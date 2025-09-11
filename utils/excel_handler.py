@@ -62,6 +62,11 @@ class DataHandler:
                 # 检查用例是否启用
                 enabled_value = str(row.get('enabled', '1')).strip().lower()
                 is_enabled = enabled_value in ['1', 'true', 'yes', 'enabled', 'enable', 'y', 't']
+                
+                # 提前提取case_id和case_name用于日志记录
+                case_id = str(row.get('case_id', row.get('id', '')))
+                case_name = str(row.get('case_name', row.get('name', '')))
+                
                 logger.debug(f"用例行 {index + 1} 是否启用: {is_enabled} (enabled值: {enabled_value})")
 
                 if not is_enabled:
@@ -70,8 +75,8 @@ class DataHandler:
 
                 # 根据实际列名映射到期望的字段名
                 case = {
-                    'case_id': str(row.get('case_id', row.get('id', ''))),
-                    'case_name': str(row.get('case_name', row.get('name', ''))),
+                    'case_id': case_id,
+                    'case_name': case_name,
                     'method': str(row.get('method', '')).upper(),
                     'url': str(row.get('url', '')),
                     'headers': str(row.get('headers', '{}')),
