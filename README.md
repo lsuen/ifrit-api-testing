@@ -81,7 +81,15 @@ timeout = 30
 - `save_var_name`: 保存的变量名
 
 ### 3. 运行测试
-
+#### 支持的参数
+```
+使用argparse解析命令行参数，支持以下选项：
+--serve-report：启动Allure报告服务器。
+--generate-report：生成HTML格式的Allure报告。
+--type：指定测试类型（excel/csv/all）。
+--file：指定测试文件路径。
+```
+#### 运行示例
 ```bash
 # 运行所有测试
 python main.py
@@ -91,6 +99,9 @@ pytest testcases/test_all_drivers.py -v
 
 # 运行测试并生成报告
 python main.py --serve-report
+
+# 运行指定类型用例并生成报告
+python main.py --type excel
 ```
 
 ### 4. 查看报告
