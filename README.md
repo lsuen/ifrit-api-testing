@@ -43,10 +43,10 @@ api_automation_framework/
 6. **Allure报告**：生成美观的测试报告
 7. **可扩展架构**：模块化设计，易于扩展
 
-## 安装依赖
+## 安装依赖(建议python version>=3.7)
 
 ```bash
-pip install pytest requests pandas openpyxl allure-pytest
+ pip install -r requirements.txt 
 ```
 
 ## 使用方法
@@ -86,7 +86,7 @@ timeout = 30
 # 运行所有测试
 python main.py
 
-# 运行所有用例并打印
+# 运行所有用例并打印调试
 pytest testcases/test_all_drivers.py -v
 
 # 运行测试并生成报告
