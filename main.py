@@ -173,11 +173,10 @@ def main():
         logger.info("测试执行完成，将生成HTML报告")
         generate_html_report()
 
-    # sys.exit(exit_code)
+    sys.exit(exit_code)  # 直接运行主函数需要注释掉本行sys.exit(exit_code)
 
 
 if __name__ == "__main__":
-
     main()
     os.system("allurec/bin/allure generate reports/allure_reports -o reports/html --clean")
     os.system("allurec/bin/allure open reports/html")

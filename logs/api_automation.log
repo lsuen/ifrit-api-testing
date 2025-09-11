@@ -3043,3 +3043,514 @@
 2025-09-10 16:25:41,593 - api_automation - INFO - 用户指定了 --serve-report 参数，将启动报告服务器
 2025-09-10 16:25:41,594 - api_automation - INFO - 启动Allure报告服务器
 2025-09-10 16:25:41,594 - api_automation - INFO - 执行命令: allure serve ./reports/allure_reports
+2025-09-10 16:55:39,501 - api_automation - INFO - 解析命令行参数完成
+2025-09-10 16:55:39,501 - api_automation - INFO - 参数详情: serve_report=True, generate_report=False, type=None, file=None
+2025-09-10 16:55:39,501 - api_automation - INFO - 开始执行API自动化测试
+2025-09-10 16:55:39,501 - api_automation - INFO - 测试路径: None
+2025-09-10 16:55:39,501 - api_automation - INFO - 测试类型: None
+2025-09-10 16:55:39,502 - api_automation - INFO - 运行所有测试用例
+2025-09-10 16:55:39,502 - api_automation - INFO - 执行命令: pytest testcases/ -v --alluredir=./reports/allure_reports --clean-alluredir
+2025-09-10 16:55:41,107 - api_automation - INFO - 查找所有测试文件，找到 4 个文件
+2025-09-10 16:55:41,108 - api_automation - INFO - 读取测试文件: /Users/sunwenlong/PythonEducationalProject/ifrit/data/excel_data/test_case_addr_01.xls
+2025-09-10 16:55:41,109 - api_automation - INFO - 开始读取测试用例文件: /Users/sunwenlong/PythonEducationalProject/ifrit/data/excel_data/test_case_addr_01.xls
+2025-09-10 16:55:41,110 - api_automation - INFO - 文件是否存在: True
+2025-09-10 16:55:41,110 - api_automation - INFO - 检测到.xls文件，使用xlrd引擎读取
+2025-09-10 16:55:41,142 - api_automation - INFO - 成功读取文件，数据行数: 4
+2025-09-10 16:55:41,166 - api_automation - INFO - 从 /Users/sunwenlong/PythonEducationalProject/ifrit/data/excel_data/test_case_addr_01.xls 成功读取 4 条测试用例
+2025-09-10 16:55:41,166 - api_automation - INFO - 从 /Users/sunwenlong/PythonEducationalProject/ifrit/data/excel_data/test_case_addr_01.xls 加载了 4 条测试用例
+2025-09-10 16:55:41,167 - api_automation - INFO - 读取测试文件: /Users/sunwenlong/PythonEducationalProject/ifrit/data/excel_data/test_case_addr_02.xls
+2025-09-10 16:55:41,167 - api_automation - INFO - 开始读取测试用例文件: /Users/sunwenlong/PythonEducationalProject/ifrit/data/excel_data/test_case_addr_02.xls
+2025-09-10 16:55:41,167 - api_automation - INFO - 文件是否存在: True
+2025-09-10 16:55:41,168 - api_automation - INFO - 检测到.xls文件，使用xlrd引擎读取
+2025-09-10 16:55:41,174 - api_automation - INFO - 成功读取文件，数据行数: 3
+2025-09-10 16:55:41,187 - api_automation - INFO - 从 /Users/sunwenlong/PythonEducationalProject/ifrit/data/excel_data/test_case_addr_02.xls 成功读取 3 条测试用例
+2025-09-10 16:55:41,187 - api_automation - INFO - 从 /Users/sunwenlong/PythonEducationalProject/ifrit/data/excel_data/test_case_addr_02.xls 加载了 3 条测试用例
+2025-09-10 16:55:41,187 - api_automation - INFO - 读取测试文件: /Users/sunwenlong/PythonEducationalProject/ifrit/data/csv_data/test_case_addr_01.csv
+2025-09-10 16:55:41,188 - api_automation - INFO - 开始读取测试用例文件: /Users/sunwenlong/PythonEducationalProject/ifrit/data/csv_data/test_case_addr_01.csv
+2025-09-10 16:55:41,188 - api_automation - INFO - 文件是否存在: True
+2025-09-10 16:55:41,188 - api_automation - INFO - 检测到.csv文件，使用CSV方式读取
+2025-09-10 16:55:41,192 - api_automation - INFO - 成功读取文件，数据行数: 4
+2025-09-10 16:55:41,205 - api_automation - INFO - 从 /Users/sunwenlong/PythonEducationalProject/ifrit/data/csv_data/test_case_addr_01.csv 成功读取 4 条测试用例
+2025-09-10 16:55:41,205 - api_automation - INFO - 从 /Users/sunwenlong/PythonEducationalProject/ifrit/data/csv_data/test_case_addr_01.csv 加载了 4 条测试用例
+2025-09-10 16:55:41,205 - api_automation - INFO - 读取测试文件: /Users/sunwenlong/PythonEducationalProject/ifrit/data/csv_data/test_case_addr_02.csv
+2025-09-10 16:55:41,206 - api_automation - INFO - 开始读取测试用例文件: /Users/sunwenlong/PythonEducationalProject/ifrit/data/csv_data/test_case_addr_02.csv
+2025-09-10 16:55:41,206 - api_automation - INFO - 文件是否存在: True
+2025-09-10 16:55:41,206 - api_automation - INFO - 检测到.csv文件，使用CSV方式读取
+2025-09-10 16:55:41,209 - api_automation - INFO - 成功读取文件，数据行数: 3
+2025-09-10 16:55:41,220 - api_automation - INFO - 从 /Users/sunwenlong/PythonEducationalProject/ifrit/data/csv_data/test_case_addr_02.csv 成功读取 3 条测试用例
+2025-09-10 16:55:41,220 - api_automation - INFO - 从 /Users/sunwenlong/PythonEducationalProject/ifrit/data/csv_data/test_case_addr_02.csv 加载了 3 条测试用例
+2025-09-10 16:55:41,220 - api_automation - INFO - 总共加载了 14 条测试用例
+2025-09-10 16:55:41,232 - api_automation - INFO - 查找所有测试文件，找到 3 个文件
+2025-09-10 16:55:41,244 - api_automation - INFO - 查找所有测试文件，找到 3 个文件
+2025-09-10 16:55:41,249 - api_automation - INFO - 开始执行测试用例: 1 - 登录
+2025-09-10 16:55:41,249 - api_automation - INFO - 发送 POST 请求到 /api/login
+2025-09-10 16:55:41,250 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,250 - api_automation - INFO - 开始发送HTTP请求
+2025-09-10 16:55:41,250 - api_automation - INFO - 请求方法: POST
+2025-09-10 16:55:41,250 - api_automation - INFO - 请求URL: http://5912.org:6666/api/login
+2025-09-10 16:55:41,251 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2025-09-10 16:55:41,251 - api_automation - INFO - JSON数据: {
+  "username": "main",
+  "password": "123456"
+}
+2025-09-10 16:55:41,251 - api_automation - INFO - 超时时间: 30秒
+2025-09-10 16:55:41,251 - api_automation - INFO - ------------------------------
+2025-09-10 16:55:41,319 - api_automation - INFO - 收到HTTP响应
+2025-09-10 16:55:41,319 - api_automation - INFO - 响应状态码: 200
+2025-09-10 16:55:41,319 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Wed, 10 Sep 2025 08:55:41 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "89",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2025-09-10 16:55:41,320 - api_automation - INFO - 响应体: {"success": true, "message": "登录成功", "token": "7bdb5933aeae425aa148e950e6db569a"}
+2025-09-10 16:55:41,320 - api_automation - INFO - 响应时间: 0.053422秒
+2025-09-10 16:55:41,320 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,320 - api_automation - INFO - 执行状态码断言: 期望 200
+2025-09-10 16:55:41,320 - api_automation - INFO - 断言成功: 状态码 200 == 200
+2025-09-10 16:55:41,321 - api_automation - INFO - 开始提取变量（简化格式）: 键=token=json.token
+2025-09-10 16:55:41,321 - api_automation - INFO - JSON路径提取成功: token -> 7bdb5933aeae425aa148e950e6db569a
+2025-09-10 16:55:41,321 - api_automation - INFO - 设置变量: token = 7bdb5933aeae425aa148e950e6db569a
+2025-09-10 16:55:41,322 - api_automation - INFO - 变量提取成功: token = 7bdb5933aeae425aa148e950e6db569a
+2025-09-10 16:55:41,323 - api_automation - INFO - 测试用例执行完成: 1 - 登录
+2025-09-10 16:55:41,333 - api_automation - INFO - 开始执行测试用例: 2 - 地址列表查询
+2025-09-10 16:55:41,333 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2025-09-10 16:55:41,335 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,335 - api_automation - INFO - 开始发送HTTP请求
+2025-09-10 16:55:41,335 - api_automation - INFO - 请求方法: POST
+2025-09-10 16:55:41,335 - api_automation - INFO - 请求URL: http://5912.org:6666/api/address/list
+2025-09-10 16:55:41,335 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2025-09-10 16:55:41,336 - api_automation - INFO - JSON数据: {
+  "username": "main",
+  "token": "7bdb5933aeae425aa148e950e6db569a"
+}
+2025-09-10 16:55:41,336 - api_automation - INFO - 超时时间: 30秒
+2025-09-10 16:55:41,336 - api_automation - INFO - ------------------------------
+2025-09-10 16:55:41,369 - api_automation - INFO - 收到HTTP响应
+2025-09-10 16:55:41,370 - api_automation - INFO - 响应状态码: 200
+2025-09-10 16:55:41,370 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Wed, 10 Sep 2025 08:55:41 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "305",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2025-09-10 16:55:41,370 - api_automation - INFO - 响应体: {"success": true, "message": "查询成功", "data": [{"id": 3, "name": "张三", "phone": "13800138000", "province": "北京市", "city": "北京市", "district": "朝阳区", "detail": "某某街道123号", "is_default": false, "created_at": "2025-08-20 09:06:27", "updated_at": "2025-08-20 09:06:27"}]}
+2025-09-10 16:55:41,371 - api_automation - INFO - 响应时间: 0.026372秒
+2025-09-10 16:55:41,371 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,371 - api_automation - INFO - 执行状态码断言: 期望 200
+2025-09-10 16:55:41,371 - api_automation - INFO - 断言成功: 状态码 200 == 200
+2025-09-10 16:55:41,371 - api_automation - INFO - 执行内容包含断言: 期望包含 '{"success": true, "message": "查询成功", "data": [{"id": 3, "name": "张三", "phone": "13800138000", "province": "北京市", "city":
+"北京市", "district": "朝阳区", "detail": "某某街道123号", "is_default": false, "created_at": "2025-08-20 09:06:27", "updated_at":
+"2025-08-20 09:06:27"}]}'
+2025-09-10 16:55:41,372 - api_automation - INFO - 断言成功: 响应内容包含标准化后的 '{"success":true,"message":"查询成功","data":[{"id":3,"name":"张三","phone":"13800138000","province":"北京市","city":"北京市","district":"朝阳区","detail":"某某街道123号","is_default":false,"created_at":"2025-08-20 09:06:27","updated_at":"2025-08-20 09:06:27"}]}'
+2025-09-10 16:55:41,373 - api_automation - INFO - 测试用例执行完成: 2 - 地址列表查询
+2025-09-10 16:55:41,385 - api_automation - INFO - 开始执行测试用例: 3 - 地址列表查询
+2025-09-10 16:55:41,386 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2025-09-10 16:55:41,388 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,388 - api_automation - INFO - 开始发送HTTP请求
+2025-09-10 16:55:41,389 - api_automation - INFO - 请求方法: POST
+2025-09-10 16:55:41,389 - api_automation - INFO - 请求URL: http://5912.org:6666/api/address/list
+2025-09-10 16:55:41,389 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2025-09-10 16:55:41,389 - api_automation - INFO - JSON数据: {
+  "username": "main"
+}
+2025-09-10 16:55:41,390 - api_automation - INFO - 超时时间: 30秒
+2025-09-10 16:55:41,390 - api_automation - INFO - ------------------------------
+2025-09-10 16:55:41,421 - api_automation - INFO - 收到HTTP响应
+2025-09-10 16:55:41,422 - api_automation - INFO - 响应状态码: 401
+2025-09-10 16:55:41,423 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Wed, 10 Sep 2025 08:55:41 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "56",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2025-09-10 16:55:41,423 - api_automation - INFO - 响应体: {"success": false, "message": "缺少用户名或Token"}
+2025-09-10 16:55:41,423 - api_automation - INFO - 响应时间: 0.021207秒
+2025-09-10 16:55:41,423 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,423 - api_automation - INFO - 执行状态码断言: 期望 401
+2025-09-10 16:55:41,423 - api_automation - ERROR - 请求发送失败，未收到有效响应，无法执行状态码断言
+2025-09-10 16:55:41,423 - api_automation - INFO - 执行内容包含断言: 期望包含 '{"success": false, "message": "缺少用户名或Token"}'
+2025-09-10 16:55:41,424 - api_automation - INFO - 断言成功: 响应内容包含标准化后的 '{"success":false,"message":"缺少用户名或Token"}'
+2025-09-10 16:55:41,425 - api_automation - INFO - 测试用例执行完成: 3 - 地址列表查询
+2025-09-10 16:55:41,438 - api_automation - INFO - 开始执行测试用例: 4 - 地址列表查询
+2025-09-10 16:55:41,439 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2025-09-10 16:55:41,447 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,447 - api_automation - INFO - 开始发送HTTP请求
+2025-09-10 16:55:41,447 - api_automation - INFO - 请求方法: POST
+2025-09-10 16:55:41,447 - api_automation - INFO - 请求URL: http://5912.org:6666/api/address/list
+2025-09-10 16:55:41,448 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2025-09-10 16:55:41,448 - api_automation - INFO - JSON数据: {
+  "username": "test",
+  "token": "7bdb5933aeae425aa148e950e6db569a"
+}
+2025-09-10 16:55:41,448 - api_automation - INFO - 超时时间: 30秒
+2025-09-10 16:55:41,448 - api_automation - INFO - ------------------------------
+2025-09-10 16:55:41,498 - api_automation - INFO - 收到HTTP响应
+2025-09-10 16:55:41,499 - api_automation - INFO - 响应状态码: 401
+2025-09-10 16:55:41,499 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Wed, 10 Sep 2025 08:55:41 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "50",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2025-09-10 16:55:41,499 - api_automation - INFO - 响应体: {"success": false, "message": "Token验证失败"}
+2025-09-10 16:55:41,500 - api_automation - INFO - 响应时间: 0.037376秒
+2025-09-10 16:55:41,500 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,500 - api_automation - INFO - 执行状态码断言: 期望 401
+2025-09-10 16:55:41,500 - api_automation - ERROR - 请求发送失败，未收到有效响应，无法执行状态码断言
+2025-09-10 16:55:41,500 - api_automation - INFO - 执行内容包含断言: 期望包含 '{"success": false, "message": "Token验证失败"}'
+2025-09-10 16:55:41,501 - api_automation - INFO - 断言成功: 响应内容包含标准化后的 '{"success":false,"message":"Token验证失败"}'
+2025-09-10 16:55:41,502 - api_automation - INFO - 测试用例执行完成: 4 - 地址列表查询
+2025-09-10 16:55:41,511 - api_automation - INFO - 开始执行测试用例: 1 - 地址列表查询
+2025-09-10 16:55:41,511 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2025-09-10 16:55:41,512 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,513 - api_automation - INFO - 开始发送HTTP请求
+2025-09-10 16:55:41,513 - api_automation - INFO - 请求方法: POST
+2025-09-10 16:55:41,513 - api_automation - INFO - 请求URL: http://5912.org:6666/api/address/list
+2025-09-10 16:55:41,513 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2025-09-10 16:55:41,513 - api_automation - INFO - JSON数据: {
+  "username": "main",
+  "token": "7bdb5933aeae425aa148e950e6db569a"
+}
+2025-09-10 16:55:41,513 - api_automation - INFO - 超时时间: 30秒
+2025-09-10 16:55:41,513 - api_automation - INFO - ------------------------------
+2025-09-10 16:55:41,540 - api_automation - INFO - 收到HTTP响应
+2025-09-10 16:55:41,540 - api_automation - INFO - 响应状态码: 200
+2025-09-10 16:55:41,540 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Wed, 10 Sep 2025 08:55:41 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "305",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2025-09-10 16:55:41,541 - api_automation - INFO - 响应体: {"success": true, "message": "查询成功", "data": [{"id": 3, "name": "张三", "phone": "13800138000", "province": "北京市", "city": "北京市", "district": "朝阳区", "detail": "某某街道123号", "is_default": false, "created_at": "2025-08-20 09:06:27", "updated_at": "2025-08-20 09:06:27"}]}
+2025-09-10 16:55:41,541 - api_automation - INFO - 响应时间: 0.020838秒
+2025-09-10 16:55:41,541 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,541 - api_automation - INFO - 执行状态码断言: 期望 200
+2025-09-10 16:55:41,541 - api_automation - INFO - 断言成功: 状态码 200 == 200
+2025-09-10 16:55:41,541 - api_automation - INFO - 执行内容包含断言: 期望包含 '{"success": true, "message": "查询成功", "data": [{"id": 3, "name": "张三", "phone": "13800138000", "province": "北京市", "city":
+"北京市", "district": "朝阳区", "detail": "某某街道123号", "is_default": false, "created_at": "2025-08-20 09:06:27", "updated_at":
+"2025-08-20 09:06:27"}]}'
+2025-09-10 16:55:41,542 - api_automation - INFO - 断言成功: 响应内容包含标准化后的 '{"success":true,"message":"查询成功","data":[{"id":3,"name":"张三","phone":"13800138000","province":"北京市","city":"北京市","district":"朝阳区","detail":"某某街道123号","is_default":false,"created_at":"2025-08-20 09:06:27","updated_at":"2025-08-20 09:06:27"}]}'
+2025-09-10 16:55:41,543 - api_automation - INFO - 测试用例执行完成: 1 - 地址列表查询
+2025-09-10 16:55:41,551 - api_automation - INFO - 开始执行测试用例: 2 - 地址列表查询
+2025-09-10 16:55:41,551 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2025-09-10 16:55:41,552 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,553 - api_automation - INFO - 开始发送HTTP请求
+2025-09-10 16:55:41,553 - api_automation - INFO - 请求方法: POST
+2025-09-10 16:55:41,553 - api_automation - INFO - 请求URL: http://5912.org:6666/api/address/list
+2025-09-10 16:55:41,553 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2025-09-10 16:55:41,553 - api_automation - INFO - JSON数据: {
+  "username": "main"
+}
+2025-09-10 16:55:41,553 - api_automation - INFO - 超时时间: 30秒
+2025-09-10 16:55:41,553 - api_automation - INFO - ------------------------------
+2025-09-10 16:55:41,578 - api_automation - INFO - 收到HTTP响应
+2025-09-10 16:55:41,579 - api_automation - INFO - 响应状态码: 401
+2025-09-10 16:55:41,579 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Wed, 10 Sep 2025 08:55:41 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "56",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2025-09-10 16:55:41,579 - api_automation - INFO - 响应体: {"success": false, "message": "缺少用户名或Token"}
+2025-09-10 16:55:41,579 - api_automation - INFO - 响应时间: 0.017802秒
+2025-09-10 16:55:41,580 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,580 - api_automation - INFO - 执行状态码断言: 期望 401
+2025-09-10 16:55:41,580 - api_automation - ERROR - 请求发送失败，未收到有效响应，无法执行状态码断言
+2025-09-10 16:55:41,580 - api_automation - INFO - 执行内容包含断言: 期望包含 '{"success": false, "message": "缺少用户名或Token"}'
+2025-09-10 16:55:41,581 - api_automation - INFO - 断言成功: 响应内容包含标准化后的 '{"success":false,"message":"缺少用户名或Token"}'
+2025-09-10 16:55:41,581 - api_automation - INFO - 测试用例执行完成: 2 - 地址列表查询
+2025-09-10 16:55:41,593 - api_automation - INFO - 开始执行测试用例: 3 - 地址列表查询
+2025-09-10 16:55:41,594 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2025-09-10 16:55:41,596 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,596 - api_automation - INFO - 开始发送HTTP请求
+2025-09-10 16:55:41,596 - api_automation - INFO - 请求方法: POST
+2025-09-10 16:55:41,596 - api_automation - INFO - 请求URL: http://5912.org:6666/api/address/list
+2025-09-10 16:55:41,596 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2025-09-10 16:55:41,596 - api_automation - INFO - JSON数据: {
+  "username": "test",
+  "token": "7bdb5933aeae425aa148e950e6db569a"
+}
+2025-09-10 16:55:41,597 - api_automation - INFO - 超时时间: 30秒
+2025-09-10 16:55:41,597 - api_automation - INFO - ------------------------------
+2025-09-10 16:55:41,633 - api_automation - INFO - 收到HTTP响应
+2025-09-10 16:55:41,633 - api_automation - INFO - 响应状态码: 401
+2025-09-10 16:55:41,633 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Wed, 10 Sep 2025 08:55:41 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "50",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2025-09-10 16:55:41,633 - api_automation - INFO - 响应体: {"success": false, "message": "Token验证失败"}
+2025-09-10 16:55:41,633 - api_automation - INFO - 响应时间: 0.029958秒
+2025-09-10 16:55:41,634 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,634 - api_automation - INFO - 执行状态码断言: 期望 401
+2025-09-10 16:55:41,634 - api_automation - ERROR - 请求发送失败，未收到有效响应，无法执行状态码断言
+2025-09-10 16:55:41,634 - api_automation - INFO - 执行内容包含断言: 期望包含 '{"success": false, "message": "Token验证失败"}'
+2025-09-10 16:55:41,634 - api_automation - INFO - 断言成功: 响应内容包含标准化后的 '{"success":false,"message":"Token验证失败"}'
+2025-09-10 16:55:41,635 - api_automation - INFO - 测试用例执行完成: 3 - 地址列表查询
+2025-09-10 16:55:41,644 - api_automation - INFO - 开始执行测试用例: 1 - 登录
+2025-09-10 16:55:41,645 - api_automation - INFO - 发送 POST 请求到 /api/login
+2025-09-10 16:55:41,647 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,647 - api_automation - INFO - 开始发送HTTP请求
+2025-09-10 16:55:41,647 - api_automation - INFO - 请求方法: POST
+2025-09-10 16:55:41,647 - api_automation - INFO - 请求URL: http://5912.org:6666/api/login
+2025-09-10 16:55:41,647 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2025-09-10 16:55:41,647 - api_automation - INFO - JSON数据: {
+  "username": "main",
+  "password": "123456"
+}
+2025-09-10 16:55:41,647 - api_automation - INFO - 超时时间: 30秒
+2025-09-10 16:55:41,647 - api_automation - INFO - ------------------------------
+2025-09-10 16:55:41,675 - api_automation - INFO - 收到HTTP响应
+2025-09-10 16:55:41,675 - api_automation - INFO - 响应状态码: 200
+2025-09-10 16:55:41,676 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Wed, 10 Sep 2025 08:55:41 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "89",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2025-09-10 16:55:41,676 - api_automation - INFO - 响应体: {"success": true, "message": "登录成功", "token": "7bdb5933aeae425aa148e950e6db569a"}
+2025-09-10 16:55:41,676 - api_automation - INFO - 响应时间: 0.021036秒
+2025-09-10 16:55:41,677 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,677 - api_automation - INFO - 执行状态码断言: 期望 200
+2025-09-10 16:55:41,678 - api_automation - INFO - 断言成功: 状态码 200 == 200
+2025-09-10 16:55:41,678 - api_automation - INFO - 开始提取变量（简化格式）: 键=token=token
+2025-09-10 16:55:41,678 - api_automation - INFO - JSON路径提取成功: token -> 7bdb5933aeae425aa148e950e6db569a
+2025-09-10 16:55:41,679 - api_automation - INFO - 设置变量: token = 7bdb5933aeae425aa148e950e6db569a
+2025-09-10 16:55:41,680 - api_automation - INFO - 变量提取成功: token = 7bdb5933aeae425aa148e950e6db569a
+2025-09-10 16:55:41,681 - api_automation - INFO - 测试用例执行完成: 1 - 登录
+2025-09-10 16:55:41,696 - api_automation - INFO - 开始执行测试用例: 2 - 地址列表验证
+2025-09-10 16:55:41,696 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2025-09-10 16:55:41,698 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,699 - api_automation - INFO - 开始发送HTTP请求
+2025-09-10 16:55:41,699 - api_automation - INFO - 请求方法: POST
+2025-09-10 16:55:41,699 - api_automation - INFO - 请求URL: http://5912.org:6666/api/address/list
+2025-09-10 16:55:41,699 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2025-09-10 16:55:41,699 - api_automation - INFO - JSON数据: {
+  "username": "main",
+  "token": "7bdb5933aeae425aa148e950e6db569a"
+}
+2025-09-10 16:55:41,699 - api_automation - INFO - 超时时间: 30秒
+2025-09-10 16:55:41,700 - api_automation - INFO - ------------------------------
+2025-09-10 16:55:41,730 - api_automation - INFO - 收到HTTP响应
+2025-09-10 16:55:41,731 - api_automation - INFO - 响应状态码: 200
+2025-09-10 16:55:41,731 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Wed, 10 Sep 2025 08:55:41 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "305",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2025-09-10 16:55:41,732 - api_automation - INFO - 响应体: {"success": true, "message": "查询成功", "data": [{"id": 3, "name": "张三", "phone": "13800138000", "province": "北京市", "city": "北京市", "district": "朝阳区", "detail": "某某街道123号", "is_default": false, "created_at": "2025-08-20 09:06:27", "updated_at": "2025-08-20 09:06:27"}]}
+2025-09-10 16:55:41,732 - api_automation - INFO - 响应时间: 0.0224秒
+2025-09-10 16:55:41,732 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,732 - api_automation - INFO - 执行状态码断言: 期望 200
+2025-09-10 16:55:41,733 - api_automation - INFO - 断言成功: 状态码 200 == 200
+2025-09-10 16:55:41,733 - api_automation - INFO - 执行内容包含断言: 期望包含 '{"success": true, "message": "查询成功", "data": [{"id": 3, "name": "张三", "phone": "13800138000", "province": "北京市", "city": "北京市", "district": "朝阳区", "detail": "某某街道123号", "is_default": false, "created_at": "2025-08-20 09:06:27", "updated_at": "2025-08-20 09:06:27"}]}'
+2025-09-10 16:55:41,734 - api_automation - INFO - 断言成功: 响应内容包含标准化后的 '{"success":true,"message":"查询成功","data":[{"id":3,"name":"张三","phone":"13800138000","province":"北京市","city":"北京市","district":"朝阳区","detail":"某某街道123号","is_default":false,"created_at":"2025-08-20 09:06:27","updated_at":"2025-08-20 09:06:27"}]}'
+2025-09-10 16:55:41,736 - api_automation - INFO - 测试用例执行完成: 2 - 地址列表验证
+2025-09-10 16:55:41,747 - api_automation - INFO - 开始执行测试用例: 3 - 地址列表传参缺失验证
+2025-09-10 16:55:41,748 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2025-09-10 16:55:41,749 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,749 - api_automation - INFO - 开始发送HTTP请求
+2025-09-10 16:55:41,749 - api_automation - INFO - 请求方法: POST
+2025-09-10 16:55:41,749 - api_automation - INFO - 请求URL: http://5912.org:6666/api/address/list
+2025-09-10 16:55:41,749 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2025-09-10 16:55:41,749 - api_automation - INFO - JSON数据: {
+  "username": "main"
+}
+2025-09-10 16:55:41,750 - api_automation - INFO - 超时时间: 30秒
+2025-09-10 16:55:41,750 - api_automation - INFO - ------------------------------
+2025-09-10 16:55:41,777 - api_automation - INFO - 收到HTTP响应
+2025-09-10 16:55:41,778 - api_automation - INFO - 响应状态码: 401
+2025-09-10 16:55:41,779 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Wed, 10 Sep 2025 08:55:41 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "56",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2025-09-10 16:55:41,779 - api_automation - INFO - 响应体: {"success": false, "message": "缺少用户名或Token"}
+2025-09-10 16:55:41,779 - api_automation - INFO - 响应时间: 0.017594秒
+2025-09-10 16:55:41,780 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,780 - api_automation - INFO - 执行状态码断言: 期望 401
+2025-09-10 16:55:41,781 - api_automation - ERROR - 请求发送失败，未收到有效响应，无法执行状态码断言
+2025-09-10 16:55:41,781 - api_automation - INFO - 执行内容包含断言: 期望包含 '{"success": false, "message": "缺少用户名或Token"}'
+2025-09-10 16:55:41,782 - api_automation - INFO - 断言成功: 响应内容包含标准化后的 '{"success":false,"message":"缺少用户名或Token"}'
+2025-09-10 16:55:41,783 - api_automation - INFO - 测试用例执行完成: 3 - 地址列表传参缺失验证
+2025-09-10 16:55:41,797 - api_automation - INFO - 开始执行测试用例: 4 - 查询地址列表登录失败验证
+2025-09-10 16:55:41,797 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2025-09-10 16:55:41,798 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,799 - api_automation - INFO - 开始发送HTTP请求
+2025-09-10 16:55:41,799 - api_automation - INFO - 请求方法: POST
+2025-09-10 16:55:41,799 - api_automation - INFO - 请求URL: http://5912.org:6666/api/address/list
+2025-09-10 16:55:41,799 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2025-09-10 16:55:41,799 - api_automation - INFO - JSON数据: {
+  "username": "test",
+  "token": "7bdb5933aeae425aa148e950e6db569a"
+}
+2025-09-10 16:55:41,799 - api_automation - INFO - 超时时间: 30秒
+2025-09-10 16:55:41,799 - api_automation - INFO - ------------------------------
+2025-09-10 16:55:41,827 - api_automation - INFO - 收到HTTP响应
+2025-09-10 16:55:41,828 - api_automation - INFO - 响应状态码: 401
+2025-09-10 16:55:41,828 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Wed, 10 Sep 2025 08:55:42 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "50",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2025-09-10 16:55:41,829 - api_automation - INFO - 响应体: {"success": false, "message": "Token验证失败"}
+2025-09-10 16:55:41,829 - api_automation - INFO - 响应时间: 0.020278秒
+2025-09-10 16:55:41,830 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,830 - api_automation - INFO - 执行状态码断言: 期望 401
+2025-09-10 16:55:41,830 - api_automation - ERROR - 请求发送失败，未收到有效响应，无法执行状态码断言
+2025-09-10 16:55:41,831 - api_automation - INFO - 执行内容包含断言: 期望包含 '{"success": false, "message": "Token验证失败"}'
+2025-09-10 16:55:41,831 - api_automation - INFO - 断言成功: 响应内容包含标准化后的 '{"success":false,"message":"Token验证失败"}'
+2025-09-10 16:55:41,833 - api_automation - INFO - 测试用例执行完成: 4 - 查询地址列表登录失败验证
+2025-09-10 16:55:41,847 - api_automation - INFO - 开始执行测试用例: 1 - 地址列表验证
+2025-09-10 16:55:41,848 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2025-09-10 16:55:41,849 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,849 - api_automation - INFO - 开始发送HTTP请求
+2025-09-10 16:55:41,849 - api_automation - INFO - 请求方法: POST
+2025-09-10 16:55:41,849 - api_automation - INFO - 请求URL: http://5912.org:6666/api/address/list
+2025-09-10 16:55:41,849 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2025-09-10 16:55:41,849 - api_automation - INFO - JSON数据: {
+  "username": "main",
+  "token": "7bdb5933aeae425aa148e950e6db569a"
+}
+2025-09-10 16:55:41,850 - api_automation - INFO - 超时时间: 30秒
+2025-09-10 16:55:41,850 - api_automation - INFO - ------------------------------
+2025-09-10 16:55:41,885 - api_automation - INFO - 收到HTTP响应
+2025-09-10 16:55:41,885 - api_automation - INFO - 响应状态码: 200
+2025-09-10 16:55:41,886 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Wed, 10 Sep 2025 08:55:42 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "305",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2025-09-10 16:55:41,886 - api_automation - INFO - 响应体: {"success": true, "message": "查询成功", "data": [{"id": 3, "name": "张三", "phone": "13800138000", "province": "北京市", "city": "北京市", "district": "朝阳区", "detail": "某某街道123号", "is_default": false, "created_at": "2025-08-20 09:06:27", "updated_at": "2025-08-20 09:06:27"}]}
+2025-09-10 16:55:41,887 - api_automation - INFO - 响应时间: 0.029092秒
+2025-09-10 16:55:41,887 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,887 - api_automation - INFO - 执行状态码断言: 期望 200
+2025-09-10 16:55:41,888 - api_automation - INFO - 断言成功: 状态码 200 == 200
+2025-09-10 16:55:41,888 - api_automation - INFO - 执行内容包含断言: 期望包含 '{"success": true, "message": "查询成功", "data": [{"id": 3, "name": "张三", "phone": "13800138000", "province": "北京市", "city": "北京市", "district": "朝阳区", "detail": "某某街道123号", "is_default": false, "created_at": "2025-08-20 09:06:27", "updated_at": "2025-08-20 09:06:27"}]}'
+2025-09-10 16:55:41,888 - api_automation - INFO - 断言成功: 响应内容包含标准化后的 '{"success":true,"message":"查询成功","data":[{"id":3,"name":"张三","phone":"13800138000","province":"北京市","city":"北京市","district":"朝阳区","detail":"某某街道123号","is_default":false,"created_at":"2025-08-20 09:06:27","updated_at":"2025-08-20 09:06:27"}]}'
+2025-09-10 16:55:41,890 - api_automation - INFO - 测试用例执行完成: 1 - 地址列表验证
+2025-09-10 16:55:41,902 - api_automation - INFO - 开始执行测试用例: 2 - 地址列表传参缺失验证
+2025-09-10 16:55:41,903 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2025-09-10 16:55:41,904 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,904 - api_automation - INFO - 开始发送HTTP请求
+2025-09-10 16:55:41,904 - api_automation - INFO - 请求方法: POST
+2025-09-10 16:55:41,904 - api_automation - INFO - 请求URL: http://5912.org:6666/api/address/list
+2025-09-10 16:55:41,904 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2025-09-10 16:55:41,904 - api_automation - INFO - JSON数据: {
+  "username": "main"
+}
+2025-09-10 16:55:41,904 - api_automation - INFO - 超时时间: 30秒
+2025-09-10 16:55:41,905 - api_automation - INFO - ------------------------------
+2025-09-10 16:55:41,928 - api_automation - INFO - 收到HTTP响应
+2025-09-10 16:55:41,929 - api_automation - INFO - 响应状态码: 401
+2025-09-10 16:55:41,929 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Wed, 10 Sep 2025 08:55:42 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "56",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2025-09-10 16:55:41,930 - api_automation - INFO - 响应体: {"success": false, "message": "缺少用户名或Token"}
+2025-09-10 16:55:41,930 - api_automation - INFO - 响应时间: 0.017548秒
+2025-09-10 16:55:41,930 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,931 - api_automation - INFO - 执行状态码断言: 期望 401
+2025-09-10 16:55:41,931 - api_automation - ERROR - 请求发送失败，未收到有效响应，无法执行状态码断言
+2025-09-10 16:55:41,931 - api_automation - INFO - 执行内容包含断言: 期望包含 '{"success": false, "message": "缺少用户名或Token"}'
+2025-09-10 16:55:41,932 - api_automation - INFO - 断言成功: 响应内容包含标准化后的 '{"success":false,"message":"缺少用户名或Token"}'
+2025-09-10 16:55:41,934 - api_automation - INFO - 测试用例执行完成: 2 - 地址列表传参缺失验证
+2025-09-10 16:55:41,947 - api_automation - INFO - 开始执行测试用例: 3 - 查询地址列表登录失败验证
+2025-09-10 16:55:41,947 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2025-09-10 16:55:41,949 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,949 - api_automation - INFO - 开始发送HTTP请求
+2025-09-10 16:55:41,949 - api_automation - INFO - 请求方法: POST
+2025-09-10 16:55:41,949 - api_automation - INFO - 请求URL: http://5912.org:6666/api/address/list
+2025-09-10 16:55:41,949 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2025-09-10 16:55:41,949 - api_automation - INFO - JSON数据: {
+  "username": "test",
+  "token": "7bdb5933aeae425aa148e950e6db569a"
+}
+2025-09-10 16:55:41,949 - api_automation - INFO - 超时时间: 30秒
+2025-09-10 16:55:41,949 - api_automation - INFO - ------------------------------
+2025-09-10 16:55:41,984 - api_automation - INFO - 收到HTTP响应
+2025-09-10 16:55:41,985 - api_automation - INFO - 响应状态码: 401
+2025-09-10 16:55:41,985 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Wed, 10 Sep 2025 08:55:42 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "50",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2025-09-10 16:55:41,986 - api_automation - INFO - 响应体: {"success": false, "message": "Token验证失败"}
+2025-09-10 16:55:41,986 - api_automation - INFO - 响应时间: 0.025658秒
+2025-09-10 16:55:41,986 - api_automation - INFO - ==================================================
+2025-09-10 16:55:41,986 - api_automation - INFO - 执行状态码断言: 期望 200
+2025-09-10 16:55:41,987 - api_automation - ERROR - 请求发送失败，未收到有效响应，无法执行状态码断言
+2025-09-10 16:55:41,987 - api_automation - INFO - 执行内容包含断言: 期望包含 '{"success": false, "message": "Token验证失败111"}'
+2025-09-10 16:55:41,987 - api_automation - ERROR - 内容包含断言失败: 标准化后的期望内容 '{"success":false,"message":"Token验证失败111"}' 未找到. 
+2025-09-10 16:55:41,988 - api_automation - ERROR - 内容断言失败: 标准化后的期望内容 '{"success":false,"message":"Token验证失败111"}' 未找到. 
+2025-09-10 16:55:42,368 - api_automation - INFO - 测试执行完成
+2025-09-10 16:55:42,369 - api_automation - INFO - 测试执行完成，退出码: 1
+2025-09-10 16:55:42,369 - api_automation - INFO - 用户指定了 --serve-report 参数，将启动报告服务器
+2025-09-10 16:55:42,369 - api_automation - INFO - 启动Allure报告服务器
+2025-09-10 16:55:42,369 - api_automation - INFO - 执行命令: allure serve ./reports/allure_reports
+2025-09-10 16:55:42,374 - api_automation - ERROR - 未找到allure命令，请确保已安装Allure命令行工具

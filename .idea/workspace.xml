@@ -4,41 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="010db024-a933-406f-8c97-89ba25fab049" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/csv-editor.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/ifrit.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/config.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/env_config.ini" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/test_data_config.ini" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/assert_handler.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/data_handler.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/request_handler.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/csv_data/test_case_addr_01.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/csv_data/test_case_addr_02.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/excel_data/test_case_addr_01.xls" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/excel_data/test_case_addr_02.xls" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/logs/api_automation.log" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pytest.ini" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/testcases/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/testcases/conftest.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/testcases/test_all_drivers.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/testcases/test_api_csv_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/testcases/test_api_excel_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/common_utils.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/excel_handler.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/logger.py" afterDir="false" />
+    <list default="true" id="010db024-a933-406f-8c97-89ba25fab049" name="更改" comment="feat:新建">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/api_automation.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/api_automation.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,19 +35,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python 测试.Python tests for test_api_excel.TestApiExcel (1).executor": "Run",
-    "Python 测试.Python tests for test_api_excel.TestApiExcel.executor": "Run",
-    "Python 测试.Python tests in test_api_excel.py.executor": "Run",
-    "Python 测试.test_api_excel.TestAPI.test_api_case 的 Python 测试.executor": "Run",
-    "Python.conftest.executor": "Run",
-    "Python.main.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "/Users/sunwenlong/PythonEducationalProject/ifrit",
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python 测试.Python tests for test_api_excel.TestApiExcel (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python 测试.Python tests for test_api_excel.TestApiExcel.executor&quot;: &quot;Run&quot;,
+    &quot;Python 测试.Python tests in test_api_excel.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python 测试.test_api_excel.TestAPI.test_api_case 的 Python 测试.executor&quot;: &quot;Run&quot;,
+    &quot;Python.conftest.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/sunwenlong/PythonEducationalProject/ifrit&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
@@ -134,7 +103,7 @@
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/testcases" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
@@ -149,7 +118,7 @@
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/testcases" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
@@ -199,6 +168,19 @@
       <option name="presentableId" value="Default" />
       <updated>1757398531783</updated>
     </task>
+    <task id="LOCAL-00001" summary="feat:新建">
+      <option name="closed" value="true" />
+      <created>1757494377164</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1757494377164</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="feat:新建" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat:新建" />
   </component>
 </project>
