@@ -115,7 +115,7 @@ def generate_html_report():
         logger.info("生成HTML格式的Allure报告")
         cmd = ["allure", "generate", "./reports/allure_reports", "-o", "./reports/html", "--clean"]
         logger.info(f"执行命令: {' '.join(cmd)}")
-        
+        logger.info(cmd)
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode == 0:
             logger.info("HTML报告生成成功，路径: ./reports/html")
