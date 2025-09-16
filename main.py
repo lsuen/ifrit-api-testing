@@ -88,6 +88,7 @@ def serve_report():
         logger.info("启动Allure报告服务器")
         cmd = ["allure", "serve", "./reports/allure_reports"]
         logger.info(f"执行命令: {' '.join(cmd)}")
+        logger.info(cmd)
         subprocess.run(cmd)
     except FileNotFoundError:
         logger.error("未找到allure命令，请确保已安装Allure命令行工具")
