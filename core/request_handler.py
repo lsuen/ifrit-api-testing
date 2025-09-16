@@ -105,7 +105,8 @@ class RequestHandler:
                 params=params,
                 data=data,
                 json=json_data,
-                timeout=self.timeout
+                timeout=self.timeout,
+                verify=False
             )
             
             # 记录响应信息到allure报告（如果可用）
