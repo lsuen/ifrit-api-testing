@@ -53,6 +53,7 @@ def run_tests(test_path=None, test_type=None):
 
         # 执行测试
         logger.info(f"执行命令: {' '.join(cmd)}")
+        logger.info(cmd)
         result = subprocess.run(cmd, capture_output=True, text=True)
 
         # 输出结果
