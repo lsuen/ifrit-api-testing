@@ -9,15 +9,16 @@
 统一测试用例执行器，支持Excel和CSV格式
 """
 
-import pytest
 import json
+
 import allure
-import os
-from utils.excel_handler import DataHandler
-from core.request_handler import RequestHandler
+import pytest
+
+from config.config import Config
 from core.assert_handler import AssertHandler
 from core.data_handler import DataHandler as GlobalDataHandler
-from config.config import Config
+from core.request_handler import RequestHandler
+from utils.excel_handler import DataHandler
 from utils.logger import logger
 
 # 全局数据处理器
@@ -44,6 +45,7 @@ if not all_test_cases:
 else:
     logger.info(f"总共加载了 {len(all_test_cases)} 条测试用例")
 
+
 @allure.feature("API接口测试")
 class TestAllDrivers:
 
@@ -58,7 +60,7 @@ class TestAllDrivers:
         self.assert_handler = AssertHandler()
         self.config = Config()
 
-    @allure.story("统一测试用例执行")
+    @allure.story("CSV测试用例执行")
     @pytest.mark.parametrize("case", all_test_cases)
     def test_api_case(self, case):
         """
@@ -72,34 +74,34 @@ class TestAllDrivers:
             # 替换请求中的变量
             logger.debug("开始处理请求参数中的变量替换")
             url = data_handler.replace_variables(case['url'])
-            
+
             # 安全地解析JSON字段
             headers_str = data_handler.replace_variables(case['headers'])
             params_str = data_handler.replace_variables(case['params'])
             body_str = data_handler.replace_variables(case['body'])
-            
+
             headers = {}
             params = {}
             body = {}
-            
+
             if headers_str and headers_str.strip():
                 try:
                     headers = json.loads(headers_str)
                 except json.JSONDecodeError as e:
                     logger.warning(f"headers JSON解析失败: {e}, 使用空字典")
-                    
+
             if params_str and params_str.strip():
                 try:
                     params = json.loads(params_str)
                 except json.JSONDecodeError as e:
                     logger.warning(f"params JSON解析失败: {e}, 使用空字典")
-                    
+
             if body_str and body_str.strip():
                 try:
                     body = json.loads(body_str)
                 except json.JSONDecodeError as e:
                     logger.warning(f"body JSON解析失败: {e}, 使用空字典")
-            
+
             logger.debug("请求参数变量替换完成")
 
             # 发送请求
@@ -113,20 +115,32 @@ class TestAllDrivers:
             )
 
             # 断言响应状态码（无论是否收到有效响应都要尝试断言）
+            # if case['expected_status']:
+            #     logger.info(f"执行状态码断言: 期望 {case['expected_status']} 实际 {response.status_code}")
+            #     if response:
+            #         try:
+            #             self.assert_handler.assert_status_code(response.status_code, int(case['expected_status']))
+            #             logger.info("状态码断言成功")
+            #         except AssertionError as e:
+            #             logger.error(f"状态码断言失败: {str(e)}")
+            #             pytest.fail(f"状态码断言失败: {str(e)}")
+            #         except Exception as e:
+            #             logger.error(f"状态码断言异常: {str(e)}")
+            #             pytest.fail(f"状态码断言异常: {str(e)}")
+            # else:
+            #     logger.warning("注意：本次断言为非200状态码断言，若需要则要手动确认是否是在测试反向情况用例")
+
+            # 断言状态码内容
             if case['expected_status']:
                 logger.info(f"执行状态码断言: 期望 {case['expected_status']} 实际 {response.status_code}")
-                if response:
-                    try:
-                        self.assert_handler.assert_status_code(response.status_code, int(case['expected_status']))
-                        logger.info("状态码断言成功")
-                    except AssertionError as e:
-                        logger.error(f"状态码断言失败: {str(e)}")
-                        pytest.fail(f"状态码断言失败: {str(e)}")
-                    except Exception as e:
-                        logger.error(f"状态码断言异常: {str(e)}")
-                        pytest.fail(f"状态码断言异常: {str(e)}")
-                else:
-                    logger.warning("注意：本次断言为非200状态码断言，若需要则要手动确认是否是在测试反向情况用例")
+            try:
+                self.assert_handler.assert_content_contains(response.status_code, case['expected_status'])
+            except AssertionError as e:
+                logger.error(f"状态码断言失败: {str(e)}")
+                pytest.fail(f"状态码断言失败: {str(e)}")
+            except Exception as e:
+                logger.error(f"状态码断言异常: {str(e)}")
+                pytest.fail(f"状态码断言异常: {str(e)}")
 
             # 如果没有收到有效响应且需要断言内容，则失败
             # 仅当response为None或False时才失败
@@ -239,5 +253,5 @@ class TestAllDrivers:
                     "当前变量",
                     allure.attachment_type.JSON
                 )
-            
+
             logger.info(f"测试用例执行完成: {case['case_id']} - {case['case_name']}")

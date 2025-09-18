@@ -14,7 +14,7 @@ class DataHandler:
     def set_variable(self, key, value):
         """
         设置变量
-        
+
         Args:
             key (str): 变量名
             value (str): 变量值
@@ -26,10 +26,10 @@ class DataHandler:
     def get_variable(self, key):
         """
         获取变量值
-        
+
         Args:
             key (str): 变量名
-            
+
         Returns:
             str: 变量值
         """
@@ -40,10 +40,10 @@ class DataHandler:
     def replace_variables(self, text):
         """
         替换文本中的变量占位符，支持${variable_name}和{{variable_name}}两种格式，兼容全角字符
-        
+
         Args:
             text (str): 包含变量占位符的文本
-            
+
         Returns:
             str: 替换变量后的文本
         """
@@ -88,11 +88,11 @@ class DataHandler:
     def extract_value(self, response_data, extract_key):
         """
         从响应数据中提取值
-        
+
         Args:
             response_data (dict): 响应数据
             extract_key (str): 提取键
-            
+
         Returns:
             str: 提取到的值
         """
@@ -147,7 +147,7 @@ class DataHandler:
     def get_all_variables(self):
         """
         获取所有变量
-        
+
         Returns:
             dict: 所有变量
         """

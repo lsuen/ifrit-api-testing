@@ -3,224 +3,254 @@
 # @Time    : 2025/9/10 上午10:07
 # @Author  : sunwl
 # @Site    : 
-# @File    : test_api_excel_driver.py
+# @File    : test_all_drivers.py
 # @Software: PyCharm
 """
-Excel测试用例执行
+统一测试用例执行器，支持Excel格式
 """
 
-import json
-from typing import Dict, Any, List
-
 import pytest
-
-# 尝试导入allure，如果失败则设置为None
-try:
-    import allure
-
-    ALLURE_AVAILABLE = True
-except ImportError:
-    allure = None
-    ALLURE_AVAILABLE = False
-
+import json
+import allure
+import os
+from utils.excel_handler import DataHandler
 from core.request_handler import RequestHandler
-from core.data_handler import DataHandler
 from core.assert_handler import AssertHandler
-from utils.excel_handler import DataHandler as ExcelHandler
-from utils.logger import logger
+from core.data_handler import DataHandler as GlobalDataHandler
 from config.config import Config
+from utils.logger import logger
+
+# 全局数据处理器
+data_handler = GlobalDataHandler()
+
+# 获取Excel测试用例
+config = Config()
+all_test_cases = []
+test_files = config.get_excel_test_files()
+logger.info(f"查找所有测试文件，找到 {len(test_files)} 个文件")
+for file_path in test_files:
+    logger.info(f"读取测试文件: {file_path}")
+    cases = DataHandler().read_test_cases(file_path)
+    if cases:
+        all_test_cases.extend(cases)
+        logger.info(f"从 {file_path} 加载了 {len(cases)} 条测试用例")
+    else:
+        logger.warning(f"从 {file_path} 未加载到测试用例")
+
+# 如果没有测试用例，跳过测试
+if not all_test_cases:
+    logger.warning("未找到任何测试用例，跳过测试")
+    pytest.skip("未找到任何测试用例", allow_module_level=True)
+else:
+    logger.info(f"总共加载了 {len(all_test_cases)} 条测试用例")
 
 
-def get_test_cases() -> List[Dict[str, Any]]:
-    """获取所有Excel测试用例"""
-    config = Config()
-    test_cases = []
-    test_files = config.get_test_files()
-    logger.info(f"查找所有测试文件，找到 {len(test_files)} 个文件")
-    for file_path in test_files:
-        if file_path.endswith(('.xls', '.xlsx')):
-            logger.info(f"读取测试文件: {file_path}")
-            handler = ExcelHandler()
-            cases = handler.read_test_cases(file_path)
-            if cases:
-                test_cases.extend(cases)
-                logger.info(f"从 {file_path} 加载了 {len(cases)} 条测试用例")
-            else:
-                logger.warning(f"从 {file_path} 未加载到测试用例")
-    return test_cases
-
-
-class TestAPI:
-    """API测试类"""
+@allure.feature("API接口测试")
+class TestAllDrivers:
 
     def setup_method(self):
-        """测试方法级别的setup"""
+        """
+        测试方法级别的初始化
+        """
+        logger.debug("初始化测试方法")
         config = Config()
         base_url = config.get_base_url()
-        timeout = config.get_timeout()
-        self.request_handler = RequestHandler(base_url=base_url, timeout=timeout)
-        self.data_manager = DataHandler()
+        self.request_handler = RequestHandler(base_url=base_url)
         self.assert_handler = AssertHandler()
-        self.excel_handler = ExcelHandler()
+        self.config = Config()
 
-    @pytest.mark.parametrize("case", get_test_cases())
-    def test_api_case(self, case: Dict[str, Any]):
-        """参数化测试API用例"""
-        logger.info(f"开始执行测试用例: {case['id']} - {case['name']}")
+    @allure.story("CSV测试用例执行")
+    @pytest.mark.parametrize("case", all_test_cases)
+    def test_api_case(self, case):
+        """
+        执行所有格式的API测试用例
 
-        # 记录测试用例信息到allure报告（如果可用）
-        if ALLURE_AVAILABLE and allure:
-            allure.dynamic.feature("接口测试")
-            allure.dynamic.story(case['name'])
-            allure.dynamic.title(f"{case['id']} - {case['name']}")
-            allure.dynamic.description(f"测试用例ID: {case['id']}\n测试用例名称: {case['name']}")
+        Args:
+            case (dict): 测试用例数据
+        """
+        logger.info(f"开始执行测试用例: {case['case_id']} - {case['case_name']}")
+        with allure.step(f"执行用例: {case['case_id']} - {case['case_name']}"):
+            # 替换请求中的变量
+            logger.debug("开始处理请求参数中的变量替换")
+            url = data_handler.replace_variables(case['url'])
 
-            # 记录请求参数
-            allure.attach(json.dumps(case, ensure_ascii=False, indent=2), "测试用例数据", allure.attachment_type.JSON)
+            # 安全地解析JSON字段
+            headers_str = data_handler.replace_variables(case['headers'])
+            params_str = data_handler.replace_variables(case['params'])
+            body_str = data_handler.replace_variables(case['body'])
 
-        # 替换URL中的变量
-        url = self.data_manager.replace_variables(case['url'])
-        logger.info(f"替换变量后的URL: {url}")
+            headers = {}
+            params = {}
+            body = {}
 
-        # 替换headers中的变量
-        headers_str = self.data_manager.replace_variables(case['headers'])
-        headers = {}
-        if headers_str:
-            try:
-                headers = json.loads(headers_str)
-                logger.debug(f"解析后的请求头: {headers}")
-            except json.JSONDecodeError as e:
-                logger.warning(f"请求头JSON解析失败: {e}, 使用空字典")
-
-        # 替换params中的变量
-        params_str = self.data_manager.replace_variables(case['params'])
-        params = {}
-        if params_str:
-            try:
-                params = json.loads(params_str)
-                logger.debug(f"解析后的URL参数: {params}")
-            except json.JSONDecodeError as e:
-                logger.warning(f"URL参数JSON解析失败: {e}, 使用空字典")
-
-        # 替换body中的变量
-        body_str = self.data_manager.replace_variables(case['body'])
-        body = {}
-        if body_str:
-            try:
-                body = json.loads(body_str)
-                logger.debug(f"解析后的请求体: {body}")
-            except json.JSONDecodeError as e:
-                logger.warning(f"body JSON解析失败: {e}, 使用空字典")
-
-        logger.debug("请求参数变量替换完成")
-
-        # 发送请求
-        logger.info(f"发送 {case['method']} 请求到 {url}")
-        response = self.request_handler.send_request(
-            method=case['method'],
-            url=url,
-            headers=headers,
-            params=params,
-            json_data=body
-        )
-
-        # 断言响应状态码（无论是否收到有效响应都要尝试断言）
-        if case['expected_status']:
-            logger.info(f"执行状态码断言: 期望 {case['expected_status']}")
-            if response:
+            if headers_str and headers_str.strip():
                 try:
-                    assert self.assert_handler.assert_status_code(response, int(case['expected_status']))
-                except AssertionError:
-                    # 如果状态码断言失败，继续执行其他断言
-                    pass
-            else:
-                logger.error("请求发送失败，未收到有效响应，无法执行状态码断言")
+                    headers = json.loads(headers_str)
+                except json.JSONDecodeError as e:
+                    logger.warning(f"headers JSON解析失败: {e}, 使用空字典")
 
-        # 如果没有收到有效响应且需要断言内容，则失败
-        if not response:
-            logger.error("请求发送失败，未收到有效响应")
-            pytest.fail("请求发送失败，未收到有效响应")
+            if params_str and params_str.strip():
+                try:
+                    params = json.loads(params_str)
+                except json.JSONDecodeError as e:
+                    logger.warning(f"params JSON解析失败: {e}, 使用空字典")
 
-        # 断言响应内容
-        if case['expected_content']:
-            logger.info(f"执行内容包含断言: 期望包含 '{case['expected_content']}'")
+            if body_str and body_str.strip():
+                try:
+                    body = json.loads(body_str)
+                except json.JSONDecodeError as e:
+                    logger.warning(f"body JSON解析失败: {e}, 使用空字典")
+
+            logger.debug("请求参数变量替换完成")
+
+            # 发送请求
+            logger.info(f"发送 {case['method']} 请求到 {url}")
+            response = self.request_handler.send_request(
+                method=case['method'],
+                url=url,
+                headers=headers,
+                params=params,
+                json_data=body
+            )
+
+            # 断言响应状态码（无论是否收到有效响应都要尝试断言）
+            # if case['expected_status']:
+            #     logger.info(f"执行状态码断言: 期望 {case['expected_status']} 实际 {response.status_code}")
+            #     if response:
+            #         try:
+            #             self.assert_handler.assert_status_code(response.status_code, int(case['expected_status']))
+            #             logger.info("状态码断言成功")
+            #         except AssertionError as e:
+            #             logger.error(f"状态码断言失败: {str(e)}")
+            #             pytest.fail(f"状态码断言失败: {str(e)}")
+            #         except Exception as e:
+            #             logger.error(f"状态码断言异常: {str(e)}")
+            #             pytest.fail(f"状态码断言异常: {str(e)}")
+            # else:
+            #     logger.warning("注意：本次断言为非200状态码断言，若需要则要手动确认是否是在测试反向情况用例")
+
+            # 断言状态码内容
+            if case['expected_status']:
+                logger.info(f"执行状态码断言: 期望 {case['expected_status']} 实际 {response.status_code}")
             try:
-                assert self.assert_handler.assert_content_contains(response, case['expected_content'])
-            except AssertionError:
-                # 内容断言失败，继续执行其他逻辑
-                pass
+                self.assert_handler.assert_content_contains(response.status_code, case['expected_status'])
+            except AssertionError as e:
+                logger.error(f"状态码断言失败: {str(e)}")
+                pytest.fail(f"状态码断言失败: {str(e)}")
+            except Exception as e:
+                logger.error(f"状态码断言异常: {str(e)}")
+                pytest.fail(f"状态码断言异常: {str(e)}")
 
-        # 断言JSON值
-        if case['json_path'] and case['expected_json_value']:
-            logger.info(f"执行JSON路径断言: 路径={case['json_path']}, 期望值={case['expected_json_value']}")
-            try:
-                assert self.assert_handler.assert_json_value(
-                    response, case['json_path'], case['expected_json_value']
+            # 如果没有收到有效响应且需要断言内容，则失败
+            # 仅当response为None或False时才失败
+            if response is None:
+                logger.error("请求发送失败，未收到有效响应")
+                pytest.fail("请求发送失败，未收到有效响应")
+
+            # 断言响应内容
+            if case['expected_content']:
+                logger.info(f"执行内容包含断言: 期望包含 '{case['expected_content']}'")
+                try:
+                    self.assert_handler.assert_content_contains(response, case['expected_content'])
+                except AssertionError as e:
+                    logger.error(f"内容断言失败: {str(e)}")
+                    pytest.fail(f"内容断言失败: {str(e)}")
+                except Exception as e:
+                    logger.error(f"内容断言异常: {str(e)}")
+                    pytest.fail(f"内容断言异常: {str(e)}")
+
+            # 断言JSON值
+            if case['json_path'] and case['expected_json_value']:
+                logger.info(f"执行JSON值断言: 路径 {case['json_path']}, 期望值 {case['expected_json_value']}")
+                try:
+                    self.assert_handler.assert_json_value(response, case['json_path'], case['expected_json_value'])
+                except AssertionError as e:
+                    logger.error(f"JSON值断言失败: {str(e)}")
+                    pytest.fail(f"JSON值断言失败: {str(e)}")
+                except Exception as e:
+                    logger.error(f"JSON值断言异常: {str(e)}")
+                    pytest.fail(f"JSON值断言异常: {str(e)}")
+
+            # 提取变量
+            if case['extract_key'] and case['save_var_name']:
+                logger.info(f"开始提取变量: 键={case['extract_key']}, 保存为={case['save_var_name']}")
+                try:
+                    response_json = response.json()
+                    # 特殊处理类似 "token=json.token" 的格式
+                    extract_key = case['extract_key']
+                    if '=' in extract_key and not extract_key.startswith(('json.', 'regex:')):
+                        # 处理 "变量名=提取路径" 格式，如 "token=json.token"
+                        var_name, json_path = extract_key.split('=', 1)
+                        # 如果json_path以"json."开头，则去掉前缀
+                        if json_path.startswith('json.'):
+                            json_path = json_path[5:]  # 去掉"json."前缀
+                        extracted_value = data_handler.extract_value(response_json, json_path)
+                        if extracted_value:
+                            data_handler.set_variable(var_name.strip(), extracted_value)
+                            allure.attach(
+                                extracted_value,
+                                f"提取变量: {var_name.strip()}",
+                                allure.attachment_type.TEXT
+                            )
+                            logger.info(f"变量提取成功: {var_name.strip()} = {extracted_value}")
+                        else:
+                            logger.warning(f"变量提取失败，未提取到值: {extract_key}")
+                    else:
+                        # 原有逻辑
+                        extracted_value = data_handler.extract_value(response_json, extract_key)
+                        if extracted_value:
+                            data_handler.set_variable(case['save_var_name'], extracted_value)
+                            allure.attach(
+                                extracted_value,
+                                f"提取变量: {case['save_var_name']}",
+                                allure.attachment_type.TEXT
+                            )
+                            logger.info(f"变量提取成功: {case['save_var_name']} = {extracted_value}")
+                        else:
+                            logger.warning("变量提取失败，未提取到值")
+                except Exception as e:
+                    error_msg = f"变量提取异常: {str(e)}"
+                    logger.error(error_msg)
+                    allure.attach(str(e), "变量提取异常", allure.attachment_type.TEXT)
+                    pytest.fail(error_msg)
+            elif case['extract_key']:
+                # 处理只有extract_key没有save_var_name的情况（如token=json.token格式）
+                logger.info(f"开始提取变量（简化格式）: 键={case['extract_key']}")
+                try:
+                    response_json = response.json()
+                    extract_key = case['extract_key']
+                    if '=' in extract_key and not extract_key.startswith(('json.', 'regex:')):
+                        # 处理 "变量名=提取路径" 格式，如 "token=json.token"
+                        var_name, json_path = extract_key.split('=', 1)
+                        # 如果json_path以"json."开头，则去掉前缀
+                        if json_path.startswith('json.'):
+                            json_path = json_path[5:]  # 去掉"json."前缀
+                        extracted_value = data_handler.extract_value(response_json, json_path)
+                        if extracted_value:
+                            data_handler.set_variable(var_name.strip(), extracted_value)
+                            allure.attach(
+                                extracted_value,
+                                f"提取变量: {var_name.strip()}",
+                                allure.attachment_type.TEXT
+                            )
+                            logger.info(f"变量提取成功: {var_name.strip()} = {extracted_value}")
+                        else:
+                            logger.warning(f"变量提取失败，未提取到值: {extract_key}")
+                    else:
+                        logger.warning(f"提取键格式不正确: {extract_key}")
+                except Exception as e:
+                    error_msg = f"变量提取异常: {str(e)}"
+                    logger.error(error_msg)
+                    allure.attach(str(e), "变量提取异常", allure.attachment_type.TEXT)
+                    pytest.fail(error_msg)
+
+            # 在Allure报告中显示当前变量状态
+            all_vars = data_handler.get_all_variables()
+            if all_vars:
+                allure.attach(
+                    json.dumps(all_vars, ensure_ascii=False, indent=2),
+                    "当前变量",
+                    allure.attachment_type.JSON
                 )
-            except AssertionError:
-                # JSON断言失败，继续执行其他逻辑
-                pass
 
-        # 提取变量
-        if case['extract_key'] and case['save_var_name']:
-            logger.info(f"开始提取变量: 键={case['extract_key']}, 保存为={case['save_var_name']}")
-            try:
-                response_json = response.json()
-                extracted_value = self.data_manager.extract_value(response_json, case['extract_key'])
-                if extracted_value:
-                    self.data_manager.set_variable(case['save_var_name'], extracted_value)
-                    logger.info(f"变量提取成功: {case['save_var_name']} = {extracted_value}")
-                    if ALLURE_AVAILABLE and allure:
-                        allure.attach(str(extracted_value), f"提取变量_{case['save_var_name']}",
-                                      allure.attachment_type.TEXT)
-                else:
-                    logger.warning("变量提取失败，未提取到值")
-            except Exception as e:
-                error_msg = f"变量提取异常: {str(e)}"
-                logger.error(error_msg)
-                if ALLURE_AVAILABLE and allure:
-                    allure.attach(str(e), "变量提取异常", allure.attachment_type.TEXT)
-                pytest.fail(error_msg)
-        elif case['extract_key']:
-            # 处理只有extract_key没有save_var_name的情况（如token=json.token格式）
-            logger.info(f"开始提取变量（简化格式）: 键={case['extract_key']}")
-            try:
-                response_json = response.json()
-                extract_key = case['extract_key']
-                if '=' in extract_key and not extract_key.startswith(('json.', 'regex:')):
-                    # 处理 "变量名=提取路径" 格式，如 "token=json.token"
-                    var_name, json_path = extract_key.split('=', 1)
-                    # 如果json_path以"json."开头，则去掉前缀
-                    if json_path.startswith('json.'):
-                        json_path = json_path[5:]  # 去掉"json."前缀
-                    extracted_value = self.data_manager.extract_value(response_json, json_path)
-                    if extracted_value:
-                        self.data_manager.set_variable(var_name.strip(), extracted_value)
-                        logger.info(f"变量提取成功: {var_name.strip()} = {extracted_value}")
-                        if ALLURE_AVAILABLE and allure:
-                            allure.attach(str(extracted_value), f"提取变量_{var_name.strip()}",
-                                          allure.attachment_type.TEXT)
-                    else:
-                        logger.warning("变量提取失败，未提取到值")
-                else:
-                    # 处理普通的json路径提取
-                    extracted_value = self.data_manager.extract_value(response_json, extract_key)
-                    if extracted_value:
-                        # 对于简化格式，使用extract_key作为变量名（去掉前缀）
-                        var_name = extract_key
-                        if var_name.startswith('json.'):
-                            var_name = var_name[5:]
-                        self.data_manager.set_variable(var_name, extracted_value)
-                        logger.info(f"变量提取成功: {var_name} = {extracted_value}")
-                        if ALLURE_AVAILABLE and allure:
-                            allure.attach(str(extracted_value), f"提取变量_{var_name}", allure.attachment_type.TEXT)
-                    else:
-                        logger.warning("变量提取失败，未提取到值")
-            except Exception as e:
-                error_msg = f"变量提取异常: {str(e)}"
-                logger.error(error_msg)
-                if ALLURE_AVAILABLE and allure:
-                    allure.attach(str(e), "变量提取异常", allure.attachment_type.TEXT)
-                pytest.fail(error_msg)
-
-        logger.info(f"测试用例执行完成: {case['id']} - {case['name']}")
+            logger.info(f"测试用例执行完成: {case['case_id']} - {case['case_name']}")

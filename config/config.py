@@ -67,7 +67,10 @@ class Config:
         files = self.test_data_config.get('test_files', 'files', fallback='all')
         if files.lower() == 'all':
             return 'all'
-        return [f.strip() for f in files.split(',')]
+        file_list = [f.strip() for f in files.split(',')]
+        # 确保返回绝对路径
+        data_dir = self.get_data_dir()
+        return [os.path.join(data_dir, f) if not os.path.isabs(f) else f for f in file_list]
 
     def get_data_dir(self):
         """获取测试数据目录"""
@@ -92,19 +95,59 @@ class Config:
             List[str]: 所有测试文件的路径列表
         """
         test_files = []
-        
+
         # 获取Excel文件
         excel_dir = self.get_excel_dir()
         if os.path.exists(excel_dir):
             for file in os.listdir(excel_dir):
                 if file.endswith(('.xlsx', '.xls')):
                     test_files.append(os.path.join(excel_dir, file))
-        
+
         # 获取CSV文件
         csv_dir = self.get_csv_dir()
         if os.path.exists(csv_dir):
             for file in os.listdir(csv_dir):
                 if file.endswith('.csv'):
                     test_files.append(os.path.join(csv_dir, file))
-        
+
         return test_files
+
+    def get_excel_test_files(self) -> List[str]:
+        """
+        获取所有测试文件路径
+
+        Returns:
+            List[str]: 所有测试文件的路径列表
+        """
+        test_files = []
+
+        # 获取Excel文件
+        excel_dir = self.get_excel_dir()
+        if os.path.exists(excel_dir):
+            for file in os.listdir(excel_dir):
+                if file.endswith(('.xlsx', '.xls')):
+                    test_files.append(os.path.join(excel_dir, file))
+
+        return test_files
+
+    def get_csv_test_files(self) -> List[str]:
+        """
+        获取所有测试文件路径
+
+        Returns:
+            List[str]: 所有测试文件的路径列表
+        """
+        test_files = []
+
+        # 获取CSV文件
+        csv_dir = self.get_csv_dir()
+        if os.path.exists(csv_dir):
+            for file in os.listdir(csv_dir):
+                if file.endswith('.csv'):
+                    test_files.append(os.path.join(csv_dir, file))
+
+        return test_files
+
+
+if __name__ == '__main__':
+    print(Config().get_excel_test_files())
