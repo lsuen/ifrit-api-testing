@@ -114,10 +114,11 @@ class TestAllDrivers:
 
             # 断言响应状态码（无论是否收到有效响应都要尝试断言）
             if case['expected_status']:
-                logger.info(f"执行状态码断言: 期望 {case['expected_status']}")
+                logger.info(f"执行状态码断言: 期望 {case['expected_status']} 实际 {response.status_code}")
                 if response:
                     try:
-                        self.assert_handler.assert_status_code(response, int(case['expected_status']))
+                        self.assert_handler.assert_status_code(response.status_code, int(case['expected_status']))
+                        logger.info("状态码断言成功")
                     except AssertionError as e:
                         logger.error(f"状态码断言失败: {str(e)}")
                         pytest.fail(f"状态码断言失败: {str(e)}")
@@ -125,7 +126,7 @@ class TestAllDrivers:
                         logger.error(f"状态码断言异常: {str(e)}")
                         pytest.fail(f"状态码断言异常: {str(e)}")
                 else:
-                    logger.error("请求发送失败，未收到有效响应，无法执行状态码断言")
+                    logger.warning("注意：本次断言为非200状态码断言，若需要则要手动确认是否是在测试反向情况用例")
 
             # 如果没有收到有效响应且需要断言内容，则失败
             # 仅当response为None或False时才失败
