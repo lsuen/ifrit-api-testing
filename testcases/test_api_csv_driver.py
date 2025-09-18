@@ -31,6 +31,36 @@ from utils.logger import logger
 from config.config import Config
 
 
+def get_csv_test_cases() -> List[Dict[str, Any]]:
+    """获取所有CSV测试用例"""
+    config = Config()
+    test_cases = []
+    
+    # 获取所有测试文件
+    all_test_files = config.get_all_test_files()
+    csv_files = [f for f in all_test_files if f.endswith('.csv')]
+    logger.info(f"查找CSV测试文件，找到 {len(csv_files)} 个文件")
+    
+    for file_path in csv_files:
+        logger.info(f"读取测试文件: {file_path}")
+        cases = ExcelHandler().read_test_cases(file_path)
+        if cases:
+            test_cases.extend(cases)
+            logger.info(f"从 {file_path} 加载了 {len(cases)} 条测试用例")
+        else:
+            logger.warning(f"从 {file_path} 未加载到测试用例")
+    
+    # 如果没有测试用例，跳过测试
+    if not test_cases:
+        logger.warning("未找到任何CSV测试用例，跳过测试")
+        pytest.skip("未找到任何CSV测试用例", allow_module_level=True)
+    else:
+        logger.info(f"总共加载了 {len(test_cases)} 条CSV测试用例")
+    
+    return test_cases
+
+
+@allure.feature("API接口测试")
 class TestAPICsv:
     """CSV API测试类"""
 
@@ -45,50 +75,18 @@ class TestAPICsv:
         self.assert_handler = AssertHandler()
         self.excel_handler = ExcelHandler()
 
-
-def get_csv_test_cases() -> List[Dict[str, Any]]:
-    """获取所有CSV测试用例"""
-    config = Config()
-    test_cases = []
-    test_files = config.get_test_files()
-    logger.info(f"查找所有测试文件，找到 {len(test_files)} 个文件")
-    for file_path in test_files:
-        if file_path.endswith('.csv'):
-            logger.info(f"读取测试文件: {file_path}")
-            handler = ExcelHandler()
-            cases = handler.read_test_cases(file_path)
-            if cases:
-                test_cases.extend(cases)
-                logger.info(f"从 {file_path} 加载了 {len(cases)} 条测试用例")
-            else:
-                logger.warning(f"从 {file_path} 未加载到测试用例")
-    return test_cases
-
-
-class TestAPICsv:
-    """CSV API测试类"""
-
-    def setup_method(self):
-        """测试方法级别的setup"""
-        config = Config()
-        base_url = config.get_base_url()
-        timeout = config.get_timeout()
-        self.request_handler = RequestHandler(base_url=base_url, timeout=timeout)
-        self.data_manager = DataHandler()
-        self.assert_handler = AssertHandler()
-        self.excel_handler = ExcelHandler()
-
+    @allure.story("CSV测试用例执行")
     @pytest.mark.parametrize("case", get_csv_test_cases())
     def test_api_case(self, case: Dict[str, Any]):
         """参数化测试API用例"""
-        logger.info(f"开始执行测试用例: {case['id']} - {case['name']}")
-
+        logger.info(f"开始执行测试用例: {case['case_id']} - {case['case_name']}")
+        
         # 记录测试用例信息到allure报告（如果可用）
         if ALLURE_AVAILABLE and allure:
             allure.dynamic.feature("接口测试")
-            allure.dynamic.story(case['name'])
-            allure.dynamic.title(f"{case['id']} - {case['name']}")
-            allure.dynamic.description(f"测试用例ID: {case['id']}\n测试用例名称: {case['name']}")
+            allure.dynamic.story(case['case_name'])
+            allure.dynamic.title(f"{case['case_id']} - {case['case_name']}")
+            allure.dynamic.description(f"测试用例ID: {case['case_id']}\n测试用例名称: {case['case_name']}")
 
             # 记录请求参数
             allure.attach(json.dumps(case, ensure_ascii=False, indent=2), "测试用例数据", allure.attachment_type.JSON)
@@ -145,11 +143,17 @@ class TestAPICsv:
             if response:
                 try:
                     assert self.assert_handler.assert_status_code(response, int(case['expected_status']))
+                    logger.info("状态码断言成功")
                 except AssertionError:
+                    logger.error(f"状态码断言失败，期望: {case['expected_status']}, 实际: {response.status_code}")
                     # 如果状态码断言失败，继续执行其他断言
                     pass
+                except Exception as e:
+                    logger.error(f"状态码断言过程中出现异常: {str(e)}")
             else:
                 logger.error("请求发送失败，未收到有效响应，无法执行状态码断言")
+        else:
+            logger.info("未设置期望状态码，跳过状态码断言")
 
         # 如果没有收到有效响应且需要断言内容，则失败
         if not response:
@@ -157,19 +161,43 @@ class TestAPICsv:
             pytest.fail("请求发送失败，未收到有效响应")
 
         # 断言响应内容
-        if case.get('expected_content'):
+        if case['expected_content']:
             logger.info(f"执行内容包含断言: 期望包含 '{case['expected_content']}'")
             try:
                 assert self.assert_handler.assert_content_contains(response, case['expected_content'])
+                logger.info("内容包含断言成功")
             except AssertionError:
+                logger.error(f"内容包含断言失败，期望包含: '{case['expected_content']}'")
                 # 内容断言失败，继续执行其他逻辑
                 pass
+            except Exception as e:
+                logger.error(f"内容包含断言过程中出现异常: {str(e)}")
+        else:
+            logger.info("未设置期望内容，跳过内容包含断言")
+
+        # 断言JSON值
+        if case['json_path'] and case['expected_json_value']:
+            logger.info(f"执行JSON路径断言: 路径={case['json_path']}, 期望值={case['expected_json_value']}")
+            try:
+                assert self.assert_handler.assert_json_value(
+                    response, case['json_path'], case['expected_json_value']
+                )
+                logger.info("JSON路径断言成功")
+            except AssertionError:
+                logger.error(f"JSON路径断言失败，路径: {case['json_path']}, 期望值: {case['expected_json_value']}")
+                # JSON断言失败，继续执行其他逻辑
+                pass
+            except Exception as e:
+                logger.error(f"JSON路径断言过程中出现异常: {str(e)}")
+        else:
+            logger.info("未设置JSON路径或期望值，跳过JSON路径断言")
 
         # 提取变量
-        if case.get('extract_key') and case.get('save_var_name'):
+        if case['extract_key'] and case['save_var_name']:
             logger.info(f"开始提取变量: 键={case['extract_key']}, 保存为={case['save_var_name']}")
             try:
                 response_json = response.json()
+                logger.debug(f"响应JSON: {response_json}")
                 extracted_value = self.data_manager.extract_value(response_json, case['extract_key'])
                 if extracted_value:
                     self.data_manager.set_variable(case['save_var_name'], extracted_value)
@@ -185,11 +213,12 @@ class TestAPICsv:
                 if ALLURE_AVAILABLE and allure:
                     allure.attach(str(e), "变量提取异常", allure.attachment_type.TEXT)
                 pytest.fail(error_msg)
-        elif case.get('extract_key'):
+        elif case['extract_key']:
             # 处理只有extract_key没有save_var_name的情况（如token=json.token格式）
             logger.info(f"开始提取变量（简化格式）: 键={case['extract_key']}")
             try:
                 response_json = response.json()
+                logger.debug(f"响应JSON: {response_json}")
                 extract_key = case['extract_key']
                 if '=' in extract_key and not extract_key.startswith(('json.', 'regex:')):
                     # 处理 "变量名=提取路径" 格式，如 "token=json.token"
@@ -226,5 +255,7 @@ class TestAPICsv:
                 if ALLURE_AVAILABLE and allure:
                     allure.attach(str(e), "变量提取异常", allure.attachment_type.TEXT)
                 pytest.fail(error_msg)
+        else:
+            logger.info("未设置变量提取规则，跳过变量提取")
 
-        logger.info(f"测试用例执行完成: {case['id']} - {case['name']}")
+        logger.info(f"测试用例执行完成: {case['case_id']} - {case['case_name']}")
