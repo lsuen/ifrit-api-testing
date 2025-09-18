@@ -59,7 +59,7 @@ class TestAllDrivers:
         self.assert_handler = AssertHandler()
         self.config = Config()
 
-    @allure.story("CSV测试用例执行")
+    @allure.story("Excel测试用例执行")
     @pytest.mark.parametrize("case", all_test_cases)
     def test_api_case(self, case):
         """
