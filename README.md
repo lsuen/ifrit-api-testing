@@ -67,7 +67,6 @@ timeout = 30
 
 - `case_id`: 用例ID
 - `case_name`: 用例名称
-- `enabled`: 是否启用 (yes/no)
 - `method`: HTTP方法 (GET/POST/PUT/DELETE)
 - `url`: 请求路径
 - `headers`: 请求头 (JSON格式)
@@ -79,6 +78,8 @@ timeout = 30
 - `expected_json_value`: 期望的JSON值
 - `extract_key`: 提取键路径 (支持正则:regex:pattern格式)
 - `save_var_name`: 保存的变量名
+- `priority`: 优先级
+- `enabled`: 是否启用 
 
 ### 3. 运行测试
 #### 支持的参数
