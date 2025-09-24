@@ -11,13 +11,12 @@ api_automation_framework/
 │   ├── config.py            # 全局配置
 │   ├── env_config.ini       # 环境配置
 │   └── test_data_config.ini # 测试数据配置
-├── data/                    # 测试数据目录
-│   └── test_cases.xlsx      # Excel测试用例
 ├── core/                    # 核心功能目录
 │   ├── __init__.py
 │   ├── request_handler.py   # 请求处理工具
 │   ├── assert_handler.py    # 断言工具
-│   └── data_handler.py      # 数据处理器(含关联和正则)
+│   ├── data_handler.py      # 数据处理器(含关联和正则)
+│   └── test_executor.py     # 测试执行器（统一执行逻辑）
 ├── utils/                   # 工具类目录
 │   ├── __init__.py
 │   ├── excel_handler.py     # Excel操作工具
@@ -26,7 +25,9 @@ api_automation_framework/
 ├── testcases/               # 测试用例目录
 │   ├── __init__.py
 │   ├── conftest.py          # Pytest配置和fixture
-│   └── test_api_excel.py    # 测试用例文件
+│   ├── test_api_excel_driver.py  # Excel测试驱动
+│   └── test_api_csv_driver.py    # CSV测试驱动
+├── data/                    # 测试数据目录
 ├── logs/                    # 日志目录
 ├── reports/                 # 测试报告目录
 ├── main.py                  # 主程序入口
