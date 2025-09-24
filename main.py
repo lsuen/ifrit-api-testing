@@ -6,10 +6,10 @@
 # @File    : test_api_csv_driver.py
 # @Software: PyCharm
 import argparse
-import subprocess
-import sys
 import os
 import platform
+import subprocess
+import sys
 
 from utils.logger import logger
 
@@ -57,8 +57,10 @@ def run_tests(test_path=None, test_type=None):
         logger.info(cmd)
         # 根据操作系统类型决定是否使用shell=True
         if platform.system().lower() == 'windows':
+            logger.info("当前操作系统为Windows，使用shell=True")
             result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
         else:
+            logger.info("当前操作系统为'Unix-like', 正常执行")
             result = subprocess.run(cmd, capture_output=True, text=True)
 
         # 输出结果
@@ -86,7 +88,7 @@ def serve_report():
         if not os.path.exists("./reports/allure_reports"):
             logger.error("Allure报告目录不存在: ./reports/allure_reports")
             return
-            
+
         if not os.listdir("./reports/allure_reports"):
             logger.warning("Allure报告目录为空，没有可显示的报告")
             return
@@ -113,12 +115,12 @@ def generate_html_report():
     try:
         # 确保输出目录存在
         os.makedirs("./reports/html", exist_ok=True)
-        
+
         # 检查allure_reports目录是否存在且不为空
         if not os.path.exists("./reports/allure_reports"):
             logger.error("Allure报告目录不存在: ./reports/allure_reports")
             return False
-            
+
         if not os.listdir("./reports/allure_reports"):
             logger.warning("Allure报告目录为空，没有可生成的报告")
             return False
@@ -129,8 +131,10 @@ def generate_html_report():
         logger.info(cmd)
         # 根据操作系统类型决定是否使用shell=True
         if platform.system().lower() == 'windows':
+            logger.info("当前操作系统为Windows，使用shell=True")
             result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
         else:
+            logger.info("当前操作系统为'Unix-like', 正常执行")
             result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode == 0:
             logger.info("HTML报告生成成功，路径: ./reports/html")
@@ -174,7 +178,8 @@ def main():
     args = parser.parse_args()
 
     logger.info("解析命令行参数完成")
-    logger.info(f"参数详情: serve_report={args.serve_report}, generate_report={args.generate_report}, type={args.type}, file={args.file}")
+    logger.info(
+        f"参数详情: serve_report={args.serve_report}, generate_report={args.generate_report}, type={args.type}, file={args.file}")
 
     # 运行测试
     exit_code = run_tests(test_path=args.file, test_type=args.type)
