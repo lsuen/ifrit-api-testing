@@ -9,6 +9,7 @@ import argparse
 import subprocess
 import sys
 import os
+import platform
 
 from utils.logger import logger
 
@@ -54,7 +55,11 @@ def run_tests(test_path=None, test_type=None):
         # 执行测试
         logger.info(f"执行命令: {' '.join(cmd)}")
         logger.info(cmd)
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        # 根据操作系统类型决定是否使用shell=True
+        if platform.system().lower() == 'windows':
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        else:
+            result = subprocess.run(cmd, capture_output=True, text=True)
 
         # 输出结果
         logger.info("测试执行完成")
@@ -90,7 +95,11 @@ def serve_report():
         cmd = ["allure", "serve", "./reports/allure_reports"]
         logger.info(f"执行命令: {' '.join(cmd)}")
         logger.info(cmd)
-        subprocess.run(cmd)
+        # 根据操作系统类型决定是否使用shell=True
+        if platform.system().lower() == 'windows':
+            subprocess.run(cmd, shell=True)
+        else:
+            subprocess.run(cmd)
     except FileNotFoundError:
         logger.error("未找到allure命令，请确保已安装Allure命令行工具")
     except Exception as e:
@@ -118,7 +127,11 @@ def generate_html_report():
         cmd = ["allure", "generate", "./reports/allure_reports", "-o", "./reports/html", "--clean"]
         logger.info(f"执行命令: {' '.join(cmd)}")
         logger.info(cmd)
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        # 根据操作系统类型决定是否使用shell=True
+        if platform.system().lower() == 'windows':
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        else:
+            result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode == 0:
             logger.info("HTML报告生成成功，路径: ./reports/html")
             return True
@@ -180,6 +193,10 @@ def main():
 
 if __name__ == "__main__":
     main()
-    os.system("allurec/bin/allure generate reports/allure_reports -o reports/html --clean")
-    os.system("allurec/bin/allure open reports/html")
-
+    # 根据操作系统类型决定是否使用shell=True
+    # if platform.system().lower() == 'windows':
+    #     os.system("allurec/bin/allure generate reports/allure_reports -o reports/html --clean")
+    #     os.system("allurec/bin/allure open reports/html")
+    # else:
+    #     os.system("allurec/bin/allure generate reports/allure_reports -o reports/html --clean")
+    #     os.system("allurec/bin/allure open reports/html")
