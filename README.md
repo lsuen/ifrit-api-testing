@@ -236,21 +236,21 @@ pip install openpyxl xlrd
 
 框架当前支持Excel和CSV格式的测试用例。要添加新的数据源（如JSON、数据库等）：
 
-1. 在 [core/data_handler.py](file:///Users/sunwenlong/PythonEducationalProject/ifrit/core/data_handler.py) 中扩展数据处理逻辑
-2. 在 [config/config.py](file:///Users/sunwenlong/PythonEducationalProject/ifrit/config/config.py) 中添加新的配置选项
-3. 创建新的测试驱动文件（参考 [testcases/test_api_excel_driver.py](file:///Users/sunwenlong/PythonEducationalProject/ifrit/testcases/test_api_excel_driver.py) 和 [testcases/test_api_csv_driver.py](file:///Users/sunwenlong/PythonEducationalProject/ifrit/testcases/test_api_csv_driver.py)）
+1. 在 `core/data_handler.py` 中扩展数据处理逻辑
+2. 在 `config/config.py` 中添加新的配置选项
+3. 创建新的测试驱动文件（参考 `testcases/test_api_excel_driver.py` 和 `testcases/test_api_csv_driver.py`）
 
 ### 2. 扩展断言类型
 
 框架支持多种断言类型，可以通过以下方式添加新的断言类型：
 
-1. 修改 [core/assert_handler.py](file:///Users/sunwenlong/PythonEducationalProject/ifrit/core/assert_handler.py) 文件中的 [AssertHandler](file:///Users/sunwenlong/PythonEducationalProject/ifrit/core/assert_handler.py#L17-L237) 类
+1. 修改 `core/assert_handler.py` 文件中的 `AssertHandler` 类
 2. 添加新的断言解析逻辑
 3. 在测试用例的 `validate` 字段中使用新的断言格式
 
 ### 3. 增强请求处理功能
 
-框架使用 [request_handler.py](file:///Users/sunwenlong/PythonEducationalProject/ifrit/core/request_handler.py) 处理HTTP请求，可以通过以下方式增强：
+框架使用 `core/request_handler.py` 处理HTTP请求，可以通过以下方式增强：
 
 1. 添加新的认证机制（如OAuth、JWT等）
 2. 支持文件上传等复杂请求
