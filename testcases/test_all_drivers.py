@@ -19,7 +19,7 @@ from core.assert_handler import AssertHandler
 from core.data_handler import DataHandler as GlobalDataHandler
 from core.request_handler import RequestHandler
 from core.test_executor import TestExecutor
-from utils.excel_handler import DataHandler
+from utils.test_case_reader import DataHandler
 from utils.logger import logger
 
 # 全局数据处理器

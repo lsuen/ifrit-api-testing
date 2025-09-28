@@ -148,6 +148,30 @@ class Config:
 
         return test_files
 
+    def get_json_dir(self):
+        """获取JSON文件目录"""
+        json_dir = self.test_data_config.get('json_files', 'json_dir', fallback='data/json_data')
+        return os.path.join(self.base_dir, json_dir)
+
+    def get_json_test_files(self) -> List[str]:
+        """
+        获取所有JSON测试文件路径
+
+        Returns:
+            List[str]: 所有JSON测试文件的路径列表
+        """
+        test_files = []
+
+        # 获取JSON文件
+        json_dir = self.get_json_dir()
+        if os.path.exists(json_dir):
+            for file in os.listdir(json_dir):
+                if file.endswith('.json'):
+                    test_files.append(os.path.join(json_dir, file))
+
+        return test_files
+
 
 if __name__ == '__main__':
-    print(Config().get_excel_test_files())
+    print(Config().get_json_test_files())
+    print(Config().get_json_test_files())

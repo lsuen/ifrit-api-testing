@@ -42,6 +42,23 @@ class DataHandler:
             elif file_path.endswith('.csv'):
                 logger.info("检测到.csv文件，使用CSV方式读取")
                 df = pd.read_csv(file_path, dtype=str)
+            elif file_path.endswith('.json'):
+                logger.info("检测到.json文件，使用JSON方式读取")
+                import json
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                # 如果数据是字典形式，转换为列表
+                if isinstance(data, dict):
+                    data = [data]
+                # 转换为DataFrame
+                df = pd.DataFrame(data)
+                # 确保所有字段都存在
+                required_columns = ['case_id', 'case_name', 'method', 'url', 'headers', 'params', 'body',
+                                    'expected_status', 'expected_content', 'json_path', 'expected_json_value',
+                                    'extract_key', 'save_var_name', 'validate', 'enabled']
+                for col in required_columns:
+                    if col not in df.columns:
+                        df[col] = ''
             else:
                 logger.error(f"不支持的文件格式: {file_path}")
                 return []

@@ -1,34 +1,33 @@
-#!/usr/bin/env python
+#!/usr/bin/env python 
 # -*- coding: utf-8 -*-
-# @Time    : 2025/9/10 上午10:07
+# @Time    : 2025/9/28 上午10:25
 # @Author  : sunwl
 # @Site    : 
-# @File    : test_all_drivers.py
+# @File    : test_api_json_driver.py
 # @Software: PyCharm
+
 """
-统一测试用例执行器，支持Excel格式
+统一测试用例执行器，支持JSON格式
 """
 
-import pytest
-import json
 import allure
-import os
+import pytest
 
-from core.test_executor import TestExecutor
-from utils.test_case_reader import DataHandler
-from core.request_handler import RequestHandler
+from config.config import Config
 from core.assert_handler import AssertHandler
 from core.data_handler import DataHandler as GlobalDataHandler
-from config.config import Config
+from core.request_handler import RequestHandler
+from core.test_executor import TestExecutor
+from utils.test_case_reader import DataHandler
 from utils.logger import logger
 
 # 全局数据处理器
 data_handler = GlobalDataHandler()
 
-# 获取Excel测试用例
+# 获取JSON测试用例
 config = Config()
 all_test_cases = []
-test_files = config.get_excel_test_files()
+test_files = config.get_json_test_files()
 logger.info(f"查找所有测试文件，找到 {len(test_files)} 个文件")
 for file_path in test_files:
     logger.info(f"读取测试文件: {file_path}")
@@ -63,11 +62,11 @@ class TestAllDrivers:
         # 创建测试执行器实例
         self.test_executor = TestExecutor(self.request_handler, data_handler, self.assert_handler)
 
-    @allure.story("Excel测试用例执行")
+    @allure.story("JSON测试用例执行")
     @pytest.mark.parametrize("case", all_test_cases)
     def test_api_case(self, case):
         """
-        利用执行器执行用例
+        执行所有格式的API测试用例
 
         Args:
             case (dict): 测试用例数据
