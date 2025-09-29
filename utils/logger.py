@@ -2,16 +2,19 @@ import logging
 import os
 from logging.handlers import RotatingFileHandler
 
-from config.config import Config
-
-# 创建配置实例
-config = Config()
+# 延迟初始化配置实例
+config = None
 
 
 class Logger:
     """日志处理类"""
 
     def __init__(self):
+        global config
+        if config is None:
+            from config.config import Config
+            config = Config()
+        
         self.logger = logging.getLogger('api_automation')
         self.logger.setLevel(getattr(logging, config.get_log_level().upper()))
 

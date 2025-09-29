@@ -16,7 +16,6 @@ import os
 
 from core.test_executor import TestExecutor
 from utils.test_case_reader import DataHandler
-from core.request_handler import RequestHandler
 from core.assert_handler import AssertHandler
 from core.data_handler import DataHandler as GlobalDataHandler
 from config.config import Config
@@ -26,6 +25,8 @@ from utils.logger import logger
 data_handler = GlobalDataHandler()
 
 # 获取Excel测试用例
+# 注意：这里暂时无法获取到命令行参数，所以使用默认配置
+# 实际环境中，RequestHandler会在conftest.py中正确初始化
 config = Config()
 all_test_cases = []
 test_files = config.get_excel_test_files()
@@ -55,21 +56,20 @@ class TestAllDrivers:
         测试方法级别的初始化
         """
         logger.debug("初始化测试方法")
-        config = Config()
-        base_url = config.get_base_url()
-        self.request_handler = RequestHandler(base_url=base_url)
-        self.assert_handler = AssertHandler()
-        self.config = Config()
-        # 创建测试执行器实例
-        self.test_executor = TestExecutor(self.request_handler, data_handler, self.assert_handler)
+        # 从conftest.py获取已正确配置的request_handler
+        pass
 
     @allure.story("Excel测试用例执行")
     @pytest.mark.parametrize("case", all_test_cases)
-    def test_api_case(self, case):
+    def test_api_case(self, case, request_handler):
         """
         利用执行器执行用例
 
         Args:
             case (dict): 测试用例数据
+            request_handler: 请求处理器fixture
         """
+        self.assert_handler = AssertHandler()
+        # 创建测试执行器实例
+        self.test_executor = TestExecutor(request_handler, data_handler, self.assert_handler)
         self.test_executor.execute_test_case(case)

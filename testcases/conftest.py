@@ -9,11 +9,37 @@ import pytest
 from core.request_handler import RequestHandler
 from core.data_handler import DataHandler
 
+# 用于存储环境参数的全局变量
+ENV_NAMES = []
+
+
+def pytest_addoption(parser):
+    """添加自定义命令行选项"""
+    parser.addoption(
+        "--env",
+        action="append",
+        help="指定运行环境，可以多次使用以指定多个环境，如 --env dev --env prod"
+    )
+
+
+def pytest_configure(config):
+    """配置pytest"""
+    global ENV_NAMES
+    ENV_NAMES = config.getoption("--env") or []
+    print(f"Pytest configured with envs: {ENV_NAMES}")  # 调试信息
+
 
 @pytest.fixture(scope="session")
 def request_handler():
     """请求处理器fixture"""
-    return RequestHandler()
+    # 在request_handler中使用环境配置
+    from config.config import Config
+    print(f"Creating request handler with envs: {ENV_NAMES}")  # 调试信息
+    config = Config(env_names=ENV_NAMES)
+    base_url = config.get_base_url()
+    timeout = config.get_timeout()
+    print(f"Request handler base_url: {base_url}, timeout: {timeout}")  # 调试信息
+    return RequestHandler(base_url=base_url, timeout=timeout)
 
 
 @pytest.fixture(scope="session")

@@ -8,6 +8,7 @@
 import configparser
 import os
 from typing import Dict, Any, List
+import sys
 
 # 获取项目根目录
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -16,7 +17,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 class Config:
     """全局配置类"""
 
-    def __init__(self):
+    def __init__(self, env_names=None):
         self.base_dir = BASE_DIR
         self.config_dir = os.path.join(BASE_DIR, 'config')
         self.data_dir = os.path.join(BASE_DIR, 'data')
@@ -35,7 +36,11 @@ class Config:
         self.env_config = self._load_env_config()
         # 加载测试数据配置
         self.test_data_config = self._load_test_data_config()
-
+        # 设置当前环境
+        self.current_envs = env_names or ['environment']
+        
+        print(f"Config initialized with envs: {self.current_envs}")  # 调试信息
+        
     def _load_env_config(self) -> Dict[str, Any]:
         """加载环境配置"""
         config = configparser.ConfigParser()
@@ -52,11 +57,29 @@ class Config:
 
     def get_base_url(self):
         """获取基础URL"""
-        return self.env_config.get('environment', 'base_url', fallback='')
+        # 遍历所有指定的环境，返回第一个有效的base_url
+        for env in self.current_envs:
+            if self.env_config.has_section(env) and self.env_config.has_option(env, 'base_url'):
+                base_url = self.env_config.get(env, 'base_url')
+                print(f"Using base_url from [{env}]: {base_url}")  # 调试信息
+                return base_url
+        # 默认返回environment部分的base_url
+        base_url = self.env_config.get('environment', 'base_url', fallback='')
+        print(f"Using default base_url from [environment]: {base_url}")  # 调试信息
+        return base_url
 
     def get_timeout(self):
         """获取超时时间"""
-        return self.env_config.getint('environment', 'timeout', fallback=30)
+        # 遍历所有指定的环境，返回第一个有效的timeout
+        for env in self.current_envs:
+            if self.env_config.has_section(env) and self.env_config.has_option(env, 'timeout'):
+                timeout = self.env_config.getint(env, 'timeout')
+                print(f"Using timeout from [{env}]: {timeout}")  # 调试信息
+                return timeout
+        # 默认返回environment部分的timeout
+        timeout = self.env_config.getint('environment', 'timeout', fallback=30)
+        print(f"Using default timeout from [environment]: {timeout}")  # 调试信息
+        return timeout
 
     def get_log_level(self):
         """获取日志级别"""

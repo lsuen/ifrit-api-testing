@@ -42,7 +42,8 @@ api_automation_framework/
 4. **配置分离**：环境配置与测试数据配置分离
 5. **日志记录**：完整的请求/响应日志记录
 6. **Allure报告**：生成美观的测试报告
-7. **可扩展架构**：模块化设计，易于扩展
+7. **多环境支持**：支持多个测试环境配置切换
+8. **可扩展架构**：模块化设计，易于扩展
 
 ## 安装依赖(建议python version>=3.7)
 
@@ -65,6 +66,14 @@ pip install -r requirements.txt
 ```ini
 [environment]
 base_url = http://5912.org:6666
+timeout = 30
+
+[api_dev]
+base_url = http://192.168.31.78:6666
+timeout = 30
+
+[api_prod]
+base_url = https://api.production.com
 timeout = 30
 ```
 
@@ -142,6 +151,27 @@ python main.py --file data/excel_data/test_cases.xlsx
 python main.py --file data/csv_data/test_cases.csv
 ```
 
+#### 指定运行环境
+
+框架支持多环境配置，可以通过 `--env` 参数指定运行环境：
+
+<!-- 点击运行: 使用开发环境配置运行测试 -->
+```bash
+python main.py --env api_dev
+```
+
+<!-- 点击运行: 使用生产环境配置运行测试 -->
+```bash
+python main.py --env api_prod
+```
+
+<!-- 点击运行: 指定多个环境（按优先级顺序） -->
+```bash
+python main.py --env api_prod --env api_staging --env api_dev
+```
+
+环境配置按指定顺序查找，使用第一个找到的有效配置。如果未找到指定环境的配置，则回退到默认的 [environment] 部分配置。
+
 #### 组合使用参数
 
 <!-- 点击运行: 运行Excel测试并生成报告 -->
@@ -154,9 +184,9 @@ python main.py --type excel --generate-report
 python main.py --file data/test_cases.xlsx --serve-report
 ```
 
-<!-- 点击运行: 运行CSV测试并生成HTML报告 -->
+<!-- 点击运行: 使用开发环境运行CSV测试并生成HTML报告 -->
 ```bash
-python main.py --type csv --generate-report
+python main.py --type csv --env api_dev --generate-report
 ```
 
 ### 4. 查看测试报告

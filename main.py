@@ -12,20 +12,26 @@ import subprocess
 import sys
 
 from utils.logger import logger
+from config.config import Config
 
 
-def run_tests(test_path=None, test_type=None):
+def run_tests(test_path=None, test_type=None, env_names=None):
     """
     运行测试
     
     Args:
         test_path (str): 指定测试文件路径
         test_type (str): 测试类型 (excel/csv/all)
+        env_names (list): 环境名称列表
     """
     try:
         logger.info("开始执行API自动化测试")
         logger.info(f"测试路径: {test_path}")
         logger.info(f"测试类型: {test_type}")
+        logger.info(f"运行环境: {env_names}")
+
+        # 初始化配置，传入环境名称
+        config = Config(env_names=env_names)
 
         # 确保报告目录存在
         os.makedirs("./reports/allure_reports", exist_ok=True)
@@ -38,6 +44,11 @@ def run_tests(test_path=None, test_type=None):
             "--clean-alluredir"
         ]
 
+        # 添加环境参数到pytest命令
+        if env_names:
+            for env_name in env_names:
+                cmd.extend(["--env", env_name])
+
         # 根据参数添加测试路径
         if test_path:
             cmd.insert(1, test_path)
@@ -48,6 +59,9 @@ def run_tests(test_path=None, test_type=None):
         elif test_type == "csv":
             cmd.insert(1, "testcases/test_api_csv_driver.py")
             logger.info("运行CSV测试用例")
+        elif test_type == "json":
+            cmd.insert(1, "testcases/test_api_json_driver.py")
+            logger.info("运行JSON测试用例")
         else:
             cmd.insert(1, "testcases/")
             logger.info("运行所有测试用例")
@@ -167,22 +181,27 @@ def main():
     )
     parser.add_argument(
         "--type",
-        choices=["excel", "csv", "all"],
-        help="指定测试类型: excel/csv/all"
+        choices=["excel", "csv", "all", "json"],
+        help="指定测试类型: excel/csv/all/json"
     )
     parser.add_argument(
         "--file",
         help="指定测试文件路径"
+    )
+    parser.add_argument(
+        "--env",
+        action="append",
+        help="指定运行环境，可以多次使用以指定多个环境，如 --env dev --env prod"
     )
 
     args = parser.parse_args()
 
     logger.info("解析命令行参数完成")
     logger.info(
-        f"参数详情: serve_report={args.serve_report}, generate_report={args.generate_report}, type={args.type}, file={args.file}")
+        f"参数详情: serve_report={args.serve_report}, generate_report={args.generate_report}, type={args.type}, file={args.file}, env={args.env}")
 
     # 运行测试
-    exit_code = run_tests(test_path=args.file, test_type=args.type)
+    exit_code = run_tests(test_path=args.file, test_type=args.type, env_names=args.env)
 
     # 如果指定了--serve-report参数，则启动报告服务器
     if args.serve_report:
