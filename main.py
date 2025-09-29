@@ -11,6 +11,10 @@ import platform
 import subprocess
 import sys
 
+# 设置环境变量以确保正确的字符编码
+os.environ['LANG'] = 'zh_CN.UTF-8'
+os.environ['LC_ALL'] = 'zh_CN.UTF-8'
+
 from utils.logger import logger
 from config.config import Config
 
@@ -146,10 +150,12 @@ def generate_html_report():
         # 根据操作系统类型决定是否使用shell=True
         if platform.system().lower() == 'windows':
             logger.info("当前操作系统为Windows，使用shell=True")
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, 
+                                  env=dict(os.environ, LANG='zh_CN.UTF-8', LC_ALL='zh_CN.UTF-8'))
         else:
             logger.info("当前操作系统为'Unix-like', 正常执行")
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = subprocess.run(cmd, capture_output=True, text=True,
+                                  env=dict(os.environ, LANG='zh_CN.UTF-8', LC_ALL='zh_CN.UTF-8'))
         if result.returncode == 0:
             logger.info("HTML报告生成成功，路径: ./reports/html")
             return True

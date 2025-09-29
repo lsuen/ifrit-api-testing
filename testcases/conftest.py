@@ -5,9 +5,15 @@
 # @Site    :
 # @File    : test_api_csv_driver.py
 # @Software: PyCharm
+import logging
+import os
 import pytest
 from core.request_handler import RequestHandler
 from core.data_handler import DataHandler
+
+# 设置环境变量以确保正确的字符编码
+os.environ['LANG'] = 'zh_CN.UTF-8'
+os.environ['LC_ALL'] = 'zh_CN.UTF-8'
 
 # 用于存储环境参数的全局变量
 ENV_NAMES = []
@@ -34,11 +40,11 @@ def request_handler():
     """请求处理器fixture"""
     # 在request_handler中使用环境配置
     from config.config import Config
-    print(f"Creating request handler with envs: {ENV_NAMES}")  # 调试信息
+    logging.info(f"Creating request handler with envs: {ENV_NAMES}")  # 调试信息
     config = Config(env_names=ENV_NAMES)
     base_url = config.get_base_url()
     timeout = config.get_timeout()
-    print(f"Request handler base_url: {base_url}, timeout: {timeout}")  # 调试信息
+    logging.info(f"Request handler base_url: {base_url}, timeout: {timeout}")  # 调试信息
     return RequestHandler(base_url=base_url, timeout=timeout)
 
 

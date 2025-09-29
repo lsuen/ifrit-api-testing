@@ -41,7 +41,7 @@ api_automation_framework/
 3. **正则表达式支持**：可使用正则表达式提取数据
 4. **配置分离**：环境配置与测试数据配置分离
 5. **日志记录**：完整的请求/响应日志记录
-6. **Allure报告**：生成美观的测试报告
+6. **Allure报告**：生成美观的测试报告，包含curl命令便于问题复现，使用case_name作为测试项标识
 7. **多环境支持**：支持多个测试环境配置切换
 8. **可扩展架构**：模块化设计，易于扩展
 
@@ -205,6 +205,8 @@ python main.py --type csv --env api_dev --generate-report
    python main.py --generate-report
    ```
    然后打开 `reports/html/index.html`
+
+在Allure报告中，每个测试项都会显示为"用例ID - 用例名称"的格式，便于识别具体的测试用例。
 
 ### 5. 高级功能
 

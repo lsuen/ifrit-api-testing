@@ -1,5 +1,6 @@
 import json
 import requests
+import shlex
 from typing import Optional, Dict, Any
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -41,6 +42,66 @@ class RequestHandler:
         self.session.mount("http://", adapter)
         self.session.mount("https://", adapter)
         
+    def _generate_curl_command(self, method: str, url: str, 
+                              headers: Optional[Dict[str, str]] = None,
+                              params: Optional[Dict[str, Any]] = None,
+                              data: Optional[Dict[str, Any]] = None,
+                              json_data: Optional[Dict[str, Any]] = None) -> str:
+        """
+        生成curl命令
+        
+        Args:
+            method (str): HTTP方法
+            url (str): 请求URL
+            headers (dict, optional): 请求头
+            params (dict, optional): URL参数
+            data (dict, optional): 表单数据
+            json_data (dict, optional): JSON数据
+            
+        Returns:
+            str: curl命令
+        """
+        # 处理URL和参数
+        if params:
+            # 构建带参数的URL
+            from urllib.parse import urlencode
+            if '?' in url:
+                url += '&' + urlencode(params)
+            else:
+                url += '?' + urlencode(params)
+        
+        # 构建基础curl命令
+        curl_cmd = ['curl', '-X', method.upper()]
+        
+        # 添加请求头
+        final_headers = dict(headers) if headers else {}
+        # 添加请求体数据
+        if json_data:
+            final_headers.setdefault('Content-Type', 'application/json')
+            json_str = json.dumps(json_data, ensure_ascii=False)
+            curl_cmd.extend(['--data-raw', json_str])
+        elif data:
+            # 处理表单数据
+            if isinstance(data, dict):
+                form_data = '&'.join([f'{k}={v}' for k, v in data.items()])
+                curl_cmd.extend(['--data', form_data])
+            else:
+                curl_cmd.extend(['--data', str(data)])
+        
+        # 添加所有请求头
+        for key, value in final_headers.items():
+            curl_cmd.extend(['-H', f'{key}: {value}'])
+        
+        # 添加URL
+        curl_cmd.append(url)
+        
+        # 使用shlex.join安全地组合命令（如果可用）或者手动组合
+        try:
+            return shlex.join(curl_cmd)
+        except AttributeError:
+            # Python < 3.8 兼容
+            return ' '.join(shlex.quote(arg) for arg in curl_cmd)
+        
     def send_request(self, method: str, url: str, 
                     headers: Optional[Dict[str, str]] = None,
                     params: Optional[Dict[str, Any]] = None,
@@ -69,8 +130,12 @@ class RequestHandler:
             path = url if url.startswith('/') else '/' + url
             url = base + path if self.base_url else url
             
+        # 生成curl命令
+        curl_command = self._generate_curl_command(method, url, headers, params, data, json_data)
+            
         # 记录请求信息到allure报告（如果可用）
         if ALLURE_AVAILABLE and allure:
+            allure.attach(curl_command, "Curl命令", allure.attachment_type.TEXT)
             allure.attach(url, "请求URL", allure.attachment_type.TEXT)
             if headers:
                 allure.attach(json.dumps(headers, ensure_ascii=False, indent=2), "请求头", allure.attachment_type.JSON)
@@ -85,6 +150,7 @@ class RequestHandler:
         logger.info("=" * 50)
         logger.info("开始发送HTTP请求")
         logger.info(f"请求方法: {method}")
+        logger.info(f"Curl命令: {curl_command}")
         logger.info(f"请求URL: {url}")
         logger.info(f"请求头: {json.dumps(headers, ensure_ascii=False, indent=2) if headers else {}}")
         if params:

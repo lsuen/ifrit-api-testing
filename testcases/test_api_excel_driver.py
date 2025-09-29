@@ -47,6 +47,9 @@ if not all_test_cases:
 else:
     logger.info(f"总共加载了 {len(all_test_cases)} 条测试用例")
 
+# 为测试用例生成ID列表
+test_case_ids = [f"{case['case_id']} - {case['case_name']}" for case in all_test_cases]
+
 
 @allure.feature("API接口测试")
 class TestAllDrivers:
@@ -60,7 +63,7 @@ class TestAllDrivers:
         pass
 
     @allure.story("Excel测试用例执行")
-    @pytest.mark.parametrize("case", all_test_cases)
+    @pytest.mark.parametrize("case", all_test_cases, ids=test_case_ids)
     def test_api_case(self, case, request_handler):
         """
         利用执行器执行用例
