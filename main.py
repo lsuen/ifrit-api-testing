@@ -158,6 +158,40 @@ def generate_html_report():
                                   env=dict(os.environ, LANG='zh_CN.UTF-8', LC_ALL='zh_CN.UTF-8'))
         if result.returncode == 0:
             logger.info("HTML报告生成成功，路径: ./reports/html")
+            
+            # 添加测试统计信息
+            try:
+                # 读取统计数据
+                summary_file = "./reports/html/history/history-trend.json"
+                if os.path.exists(summary_file):
+                    with open(summary_file, 'r', encoding='utf-8') as f:
+                        import json
+                        history_data = json.load(f)
+                        if history_data and isinstance(history_data, list) and len(history_data) > 0:
+                            latest = history_data[-1]['data']
+                            total = latest['total']
+                            passed = latest['passed']
+                            failed = latest['failed']
+                            skipped = latest['skipped']
+                            broken = latest['broken']
+                            
+                            # logger.info("=" * 50)
+                            # logger.info("测试执行汇总")
+                            # logger.info("=" * 50)
+                            # logger.info(f"总计执行用例数: {total}")
+                            # logger.info(f"  通过: {passed}")
+                            # logger.info(f"  失败: {failed}")
+                            # logger.info(f"  跳过: {skipped}")
+                            # logger.info(f"  错误: {broken}")
+                            # logger.info("=" * 50)
+                            logger.info(f"总计执行用例数: {total}, 通过: {passed}, 失败: {failed}, 跳过: {skipped}, 错误: {broken}")
+                        else:
+                            logger.warning("无法读取测试统计数据")
+                else:
+                    logger.warning("测试统计数据文件不存在")
+            except Exception as e:
+                logger.error(f"读取测试统计数据时发生异常: {str(e)}")
+            
             return True
         else:
             logger.error(f"HTML报告生成失败: {result.stderr}")
