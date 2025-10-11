@@ -1,13 +1,14 @@
 import json
-import requests
 import shlex
 from typing import Optional, Dict, Any
+
+import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-# 尝试导入allure，如果失败则设置为None
 try:
     import allure
+
     ALLURE_AVAILABLE = True
 except ImportError:
     allure = None
@@ -17,21 +18,13 @@ from utils.logger import logger
 
 
 class RequestHandler:
-    """HTTP请求处理器"""
-    
+    """HTTP请求处理器（默认优先JSON，回退表单）"""
+
     def __init__(self, base_url: str = "", timeout: int = 30, retries: int = 3):
-        """
-        初始化请求处理器
-        
-        Args:
-            base_url (str): 基础URL
-            timeout (int): 超时时间（秒）
-            retries (int): 重试次数
-        """
         self.base_url = base_url.rstrip('/') if base_url else ""
         self.timeout = timeout
-        
-        # 创建会话并配置重试策略
+
+        # 配置会话和重试策略
         self.session = requests.Session()
         retry_strategy = Retry(
             total=retries,
@@ -41,99 +34,87 @@ class RequestHandler:
         adapter = HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("http://", adapter)
         self.session.mount("https://", adapter)
-        
-    def _generate_curl_command(self, method: str, url: str, 
-                              headers: Optional[Dict[str, str]] = None,
-                              params: Optional[Dict[str, Any]] = None,
-                              data: Optional[Dict[str, Any]] = None,
-                              json_data: Optional[Dict[str, Any]] = None) -> str:
-        """
-        生成curl命令
-        
-        Args:
-            method (str): HTTP方法
-            url (str): 请求URL
-            headers (dict, optional): 请求头
-            params (dict, optional): URL参数
-            data (dict, optional): 表单数据
-            json_data (dict, optional): JSON数据
-            
-        Returns:
-            str: curl命令
-        """
-        # 处理URL和参数
+
+    def _generate_curl_command(self, method: str, url: str,
+                               headers: Optional[Dict[str, str]] = None,
+                               params: Optional[Dict[str, Any]] = None,
+                               data: Optional[Dict[str, Any]] = None,
+                               json_data: Optional[Dict[str, Any]] = None) -> str:
+        """生成等效的cURL命令"""
+        # 处理URL参数
         if params:
-            # 构建带参数的URL
             from urllib.parse import urlencode
-            if '?' in url:
-                url += '&' + urlencode(params)
-            else:
-                url += '?' + urlencode(params)
-        
-        # 构建基础curl命令
+            url += ('&' if '?' in url else '?') + urlencode(params)
+
         curl_cmd = ['curl', '-X', method.upper()]
-        
-        # 添加请求头
         final_headers = dict(headers) if headers else {}
-        # 添加请求体数据
-        if json_data:
+
+        # 优先处理JSON数据
+        if json_data is not None:
             final_headers.setdefault('Content-Type', 'application/json')
             json_str = json.dumps(json_data, ensure_ascii=False)
             curl_cmd.extend(['--data-raw', json_str])
-        elif data:
-            # 处理表单数据
+        # 回退到表单数据
+        elif data is not None:
             if isinstance(data, dict):
-                form_data = '&'.join([f'{k}={v}' for k, v in data.items()])
+                form_data = '&'.join(f'{k}={v}' for k, v in data.items())
                 curl_cmd.extend(['--data', form_data])
             else:
                 curl_cmd.extend(['--data', str(data)])
-        
-        # 添加所有请求头
+
+        # 添加请求头
         for key, value in final_headers.items():
             curl_cmd.extend(['-H', f'{key}: {value}'])
-        
+
         # 添加URL
         curl_cmd.append(url)
-        
-        # 使用shlex.join安全地组合命令（如果可用）或者手动组合
+
+        # 安全拼接命令（兼容Python <3.8）
         try:
             return shlex.join(curl_cmd)
         except AttributeError:
-            # Python < 3.8 兼容
             return ' '.join(shlex.quote(arg) for arg in curl_cmd)
-        
-    def send_request(self, method: str, url: str, 
-                    headers: Optional[Dict[str, str]] = None,
-                    params: Optional[Dict[str, Any]] = None,
-                    data: Optional[Dict[str, Any]] = None,
-                    json_data: Optional[Dict[str, Any]] = None,
-                    **kwargs) -> Optional[requests.Response]:
+
+    def send_request(self, method: str, url: str,
+                     headers: Optional[Dict[str, str]] = None,
+                     params: Optional[Dict[str, Any]] = None,
+                     data: Optional[Dict[str, Any]] = None,
+                     json_data: Optional[Dict[str, Any]] = None,
+                     **kwargs) -> Optional[requests.Response]:
         """
-        发送HTTP请求
-        
+        发送HTTP请求（默认优先JSON，回退表单）
+
         Args:
-            method (str): HTTP方法
-            url (str): 请求URL
-            headers (dict, optional): 请求头
-            params (dict, optional): URL参数
-            data (dict, optional): 表单数据
-            json_data (dict, optional): JSON数据
-            **kwargs: 其他参数
-            
-        Returns:
-            requests.Response: 响应对象，如果请求失败则返回None
+            method: HTTP方法（GET/POST/PUT/DELETE等）
+            url: 请求路径（自动拼接base_url）
+            headers: 请求头
+            params: URL参数
+            data: 表单数据（当json_data未提供时回退使用）
+            json_data: JSON数据（优先使用）
+            **kwargs: 其他requests参数（如files、cookies等）
         """
         # 处理URL
         if not url.startswith(('http://', 'https://')):
-            # 确保base_url不以/结尾，url以/开头
             base = self.base_url.rstrip('/')
             path = url if url.startswith('/') else '/' + url
             url = base + path if self.base_url else url
-            
-        # 生成curl命令
-        curl_command = self._generate_curl_command(method, url, headers, params, data, json_data)
-            
-        # 记录请求信息到allure报告（如果可用）
+
+        # 自动选择数据格式：优先JSON，其次表单
+        request_data = None
+        request_headers = dict(headers) if headers else {}
+
+        if json_data is not None:
+            request_headers.setdefault('Content-Type', 'application/json')
+            request_data = json_data  # requests会自动处理json序列化
+        elif data is not None:
+            request_data = data  # 默认发送表单格式
+
+        # 生成cURL命令（用于日志和Allure）
+        curl_command = self._generate_curl_command(
+            method, url, headers=headers, params=params, data=data, json_data=json_data
+        )
+
+        # 记录请求信息（Allure和日志）
         if ALLURE_AVAILABLE and allure:
             allure.attach(curl_command, "Curl命令", allure.attachment_type.TEXT)
             allure.attach(url, "请求URL", allure.attachment_type.TEXT)
@@ -141,90 +122,78 @@ class RequestHandler:
                 allure.attach(json.dumps(headers, ensure_ascii=False, indent=2), "请求头", allure.attachment_type.JSON)
             if params:
                 allure.attach(json.dumps(params, ensure_ascii=False, indent=2), "URL参数", allure.attachment_type.JSON)
-            if data:
-                allure.attach(json.dumps(data, ensure_ascii=False, indent=2), "表单数据", allure.attachment_type.JSON)
             if json_data:
-                allure.attach(json.dumps(json_data, ensure_ascii=False, indent=2), "JSON数据", allure.attachment_type.JSON)
-        
-        # 记录详细的请求日志
+                allure.attach(json.dumps(json_data, ensure_ascii=False, indent=2), "JSON数据",
+                              allure.attachment_type.JSON)
+            elif data:
+                allure.attach(json.dumps(data, ensure_ascii=False, indent=2), "表单数据", allure.attachment_type.JSON)
+
         logger.info("=" * 50)
-        logger.info("开始发送HTTP请求")
         logger.info(f"请求方法: {method}")
         logger.info(f"Curl命令: {curl_command}")
         logger.info(f"请求URL: {url}")
-        logger.info(f"请求头: {json.dumps(headers, ensure_ascii=False, indent=2) if headers else {}}")
+        logger.info(f"请求头: {json.dumps(request_headers, ensure_ascii=False, indent=2)}")
         if params:
             logger.info(f"URL参数: {json.dumps(params, ensure_ascii=False, indent=2)}")
-        if data:
-            logger.info(f"表单数据: {json.dumps(data, ensure_ascii=False, indent=2)}")
         if json_data:
             logger.info(f"JSON数据: {json.dumps(json_data, ensure_ascii=False, indent=2)}")
-        logger.info(f"超时时间: {self.timeout}秒")
+        elif data:
+            logger.info(f"表单数据: {json.dumps(data, ensure_ascii=False, indent=2)}")
         logger.info("-" * 30)
-        
+
         try:
-            # 发送请求
+            # 发送请求（根据数据类型自动选择json或data参数）
             response = self.session.request(
                 method=method,
                 url=url,
-                headers=headers,
+                headers=request_headers,
                 params=params,
-                data=data,
-                json=json_data,
+                json=json_data if json_data is not None else None,  # 优先JSON
+                data=data if json_data is None and data is not None else None,  # 回退表单
                 timeout=self.timeout,
-                verify=False
+                verify=False,
+                **kwargs
             )
-            
-            # 记录响应信息到allure报告（如果可用）
+
+            # 记录响应信息
             if ALLURE_AVAILABLE and allure:
                 allure.attach(str(response.status_code), "响应状态码", allure.attachment_type.TEXT)
-                allure.attach(json.dumps(dict(response.headers), ensure_ascii=False, indent=2), "响应头", allure.attachment_type.JSON)
+                allure.attach(json.dumps(dict(response.headers), ensure_ascii=False, indent=2), "响应头",
+                              allure.attachment_type.JSON)
                 allure.attach(response.text, "响应体", allure.attachment_type.TEXT)
-            
-            # 记录详细的响应日志
-            logger.info("收到HTTP响应")
-            logger.info(f"响应状态码: {response.status_code}")
+
+            logger.info("收到响应")
+            logger.info(f"状态码: {response.status_code}")
             logger.info(f"响应头: {json.dumps(dict(response.headers), ensure_ascii=False, indent=2)}")
             logger.info(f"响应体: {response.text}")
-            logger.info(f"响应时间: {response.elapsed.total_seconds()}秒")
+            logger.info(f"耗时: {response.elapsed.total_seconds()}秒")
             logger.info("=" * 50)
-            
+
             return response
-            
+
         except requests.exceptions.Timeout as e:
-            logger.error(f"请求超时: {str(e)}")
-            logger.info(f"超时时间: {self.timeout}秒")
+            logger.error(f"请求超时: {e}")
             if ALLURE_AVAILABLE and allure:
                 allure.attach(str(e), "请求超时", allure.attachment_type.TEXT)
-            return None
-        except requests.exceptions.ConnectionError as e:
-            logger.error(f"连接错误: {str(e)}")
-            if ALLURE_AVAILABLE and allure:
-                allure.attach(str(e), "连接错误", allure.attachment_type.TEXT)
-            return None
         except requests.exceptions.RequestException as e:
-            logger.error(f"请求发送失败: {str(e)}")
+            logger.error(f"请求失败: {e}")
             if ALLURE_AVAILABLE and allure:
                 allure.attach(str(e), "请求异常", allure.attachment_type.TEXT)
-            return None
         except Exception as e:
-            logger.error(f"未知错误: {str(e)}")
+            logger.error(f"未知错误: {e}")
             if ALLURE_AVAILABLE and allure:
                 allure.attach(str(e), "未知错误", allure.attachment_type.TEXT)
-            return None
-            
+        return None
+
+    # 快捷方法
     def get(self, url: str, **kwargs) -> Optional[requests.Response]:
-        """发送GET请求"""
         return self.send_request('GET', url, **kwargs)
-        
+
     def post(self, url: str, **kwargs) -> Optional[requests.Response]:
-        """发送POST请求"""
         return self.send_request('POST', url, **kwargs)
-        
+
     def put(self, url: str, **kwargs) -> Optional[requests.Response]:
-        """发送PUT请求"""
         return self.send_request('PUT', url, **kwargs)
-        
+
     def delete(self, url: str, **kwargs) -> Optional[requests.Response]:
-        """发送DELETE请求"""
         return self.send_request('DELETE', url, **kwargs)
