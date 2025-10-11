@@ -44,6 +44,7 @@ api_automation_framework/
 6. **Allure报告**：生成美观的测试报告，包含curl命令便于问题复现，使用case_name作为测试项标识
 7. **多环境支持**：支持多个测试环境配置切换
 8. **可扩展架构**：模块化设计，易于扩展
+9. **多值变量提取**：支持一次提取多个变量并分别存储
 
 ## 安装依赖(建议python version>=3.7)
 
@@ -218,6 +219,14 @@ python main.py --type csv --env api_dev --generate-report
 #### 正则表达式提取
 
 在 `extract_key` 列中使用 `regex:your_pattern` 格式来提取数据
+
+#### 多值变量提取
+
+框架支持在单次提取中获取多个变量并分别存储：
+
+1. 在 `extract_key` 列中使用分号分隔多个提取表达式
+2. 使用 `变量名=提取路径` 的格式为提取值指定变量名
+3. 例如：`token=token; message=debug[0].path1` 将分别存储token和message两个变量
 
 #### 断言配置
 
