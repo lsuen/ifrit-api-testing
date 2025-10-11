@@ -120,15 +120,36 @@ class DataHandler:
             # 处理JSON路径提取
             else:
                 logger.debug(f"使用JSON路径提取: {extract_key}")
-                keys = extract_key.split('.')
+                # keys = extract_key.split('.')
+                # value = response_data
+                # for key in keys:
+                #     if isinstance(value, dict) and key in value:
+                #         value = value[key]
+                #         logger.debug(f"获取键 {key} 的值: {value}")
+                #     else:
+                #         logger.warning(f"JSON路径 {extract_key} 未找到")
+                #         return ''
+                # 解析带索引的路径
+                import re
+
+                # 将 extract_key 按照数组索引和对象属性分离
+                parts = re.findall(r'[^.\[\]]+|\[\d+\]', extract_key)
                 value = response_data
-                for key in keys:
-                    if isinstance(value, dict) and key in value:
-                        value = value[key]
-                        logger.debug(f"获取键 {key} 的值: {value}")
+
+                for part in parts:
+                    if part.startswith('[') and part.endswith(']'):
+                        # 处理数组索引 [index]
+                        index = int(part[1:-1])
+                        if isinstance(value, list) and 0 <= index < len(value):
+                            value = value[index]
+                        else:
+                            return ''  # 索引越界或不是数组
                     else:
-                        logger.warning(f"JSON路径 {extract_key} 未找到")
-                        return ''
+                        # 处理普通键访问
+                        if isinstance(value, dict) and part in value:
+                            value = value[part]
+                        else:
+                            return ''  # 键不存在或不是字典
                 extracted_value = str(value)
                 logger.info(f"JSON路径提取成功: {extract_key} -> {extracted_value}")
                 return extracted_value
