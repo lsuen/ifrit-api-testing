@@ -87,6 +87,30 @@ class DataHandler:
 
     def extract_value(self, response_data, extract_key):
         """
+        从响应数据中提取值，支持多值提取（用分号分隔）
+        支持语法: "var1=key1; var2=key2" 或 "var1=path[0].field; var2=path2.field"
+        """
+        # 支持多值提取
+        if ';' in extract_key:
+            results = {}
+            keys = [k.strip() for k in extract_key.split(';')]
+            for key in keys:
+                if '=' in key:
+                    # 处理别名赋值，如 "message=debug[0].path1"
+                    alias, actual_key = key.split('=', 1)
+                    alias = alias.strip()
+                    actual_key = actual_key.strip()
+                    results[alias] = self._extract_single_value(response_data, actual_key)
+                else:
+                    # 直接使用键名作为变量名
+                    results[key] = self._extract_single_value(response_data, key)
+            return results
+        else:
+            # 单值提取保持原有逻辑
+            return self._extract_single_value(response_data, extract_key)
+
+    def _extract_single_value(self, response_data, extract_key):
+        """
         从响应数据中提取值
 
         Args:
@@ -130,7 +154,6 @@ class DataHandler:
                 #         logger.warning(f"JSON路径 {extract_key} 未找到")
                 #         return ''
                 # 解析带索引的路径
-                import re
 
                 # 将 extract_key 按照数组索引和对象属性分离
                 parts = re.findall(r'[^.\[\]]+|\[\d+\]', extract_key)
