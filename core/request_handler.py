@@ -18,7 +18,7 @@ from utils.logger import logger
 
 
 class RequestHandler:
-    """HTTP请求处理器（默认优先JSON，回退表单）"""
+    """HTTP请求处理器（根据Content-Type判断发送JSON或表单数据）"""
 
     def __init__(self, base_url: str = "", timeout: int = 30, retries: int = 3):
         self.base_url = base_url.rstrip('/') if base_url else ""
@@ -49,12 +49,17 @@ class RequestHandler:
         curl_cmd = ['curl', '-X', method.upper()]
         final_headers = dict(headers) if headers else {}
 
-        # 优先处理JSON数据
+        # 根据Content-Type判断处理数据
+        content_type = final_headers.get('Content-Type', '').lower()
+        
         if json_data is not None:
-            final_headers.setdefault('Content-Type', 'application/json')
-            json_str = json.dumps(json_data, ensure_ascii=False)
-            curl_cmd.extend(['--data-raw', json_str])
-        # 回退到表单数据
+            if 'application/json' in content_type:
+                json_str = json.dumps(json_data, ensure_ascii=False)
+                curl_cmd.extend(['--data-raw', json_str])
+            else:
+                # 如果Content-Type不是application/json，则转换为表单数据
+                form_data = '&'.join(f'{k}={v}' for k, v in json_data.items())
+                curl_cmd.extend(['--data', form_data])
         elif data is not None:
             if isinstance(data, dict):
                 form_data = '&'.join(f'{k}={v}' for k, v in data.items())
@@ -82,15 +87,15 @@ class RequestHandler:
                      json_data: Optional[Dict[str, Any]] = None,
                      **kwargs) -> Optional[requests.Response]:
         """
-        发送HTTP请求（默认优先JSON，回退表单）
+        发送HTTP请求（根据Content-Type判断发送JSON或表单数据）
 
         Args:
             method: HTTP方法（GET/POST/PUT/DELETE等）
             url: 请求路径（自动拼接base_url）
             headers: 请求头
             params: URL参数
-            data: 表单数据（当json_data未提供时回退使用）
-            json_data: JSON数据（优先使用）
+            data: 表单数据
+            json_data: JSON数据
             **kwargs: 其他requests参数（如files、cookies等）
         """
         # 处理URL
@@ -99,15 +104,27 @@ class RequestHandler:
             path = url if url.startswith('/') else '/' + url
             url = base + path if self.base_url else url
 
-        # 自动选择数据格式：优先JSON，其次表单
-        request_data = None
+        # 处理请求头
         request_headers = dict(headers) if headers else {}
+        content_type = request_headers.get('Content-Type', '').lower()
+
+        # 根据Content-Type判断发送数据的格式
+        request_data = None
+        request_json = None
 
         if json_data is not None:
-            request_headers.setdefault('Content-Type', 'application/json')
-            request_data = json_data  # requests会自动处理json序列化
+            if 'application/json' in content_type:
+                # 明确指定Content-Type为application/json时发送JSON数据
+                request_json = json_data
+            else:
+                # 否则将JSON数据转换为表单数据发送
+                request_data = json_data
+                # 如果没有指定Content-Type，则设置为表单类型
+                if 'content-type' not in [k.lower() for k in request_headers.keys()]:
+                    request_headers['Content-Type'] = 'application/x-www-form-urlencoded'
         elif data is not None:
-            request_data = data  # 默认发送表单格式
+            # 直接发送表单数据
+            request_data = data
 
         # 生成cURL命令（用于日志和Allure）
         curl_command = self._generate_curl_command(
@@ -123,10 +140,10 @@ class RequestHandler:
             if params:
                 allure.attach(json.dumps(params, ensure_ascii=False, indent=2), "URL参数", allure.attachment_type.JSON)
             if json_data:
-                allure.attach(json.dumps(json_data, ensure_ascii=False, indent=2), "JSON数据",
+                allure.attach(json.dumps(json_data, ensure_ascii=False, indent=2), "请求数据",
                               allure.attachment_type.JSON)
             elif data:
-                allure.attach(json.dumps(data, ensure_ascii=False, indent=2), "表单数据", allure.attachment_type.JSON)
+                allure.attach(json.dumps(data, ensure_ascii=False, indent=2), "请求数据", allure.attachment_type.JSON)
 
         logger.info("=" * 50)
         logger.info(f"请求方法: {method}")
@@ -136,20 +153,20 @@ class RequestHandler:
         if params:
             logger.info(f"URL参数: {json.dumps(params, ensure_ascii=False, indent=2)}")
         if json_data:
-            logger.info(f"JSON数据: {json.dumps(json_data, ensure_ascii=False, indent=2)}")
+            logger.info(f"请求JSON数据: {json.dumps(json_data, ensure_ascii=False, indent=2)}")
         elif data:
-            logger.info(f"表单数据: {json.dumps(data, ensure_ascii=False, indent=2)}")
+            logger.info(f"请求表单数据: {json.dumps(data, ensure_ascii=False, indent=2)}")
         logger.info("-" * 30)
 
         try:
-            # 发送请求（根据数据类型自动选择json或data参数）
+            # 发送请求
             response = self.session.request(
                 method=method,
                 url=url,
                 headers=request_headers,
                 params=params,
-                json=json_data if json_data is not None else None,  # 优先JSON
-                data=data if json_data is None and data is not None else None,  # 回退表单
+                json=request_json,  # JSON数据
+                data=request_data,  # 表单数据
                 timeout=self.timeout,
                 verify=False,
                 **kwargs
