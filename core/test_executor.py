@@ -139,7 +139,19 @@ class TestExecutor:
                     if json_path.startswith('json.'):
                         json_path = json_path[5:]  # 去掉"json."前缀
                     extracted_value = self.data_handler.extract_value(response_json, json_path)
-                    if extracted_value:
+                    if isinstance(extracted_value, dict):
+                        # 多值提取结果，分别存储每个变量
+                        for key, value in extracted_value.items():
+                            self.data_handler.set_variable(key, value)
+                            # 使用allure（如果可用）
+                            if hasattr(allure, 'attach'):
+                                allure.attach(
+                                    value,
+                                    f"提取变量: {key}",
+                                    allure.attachment_type.TEXT
+                                )
+                            logger.info(f"变量提取成功: {key} = {value}")
+                    elif extracted_value:
                         self.data_handler.set_variable(var_name.strip(), extracted_value)
                         # 使用allure（如果可用）
                         if hasattr(allure, 'attach'):
@@ -154,7 +166,19 @@ class TestExecutor:
                 else:
                     # 原有逻辑
                     extracted_value = self.data_handler.extract_value(response_json, extract_key)
-                    if extracted_value:
+                    if isinstance(extracted_value, dict):
+                        # 多值提取结果，分别存储每个变量
+                        for key, value in extracted_value.items():
+                            self.data_handler.set_variable(key, value)
+                            # 使用allure（如果可用）
+                            if hasattr(allure, 'attach'):
+                                allure.attach(
+                                    value,
+                                    f"提取变量: {key}",
+                                    allure.attachment_type.TEXT
+                                )
+                            logger.info(f"变量提取成功: {key} = {value}")
+                    elif extracted_value:
                         self.data_handler.set_variable(case['save_var_name'], extracted_value)
                         # 使用allure（如果可用）
                         if hasattr(allure, 'attach'):
@@ -186,7 +210,19 @@ class TestExecutor:
                     if json_path.startswith('json.'):
                         json_path = json_path[5:]  # 去掉"json."前缀
                     extracted_value = self.data_handler.extract_value(response_json, json_path)
-                    if extracted_value:
+                    if isinstance(extracted_value, dict):
+                        # 多值提取结果，分别存储每个变量
+                        for key, value in extracted_value.items():
+                            self.data_handler.set_variable(key, value)
+                            # 使用allure（如果可用）
+                            if hasattr(allure, 'attach'):
+                                allure.attach(
+                                    value,
+                                    f"提取变量: {key}",
+                                    allure.attachment_type.TEXT
+                                )
+                            logger.info(f"变量提取成功: {key} = {value}")
+                    elif extracted_value:
                         self.data_handler.set_variable(var_name.strip(), extracted_value)
                         # 使用allure（如果可用）
                         if hasattr(allure, 'attach'):
