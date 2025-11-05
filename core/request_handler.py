@@ -17,6 +17,7 @@ except ImportError:
 from utils.logger import logger
 
 
+
 class RequestHandler:
     """HTTP请求处理器（根据Content-Type判断发送JSON或表单数据）"""
 
@@ -39,7 +40,8 @@ class RequestHandler:
                                headers: Optional[Dict[str, str]] = None,
                                params: Optional[Dict[str, Any]] = None,
                                data: Optional[Dict[str, Any]] = None,
-                               json_data: Optional[Dict[str, Any]] = None) -> str:
+                               json_data: Optional[Dict[str, Any]] = None,
+                               plain_text: Optional[str] = None) -> str:
         """生成等效的cURL命令"""
         # 处理URL参数
         if params:
@@ -60,6 +62,9 @@ class RequestHandler:
                 # 如果Content-Type不是application/json，则转换为表单数据
                 form_data = '&'.join(f'{k}={v}' for k, v in json_data.items())
                 curl_cmd.extend(['--data', form_data])
+        elif plain_text is not None:
+            # 处理text/plain类型数据
+            curl_cmd.extend(['--data', plain_text])
         elif data is not None:
             if isinstance(data, dict):
                 form_data = '&'.join(f'{k}={v}' for k, v in data.items())
@@ -85,6 +90,7 @@ class RequestHandler:
                      params: Optional[Dict[str, Any]] = None,
                      data: Optional[Dict[str, Any]] = None,
                      json_data: Optional[Dict[str, Any]] = None,
+                     plain_text: Optional[str] = None,
                      **kwargs) -> Optional[requests.Response]:
         """
         发送HTTP请求（根据Content-Type判断发送JSON或表单数据）
@@ -96,6 +102,7 @@ class RequestHandler:
             params: URL参数
             data: 表单数据
             json_data: JSON数据
+            plain_text: 纯文本数据
             **kwargs: 其他requests参数（如files、cookies等）
         """
         # 处理URL
@@ -122,13 +129,19 @@ class RequestHandler:
                 # 如果没有指定Content-Type，则设置为表单类型
                 if 'content-type' not in [k.lower() for k in request_headers.keys()]:
                     request_headers['Content-Type'] = 'application/x-www-form-urlencoded'
+        elif plain_text is not None:
+            # 处理text/plain类型数据
+            request_data = plain_text
+            # 如果没有指定Content-Type，则设置为text/plain类型
+            if 'content-type' not in [k.lower() for k in request_headers.keys()]:
+                request_headers['Content-Type'] = 'text/plain'
         elif data is not None:
             # 直接发送表单数据
             request_data = data
 
         # 生成cURL命令（用于日志和Allure）
         curl_command = self._generate_curl_command(
-            method, url, headers=headers, params=params, data=data, json_data=json_data
+            method, url, headers=headers, params=params, data=data, json_data=json_data, plain_text=plain_text
         )
 
         # 记录请求信息（Allure和日志）
@@ -140,10 +153,12 @@ class RequestHandler:
             if params:
                 allure.attach(json.dumps(params, ensure_ascii=False, indent=2), "URL参数", allure.attachment_type.JSON)
             if json_data:
-                allure.attach(json.dumps(json_data, ensure_ascii=False, indent=2), "请求数据",
+                allure.attach(json.dumps(json_data, ensure_ascii=False, indent=2), "请求JSON数据",
                               allure.attachment_type.JSON)
+            elif plain_text:
+                allure.attach(plain_text, "请求纯文本数据", allure.attachment_type.TEXT)
             elif data:
-                allure.attach(json.dumps(data, ensure_ascii=False, indent=2), "请求数据", allure.attachment_type.JSON)
+                allure.attach(json.dumps(data, ensure_ascii=False, indent=2), "请求表单数据", allure.attachment_type.JSON)
 
         logger.info("=" * 50)
         logger.info(f"请求方法: {method}")
@@ -152,10 +167,42 @@ class RequestHandler:
         logger.info(f"请求头: {json.dumps(request_headers, ensure_ascii=False, indent=2)}")
         if params:
             logger.info(f"URL参数: {json.dumps(params, ensure_ascii=False, indent=2)}")
-        if json_data:
-            logger.info(f"请求JSON数据: {json.dumps(json_data, ensure_ascii=False, indent=2)}")
-        elif data:
-            logger.info(f"请求表单数据: {json.dumps(data, ensure_ascii=False, indent=2)}")
+        
+        # 根据Content-Type类型打印不同的日志信息
+        if 'application/json' in content_type:
+            logger.info("通过content-type检查到为json类型，请求开始发送")
+            if json_data is not None:
+                logger.info(f"请求JSON数据: {json.dumps(json_data, ensure_ascii=False, indent=2)}")
+        elif 'text/plain' in content_type:
+            logger.info("通过content-type检查到为text/plain类型，请求开始发送")
+            if plain_text is not None:
+                logger.info(f"请求纯文本数据: {plain_text}")
+        elif 'application/x-www-form-urlencoded' in content_type:
+            logger.info("通过content-type检查到为form类型，请求开始发送")
+            if data is not None:
+                logger.info(f"请求表单数据: {json.dumps(data, ensure_ascii=False, indent=2)}")
+            elif json_data is not None:
+                logger.info(f"请求表单数据: {json.dumps(json_data, ensure_ascii=False, indent=2)}")
+        elif content_type:
+            # 其他类型的Content-Type
+            logger.info(f"通过content-type检查到为{content_type}类型，请求开始发送")
+            if plain_text is not None:
+                logger.info(f"请求纯文本数据: {plain_text}")
+            elif data is not None:
+                logger.info(f"请求表单数据: {json.dumps(data, ensure_ascii=False, indent=2)}")
+            elif json_data is not None:
+                logger.info(f"请求数据: {json.dumps(json_data, ensure_ascii=False, indent=2)}")
+        else:
+            # 没有指定Content-Type的情况
+            if json_data is not None:
+                logger.info("通过content-type检查到为json类型，请求开始发送")
+                logger.info(f"请求JSON数据: {json.dumps(json_data, ensure_ascii=False, indent=2)}")
+            elif plain_text is not None:
+                logger.info("通过content-type检查到为text/plain类型，请求开始发送")
+                logger.info(f"请求纯文本数据: {plain_text}")
+            elif data is not None:
+                logger.info("通过content-type检查到为form类型，请求开始发送")
+                logger.info(f"请求表单数据: {json.dumps(data, ensure_ascii=False, indent=2)}")
         logger.info("-" * 30)
 
         try:
@@ -166,7 +213,7 @@ class RequestHandler:
                 headers=request_headers,
                 params=params,
                 json=request_json,  # JSON数据
-                data=request_data,  # 表单数据
+                data=request_data,  # 表单数据或纯文本数据
                 timeout=self.timeout,
                 verify=False,
                 **kwargs
