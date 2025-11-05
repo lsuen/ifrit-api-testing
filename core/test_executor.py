@@ -60,6 +60,9 @@ class TestExecutor:
             except json.JSONDecodeError as e:
                 logger.warning(f"headers JSON解析失败: {e}, 使用空字典")
 
+        # 获取Content-Type
+        content_type = headers.get('Content-Type', '').lower() if isinstance(headers, dict) else ''
+
         if params_str and params_str.strip():
             try:
                 params = json.loads(params_str)
@@ -67,22 +70,43 @@ class TestExecutor:
                 logger.warning(f"params JSON解析失败: {e}, 使用空字典")
 
         if body_str and body_str.strip():
-            try:
-                body = json.loads(body_str)
-            except json.JSONDecodeError as e:
-                logger.warning(f"body JSON解析失败: {e}, 使用空字典")
+            # 根据Content-Type判断是否需要解析JSON
+            if 'text/plain' in content_type:
+                # text/plain类型，body作为纯文本处理
+                body = body_str
+                logger.debug("Content-Type为text/plain，body作为纯文本处理")
+            elif 'application/x-www-form-urlencoded' in content_type:
+                # form类型，body作为字符串处理
+                body = body_str
+                logger.debug("Content-Type为application/x-www-form-urlencoded，body作为字符串处理")
+            else:
+                # 默认或其他类型，尝试解析为JSON
+                try:
+                    body = json.loads(body_str)
+                except json.JSONDecodeError as e:
+                    logger.warning(f"body JSON解析失败: {e}, 使用空字典")
 
         logger.debug("请求参数变量替换完成")
 
         # 发送请求
         logger.info(f"发送 {case['method']} 请求到 {url}")
-        response = self.request_handler.send_request(
-            method=case['method'],
-            url=url,
-            headers=headers,
-            params=params,
-            json_data=body
-        )
+        # 根据Content-Type决定使用哪个参数发送body
+        if 'text/plain' in content_type and isinstance(body, str):
+            response = self.request_handler.send_request(
+                method=case['method'],
+                url=url,
+                headers=headers,
+                params=params,
+                plain_text=body
+            )
+        else:
+            response = self.request_handler.send_request(
+                method=case['method'],
+                url=url,
+                headers=headers,
+                params=params,
+                json_data=body
+            )
 
         # 断言状态码内容
         if case['expected_status']:
