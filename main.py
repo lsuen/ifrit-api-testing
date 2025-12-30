@@ -55,8 +55,20 @@ def run_tests(test_path=None, test_type=None, env_names=None):
 
         # 根据参数添加测试路径
         if test_path:
-            cmd.insert(1, test_path)
-            logger.info(f"运行指定测试文件: {test_path}")
+            # 检查文件类型并选择合适的测试驱动
+            if test_path.endswith(".csv"):
+                cmd.insert(1, "testcases/test_api_csv_driver.py")
+                logger.info(f"检测到CSV文件，运行CSV测试用例: {test_path}")
+            elif test_path.endswith((".xlsx", ".xls")):
+                cmd.insert(1, "testcases/test_api_excel_driver.py")
+                logger.info(f"检测到Excel文件，运行Excel测试用例: {test_path}")
+            elif test_path.endswith(".json"):
+                cmd.insert(1, "testcases/test_api_json_driver.py")
+                logger.info(f"检测到JSON文件，运行JSON测试用例: {test_path}")
+            else:
+                # 如果是Python测试文件，则直接运行
+                cmd.insert(1, test_path)
+                logger.info(f"运行指定测试文件: {test_path}")
         elif test_type == "excel":
             cmd.insert(1, "testcases/test_api_excel_driver.py")
             logger.info("运行Excel测试用例")
