@@ -3,11 +3,14 @@
 # @Time    : 2025/9/9 上午10:07
 # @Author  : sunwl
 # @Site    :
-# @File    : test_api_csv_driver.py
+# @File    : assert_handler.py
 # @Software: PyCharm
 import json
 import re
 from typing import Any, Dict
+
+from jsonpath_ng import parse
+
 from utils.logger import logger
 
 
@@ -70,19 +73,21 @@ class AssertHandler:
             try:
                 response_json = response.json() if hasattr(response, 'json') else json.loads(response)
                 logger.debug(f"响应JSON: {response_json}")
-                
-                # 使用jsonpath提取值
-                matches = jsonpath.jsonpath(response_json, json_path)
+
+                # 改用 jsonpath-ng 的调用方式
+                jsonpath_expr = parse(json_path)
+                matches = [match.value for match in jsonpath_expr.find(response_json)]
+
                 if not matches:
                     raise ValueError(f"JSON路径 '{json_path}' 未找到匹配项")
-                
+
                 actual_value = matches[0]
                 logger.debug(f"实际值: {actual_value}")
-                
+
                 assert actual_value == expected_value, f"期望值: {expected_value}, 实际值: {actual_value}. {message}"
                 logger.info(f"断言成功: JSON路径 '{json_path}' 的值 {actual_value} == {expected_value}")
                 return True
-                
+
             except json.JSONDecodeError as e:
                 logger.error(f"JSON解析失败: {str(e)}")
                 raise ValueError(f"响应不是有效的JSON格式: {str(e)}")
@@ -109,14 +114,14 @@ class AssertHandler:
                 logger.debug("检测到JSON格式内容，进行标准化比较")
                 expected_normalized = AssertHandler._normalize_json_string(expected_content)
                 actual_normalized = AssertHandler._normalize_json_string(actual_content)
-                
+
                 assert expected_normalized in actual_normalized, f"标准化后的期望内容 '{expected_normalized}' 未找到. {message}"
                 logger.info(f"断言成功: 响应内容包含标准化后的 '{expected_normalized}'")
             else:
                 # 普通文本比较
                 assert expected_content in actual_content, f"期望内容 '{expected_content}' 未找到. {message}"
                 logger.info(f"断言成功: 响应内容包含 '{expected_content}'")
-            
+
             return True
 
         except AssertionError as e:
@@ -199,10 +204,15 @@ class AssertHandler:
                 elif isinstance(expected, list):
                     if not isinstance(actual, list):
                         return False
-                    if len(expected) > 0 and len(actual) > 0:
-                        return check_structure(actual[0], expected[0])
+                    # 修复：严谨校验数组元素结构
+                    if len(expected) > 0:
+                        # 期望有结构时，所有实际数组元素都要匹配
+                        for item in actual:
+                            if not check_structure(item, expected[0]):
+                                return False
                     return True
                 else:
+                    # 修复：通过类型示例判断实际类型是否匹配
                     return isinstance(actual, type(expected))
 
             assert check_structure(response_json,
@@ -225,7 +235,15 @@ class AssertHandler:
             if not response:
                 raise ValueError("响应对象为空")
 
-            actual_response_time = response.elapsed.total_seconds() if hasattr(response, 'elapsed') else float(response)
+            # 修复：增加非响应对象的异常处理
+            if hasattr(response, 'elapsed'):
+                actual_response_time = response.elapsed.total_seconds()
+            else:
+                try:
+                    actual_response_time = float(response)
+                except (ValueError, TypeError):
+                    raise ValueError(f"响应时间必须是数字类型，实际传入: {type(response)}")
+
             logger.debug(f"实际响应时间: {actual_response_time}秒")
 
             assert actual_response_time <= max_response_time, f"实际响应时间: {actual_response_time}, 最大允许时间: {max_response_time}. {message}"
@@ -238,3 +256,98 @@ class AssertHandler:
         except Exception as e:
             logger.error(f"响应时间断言异常: {str(e)}")
             raise e
+
+
+if __name__ == "__main__":
+    from unittest.mock import Mock
+
+
+    # 创建一个模拟的响应对象用于测试
+    class MockResponse:
+        def __init__(self, json_data=None, status_code=200, text="", elapsed_seconds=0.1):
+            # 修复：默认值改为空字典，避免json()返回None
+            self.json_data = json_data if json_data is not None else {}
+            self.status_code = status_code
+            self.text = text
+            self.elapsed = Mock()
+            self.elapsed.total_seconds.return_value = elapsed_seconds
+
+        def json(self):
+            return self.json_data
+
+
+    # 测试用例
+    handler = AssertHandler()
+
+    # 测试 assert_equal
+    print("测试 assert_equal:")
+    try:
+        handler.assert_equal(5, 5, "数值相等")
+        print("✓ assert_equal 成功")
+    except AssertionError:
+        print("✗ assert_equal 失败")
+
+    # 测试 assert_contains
+    print("\n测试 assert_contains:")
+    try:
+        handler.assert_contains("hello world", "world", "包含子串")
+        print("✓ assert_contains 成功")
+    except AssertionError:
+        print("✗ assert_contains 失败")
+
+    # 测试 assert_status_code
+    print("\n测试 assert_status_code:")
+    mock_resp = MockResponse(status_code=200)
+    try:
+        handler.assert_status_code(mock_resp, 200, "状态码正确")
+        print("✓ assert_status_code 成功")
+    except AssertionError:
+        print("✗ assert_status_code 失败")
+
+    # 测试 assert_json_value
+    print("\n测试 assert_json_value:")
+    json_resp = MockResponse(json_data={"user": {"name": "test", "age": 25}})
+    try:
+        handler.assert_json_value(json_resp, "user.name", "test", "JSON值正确")
+        print("✓ assert_json_value 成功")
+    except AssertionError:
+        print("✗ assert_json_value 失败")
+
+    # 测试 assert_content_contains
+    print("\n测试 assert_content_contains:")
+    content_resp = MockResponse(text="Welcome to our website")
+    try:
+        handler.assert_content_contains(content_resp, "website", "内容包含")
+        print("✓ assert_content_contains 成功")
+    except AssertionError:
+        print("✗ assert_content_contains 失败")
+
+    # 测试 assert_regex
+    print("\n测试 assert_regex:")
+    regex_resp = MockResponse(text="My email is test@example.com")
+    try:
+        handler.assert_regex(regex_resp, r"\w+@\w+\.\w+", "正则匹配")
+        print("✓ assert_regex 成功")
+    except AssertionError:
+        print("✗ assert_regex 失败")
+
+    # 测试 assert_json_structure
+    print("\n测试 assert_json_structure:")
+    struct_resp = MockResponse(json_data={"user": {"name": "test", "settings": {}}})
+    expected_struct = {"user": {"name": "", "settings": {}}}
+    try:
+        handler.assert_json_structure(struct_resp, expected_struct, "JSON结构正确")
+        print("✓ assert_json_structure 成功")
+    except AssertionError:
+        print("✗ assert_json_structure 失败")
+
+    # 测试 assert_response_time
+    print("\n测试 assert_response_time:")
+    time_resp = MockResponse(elapsed_seconds=0.5)
+    try:
+        handler.assert_response_time(time_resp, 1.0, "响应时间正确")
+        print("✓ assert_response_time 成功")
+    except AssertionError:
+        print("✗ assert_response_time 失败")
+
+    print("\n所有测试完成！")
