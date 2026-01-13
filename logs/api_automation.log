@@ -1429,3 +1429,531 @@
 2026-01-13 17:09:40,252 - api_automation - INFO - 为API GET /api/posts 生成测试用例
 2026-01-13 17:10:14,835 - api_automation - INFO - 总共生成了 37 个测试用例
 2026-01-13 17:10:14,836 - api_automation - INFO - 质量评分: 90.0 (A) - 优秀
+2026-01-13 17:11:23,724 - api_automation - INFO - 成功保存 37 个测试用例到: data/ai_generated\excel_data\ai_complex_api_20260113_171123.xlsx
+2026-01-13 17:11:23,724 - api_automation - INFO - AI测试用例生成完成
+2026-01-13 17:11:41,442 - api_automation - INFO - 解析命令行参数完成
+2026-01-13 17:11:41,442 - api_automation - INFO - 参数详情: serve_report=False, generate_report=True, type=excel, file=None, env=None, ai_generate=False
+2026-01-13 17:11:41,442 - api_automation - INFO - 开始执行API自动化测试
+2026-01-13 17:11:41,444 - api_automation - INFO - 测试路径: None
+2026-01-13 17:11:41,444 - api_automation - INFO - 测试类型: excel
+2026-01-13 17:11:41,444 - api_automation - INFO - 运行环境: None
+2026-01-13 17:11:41,445 - api_automation - INFO - 运行Excel测试用例
+2026-01-13 17:11:41,445 - api_automation - INFO - 执行命令: pytest testcases/test_api_excel_driver.py -v --alluredir=./reports/allure_reports --clean-alluredir
+2026-01-13 17:11:41,445 - api_automation - INFO - ['pytest', 'testcases/test_api_excel_driver.py', '-v', '--alluredir=./reports/allure_reports', '--clean-alluredir']
+2026-01-13 17:11:41,470 - api_automation - INFO - 当前操作系统为Windows，使用shell=True
+2026-01-13 17:11:42,160 - api_automation - INFO - 查找所有测试文件，找到 2 个文件
+2026-01-13 17:11:42,162 - api_automation - INFO - 读取测试文件: C:\CodeFiles\PyProjects\ifrit-apitest\data/excel_data\test_case_addr_01.xls
+2026-01-13 17:11:42,164 - api_automation - INFO - 开始读取测试用例文件: C:\CodeFiles\PyProjects\ifrit-apitest\data/excel_data\test_case_addr_01.xls
+2026-01-13 17:11:42,164 - api_automation - INFO - 文件是否存在: True
+2026-01-13 17:11:42,164 - api_automation - INFO - 检测到.xls文件，使用xlrd引擎读取
+2026-01-13 17:11:42,180 - api_automation - INFO - 成功读取文件，数据行数: 4
+2026-01-13 17:11:42,200 - api_automation - INFO - 从 C:\CodeFiles\PyProjects\ifrit-apitest\data/excel_data\test_case_addr_01.xls 成功读取 4 条测试用例
+2026-01-13 17:11:42,200 - api_automation - INFO - 从 C:\CodeFiles\PyProjects\ifrit-apitest\data/excel_data\test_case_addr_01.xls 加载了 4 条测试用例
+2026-01-13 17:11:42,202 - api_automation - INFO - 读取测试文件: C:\CodeFiles\PyProjects\ifrit-apitest\data/excel_data\test_case_addr_02.xls
+2026-01-13 17:11:42,202 - api_automation - INFO - 开始读取测试用例文件: C:\CodeFiles\PyProjects\ifrit-apitest\data/excel_data\test_case_addr_02.xls
+2026-01-13 17:11:42,204 - api_automation - INFO - 文件是否存在: True
+2026-01-13 17:11:42,204 - api_automation - INFO - 检测到.xls文件，使用xlrd引擎读取
+2026-01-13 17:11:42,207 - api_automation - INFO - 成功读取文件，数据行数: 3
+2026-01-13 17:11:42,215 - api_automation - INFO - 从 C:\CodeFiles\PyProjects\ifrit-apitest\data/excel_data\test_case_addr_02.xls 成功读取 3 条测试用例
+2026-01-13 17:11:42,215 - api_automation - INFO - 从 C:\CodeFiles\PyProjects\ifrit-apitest\data/excel_data\test_case_addr_02.xls 加载了 3 条测试用例
+2026-01-13 17:11:42,215 - api_automation - INFO - 总共加载了 7 条测试用例
+2026-01-13 17:11:42,222 - api_automation - INFO - 开始执行测试用例: 1 - 登录
+2026-01-13 17:11:42,223 - api_automation - INFO - 发送 POST 请求到 /api/login
+2026-01-13 17:11:42,225 - api_automation - INFO - ==================================================
+2026-01-13 17:11:42,225 - api_automation - INFO - 请求方法: POST
+2026-01-13 17:11:42,225 - api_automation - INFO - Curl命令: curl -X POST --data-raw '{"username": "main", "password": "123456"}' -H 'Content-Type: application/json' http://192.168.31.129:5000/api/login
+2026-01-13 17:11:42,225 - api_automation - INFO - 请求URL: http://192.168.31.129:5000/api/login
+2026-01-13 17:11:42,225 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2026-01-13 17:11:42,225 - api_automation - INFO - 通过content-type检查到为json类型，请求开始发送
+2026-01-13 17:11:42,225 - api_automation - INFO - 请求JSON数据: {
+  "username": "main",
+  "password": "123456"
+}
+2026-01-13 17:11:42,225 - api_automation - INFO - ------------------------------
+2026-01-13 17:11:42,293 - api_automation - INFO - 收到响应
+2026-01-13 17:11:42,293 - api_automation - INFO - 状态码: 200
+2026-01-13 17:11:42,293 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Tue, 13 Jan 2026 09:11:42 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "89",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2026-01-13 17:11:42,293 - api_automation - INFO - 响应体: {"success": true, "message": "登录成功", "token": "7bdb5933aeae425aa148e950e6db569a"}
+2026-01-13 17:11:42,293 - api_automation - INFO - 耗时: 0.052593秒
+2026-01-13 17:11:42,293 - api_automation - INFO - ==================================================
+2026-01-13 17:11:42,294 - api_automation - INFO - 执行状态码断言: 期望 200 实际 200
+2026-01-13 17:11:42,294 - api_automation - INFO - 断言成功: 响应内容包含标准化后的 '200'
+2026-01-13 17:11:42,294 - api_automation - INFO - 开始提取变量（简化格式）: 键=token=json.token
+2026-01-13 17:11:42,294 - api_automation - INFO - JSON路径提取成功: token -> 7bdb5933aeae425aa148e950e6db569a
+2026-01-13 17:11:42,294 - api_automation - INFO - 设置变量: token = 7bdb5933aeae425aa148e950e6db569a
+2026-01-13 17:11:42,296 - api_automation - INFO - 变量提取成功: token = 7bdb5933aeae425aa148e950e6db569a
+2026-01-13 17:11:42,296 - api_automation - INFO - 测试用例执行完成: 1 - 登录
+2026-01-13 17:11:42,301 - api_automation - INFO - 开始执行测试用例: 2 - 地址列表查询
+2026-01-13 17:11:42,302 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2026-01-13 17:11:42,304 - api_automation - INFO - ==================================================
+2026-01-13 17:11:42,304 - api_automation - INFO - 请求方法: POST
+2026-01-13 17:11:42,304 - api_automation - INFO - Curl命令: curl -X POST --data-raw '{"username": "main", "token": "7bdb5933aeae425aa148e950e6db569a"}' -H 'Content-Type: application/json' http://192.168.31.129:5000/api/address/list
+2026-01-13 17:11:42,304 - api_automation - INFO - 请求URL: http://192.168.31.129:5000/api/address/list
+2026-01-13 17:11:42,304 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2026-01-13 17:11:42,304 - api_automation - INFO - 通过content-type检查到为json类型，请求开始发送
+2026-01-13 17:11:42,304 - api_automation - INFO - 请求JSON数据: {
+  "username": "main",
+  "token": "7bdb5933aeae425aa148e950e6db569a"
+}
+2026-01-13 17:11:42,305 - api_automation - INFO - ------------------------------
+2026-01-13 17:11:42,349 - api_automation - INFO - 收到响应
+2026-01-13 17:11:42,349 - api_automation - INFO - 状态码: 401
+2026-01-13 17:11:42,349 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Tue, 13 Jan 2026 09:11:42 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "129",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2026-01-13 17:11:42,351 - api_automation - INFO - 响应体: {"apiVersion": "1.0", "success": false, "data": null, "message": "\u7f3a\u5c11Token", "timestamp": "2026-01-13T09:11:42.980314Z"}
+2026-01-13 17:11:42,351 - api_automation - INFO - 耗时: 0.031698秒
+2026-01-13 17:11:42,351 - api_automation - INFO - ==================================================
+2026-01-13 17:11:42,351 - api_automation - INFO - 执行状态码断言: 期望 200 实际 401
+2026-01-13 17:11:42,351 - api_automation - ERROR - 内容包含断言失败: 标准化后的期望内容 '200' 未找到. 
+2026-01-13 17:11:42,352 - api_automation - ERROR - 状态码断言失败: 标准化后的期望内容 '200' 未找到. 
+2026-01-13 17:11:42,532 - api_automation - INFO - 开始执行测试用例: 3 - 地址列表查询
+2026-01-13 17:11:42,532 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2026-01-13 17:11:42,535 - api_automation - INFO - ==================================================
+2026-01-13 17:11:42,535 - api_automation - INFO - 请求方法: POST
+2026-01-13 17:11:42,536 - api_automation - INFO - Curl命令: curl -X POST --data-raw '{"username": "main"}' -H 'Content-Type: application/json' http://192.168.31.129:5000/api/address/list
+2026-01-13 17:11:42,536 - api_automation - INFO - 请求URL: http://192.168.31.129:5000/api/address/list
+2026-01-13 17:11:42,536 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2026-01-13 17:11:42,536 - api_automation - INFO - 通过content-type检查到为json类型，请求开始发送
+2026-01-13 17:11:42,536 - api_automation - INFO - 请求JSON数据: {
+  "username": "main"
+}
+2026-01-13 17:11:42,536 - api_automation - INFO - ------------------------------
+2026-01-13 17:11:42,582 - api_automation - INFO - 收到响应
+2026-01-13 17:11:42,582 - api_automation - INFO - 状态码: 401
+2026-01-13 17:11:42,582 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Tue, 13 Jan 2026 09:11:43 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "129",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2026-01-13 17:11:42,582 - api_automation - INFO - 响应体: {"apiVersion": "1.0", "success": false, "data": null, "message": "\u7f3a\u5c11Token", "timestamp": "2026-01-13T09:11:43.213766Z"}
+2026-01-13 17:11:42,583 - api_automation - INFO - 耗时: 0.033244秒
+2026-01-13 17:11:42,583 - api_automation - INFO - ==================================================
+2026-01-13 17:11:42,583 - api_automation - INFO - 执行状态码断言: 期望 401 实际 401
+2026-01-13 17:11:42,583 - api_automation - INFO - 断言成功: 响应内容包含标准化后的 '401'
+2026-01-13 17:11:42,583 - api_automation - INFO - 执行内容包含断言: 期望包含 '{"success": false, "message": "缺少用户名或Token"}'
+2026-01-13 17:11:42,583 - api_automation - ERROR - 内容包含断言失败: 标准化后的期望内容 '{"success":false,"message":"缺少用户名或Token"}' 未找到. 
+2026-01-13 17:11:42,583 - api_automation - ERROR - 内容断言失败: 标准化后的期望内容 '{"success":false,"message":"缺少用户名或Token"}' 未找到. 
+2026-01-13 17:11:42,604 - api_automation - INFO - 开始执行测试用例: 4 - 地址列表查询
+2026-01-13 17:11:42,604 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2026-01-13 17:11:42,606 - api_automation - INFO - ==================================================
+2026-01-13 17:11:42,606 - api_automation - INFO - 请求方法: POST
+2026-01-13 17:11:42,606 - api_automation - INFO - Curl命令: curl -X POST --data-raw '{"username": "test", "token": "7bdb5933aeae425aa148e950e6db569a"}' -H 'Content-Type: application/json' http://192.168.31.129:5000/api/address/list
+2026-01-13 17:11:42,606 - api_automation - INFO - 请求URL: http://192.168.31.129:5000/api/address/list
+2026-01-13 17:11:42,607 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2026-01-13 17:11:42,607 - api_automation - INFO - 通过content-type检查到为json类型，请求开始发送
+2026-01-13 17:11:42,607 - api_automation - INFO - 请求JSON数据: {
+  "username": "test",
+  "token": "7bdb5933aeae425aa148e950e6db569a"
+}
+2026-01-13 17:11:42,607 - api_automation - INFO - ------------------------------
+2026-01-13 17:11:42,664 - api_automation - INFO - 收到响应
+2026-01-13 17:11:42,664 - api_automation - INFO - 状态码: 401
+2026-01-13 17:11:42,664 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Tue, 13 Jan 2026 09:11:43 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "129",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2026-01-13 17:11:42,664 - api_automation - INFO - 响应体: {"apiVersion": "1.0", "success": false, "data": null, "message": "\u7f3a\u5c11Token", "timestamp": "2026-01-13T09:11:43.293431Z"}
+2026-01-13 17:11:42,664 - api_automation - INFO - 耗时: 0.042359秒
+2026-01-13 17:11:42,664 - api_automation - INFO - ==================================================
+2026-01-13 17:11:42,664 - api_automation - INFO - 执行状态码断言: 期望 401 实际 401
+2026-01-13 17:11:42,664 - api_automation - INFO - 断言成功: 响应内容包含标准化后的 '401'
+2026-01-13 17:11:42,666 - api_automation - INFO - 执行内容包含断言: 期望包含 '{"success": false, "message": "Token验证失败"}'
+2026-01-13 17:11:42,666 - api_automation - ERROR - 内容包含断言失败: 标准化后的期望内容 '{"success":false,"message":"Token验证失败"}' 未找到. 
+2026-01-13 17:11:42,666 - api_automation - ERROR - 内容断言失败: 标准化后的期望内容 '{"success":false,"message":"Token验证失败"}' 未找到. 
+2026-01-13 17:11:42,697 - api_automation - INFO - 开始执行测试用例: 1 - 地址列表查询
+2026-01-13 17:11:42,697 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2026-01-13 17:11:42,698 - api_automation - INFO - ==================================================
+2026-01-13 17:11:42,698 - api_automation - INFO - 请求方法: POST
+2026-01-13 17:11:42,698 - api_automation - INFO - Curl命令: curl -X POST --data-raw '{"username": "main", "token": "7bdb5933aeae425aa148e950e6db569a"}' -H 'Content-Type: application/json' http://192.168.31.129:5000/api/address/list
+2026-01-13 17:11:42,698 - api_automation - INFO - 请求URL: http://192.168.31.129:5000/api/address/list
+2026-01-13 17:11:42,698 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2026-01-13 17:11:42,698 - api_automation - INFO - 通过content-type检查到为json类型，请求开始发送
+2026-01-13 17:11:42,698 - api_automation - INFO - 请求JSON数据: {
+  "username": "main",
+  "token": "7bdb5933aeae425aa148e950e6db569a"
+}
+2026-01-13 17:11:42,700 - api_automation - INFO - ------------------------------
+2026-01-13 17:11:42,743 - api_automation - INFO - 收到响应
+2026-01-13 17:11:42,745 - api_automation - INFO - 状态码: 401
+2026-01-13 17:11:42,745 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Tue, 13 Jan 2026 09:11:43 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "129",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2026-01-13 17:11:42,745 - api_automation - INFO - 响应体: {"apiVersion": "1.0", "success": false, "data": null, "message": "\u7f3a\u5c11Token", "timestamp": "2026-01-13T09:11:43.367426Z"}
+2026-01-13 17:11:42,745 - api_automation - INFO - 耗时: 0.033105秒
+2026-01-13 17:11:42,745 - api_automation - INFO - ==================================================
+2026-01-13 17:11:42,745 - api_automation - INFO - 执行状态码断言: 期望 200 实际 401
+2026-01-13 17:11:42,745 - api_automation - ERROR - 内容包含断言失败: 标准化后的期望内容 '200' 未找到. 
+2026-01-13 17:11:42,745 - api_automation - ERROR - 状态码断言失败: 标准化后的期望内容 '200' 未找到. 
+2026-01-13 17:11:42,763 - api_automation - INFO - 开始执行测试用例: 2 - 地址列表查询
+2026-01-13 17:11:42,763 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2026-01-13 17:11:42,765 - api_automation - INFO - ==================================================
+2026-01-13 17:11:42,765 - api_automation - INFO - 请求方法: POST
+2026-01-13 17:11:42,765 - api_automation - INFO - Curl命令: curl -X POST --data-raw '{"username": "main"}' -H 'Content-Type: application/json' http://192.168.31.129:5000/api/address/list
+2026-01-13 17:11:42,765 - api_automation - INFO - 请求URL: http://192.168.31.129:5000/api/address/list
+2026-01-13 17:11:42,765 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2026-01-13 17:11:42,766 - api_automation - INFO - 通过content-type检查到为json类型，请求开始发送
+2026-01-13 17:11:42,766 - api_automation - INFO - 请求JSON数据: {
+  "username": "main"
+}
+2026-01-13 17:11:42,766 - api_automation - INFO - ------------------------------
+2026-01-13 17:11:42,836 - api_automation - INFO - 收到响应
+2026-01-13 17:11:42,836 - api_automation - INFO - 状态码: 401
+2026-01-13 17:11:42,836 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Tue, 13 Jan 2026 09:11:43 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "129",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2026-01-13 17:11:42,838 - api_automation - INFO - 响应体: {"apiVersion": "1.0", "success": false, "data": null, "message": "\u7f3a\u5c11Token", "timestamp": "2026-01-13T09:11:43.452282Z"}
+2026-01-13 17:11:42,838 - api_automation - INFO - 耗时: 0.067105秒
+2026-01-13 17:11:42,838 - api_automation - INFO - ==================================================
+2026-01-13 17:11:42,838 - api_automation - INFO - 执行状态码断言: 期望 401 实际 401
+2026-01-13 17:11:42,838 - api_automation - INFO - 断言成功: 响应内容包含标准化后的 '401'
+2026-01-13 17:11:42,838 - api_automation - INFO - 执行内容包含断言: 期望包含 '{"success": false, "message": "缺少用户名或Token"}'
+2026-01-13 17:11:42,838 - api_automation - ERROR - 内容包含断言失败: 标准化后的期望内容 '{"success":false,"message":"缺少用户名或Token"}' 未找到. 
+2026-01-13 17:11:42,838 - api_automation - ERROR - 内容断言失败: 标准化后的期望内容 '{"success":false,"message":"缺少用户名或Token"}' 未找到. 
+2026-01-13 17:11:42,856 - api_automation - INFO - 开始执行测试用例: 3 - 地址列表查询
+2026-01-13 17:11:42,857 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2026-01-13 17:11:42,857 - api_automation - INFO - ==================================================
+2026-01-13 17:11:42,859 - api_automation - INFO - 请求方法: POST
+2026-01-13 17:11:42,859 - api_automation - INFO - Curl命令: curl -X POST --data-raw '{"username": "test", "token": "7bdb5933aeae425aa148e950e6db569a"}' -H 'Content-Type: application/json' http://192.168.31.129:5000/api/address/list
+2026-01-13 17:11:42,859 - api_automation - INFO - 请求URL: http://192.168.31.129:5000/api/address/list
+2026-01-13 17:11:42,859 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2026-01-13 17:11:42,859 - api_automation - INFO - 通过content-type检查到为json类型，请求开始发送
+2026-01-13 17:11:42,859 - api_automation - INFO - 请求JSON数据: {
+  "username": "test",
+  "token": "7bdb5933aeae425aa148e950e6db569a"
+}
+2026-01-13 17:11:42,859 - api_automation - INFO - ------------------------------
+2026-01-13 17:11:42,905 - api_automation - INFO - 收到响应
+2026-01-13 17:11:42,905 - api_automation - INFO - 状态码: 401
+2026-01-13 17:11:42,907 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Tue, 13 Jan 2026 09:11:43 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "129",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2026-01-13 17:11:42,907 - api_automation - INFO - 响应体: {"apiVersion": "1.0", "success": false, "data": null, "message": "\u7f3a\u5c11Token", "timestamp": "2026-01-13T09:11:43.537798Z"}
+2026-01-13 17:11:42,907 - api_automation - INFO - 耗时: 0.035008秒
+2026-01-13 17:11:42,907 - api_automation - INFO - ==================================================
+2026-01-13 17:11:42,907 - api_automation - INFO - 执行状态码断言: 期望 401 实际 401
+2026-01-13 17:11:42,907 - api_automation - INFO - 断言成功: 响应内容包含标准化后的 '401'
+2026-01-13 17:11:42,907 - api_automation - INFO - 执行内容包含断言: 期望包含 '{"success": false, "message": "Token验证失败"}'
+2026-01-13 17:11:42,908 - api_automation - ERROR - 内容包含断言失败: 标准化后的期望内容 '{"success":false,"message":"Token验证失败"}' 未找到. 
+2026-01-13 17:11:42,908 - api_automation - ERROR - 内容断言失败: 标准化后的期望内容 '{"success":false,"message":"Token验证失败"}' 未找到. 
+2026-01-13 17:11:43,036 - api_automation - INFO - 测试执行完成
+2026-01-13 17:11:43,036 - api_automation - INFO - 测试执行完成，退出码: 1
+2026-01-13 17:11:43,038 - api_automation - INFO - 测试执行完成，将生成HTML报告
+2026-01-13 17:11:43,038 - api_automation - INFO - 生成HTML格式的Allure报告
+2026-01-13 17:11:43,038 - api_automation - INFO - 执行命令: allure generate ./reports/allure_reports -o ./reports/html --clean
+2026-01-13 17:11:43,038 - api_automation - INFO - ['allure', 'generate', './reports/allure_reports', '-o', './reports/html', '--clean']
+2026-01-13 17:11:43,038 - api_automation - INFO - 当前操作系统为Windows，使用shell=True
+2026-01-13 17:11:43,087 - api_automation - ERROR - HTML报告生成失败: 
+2026-01-13 17:12:03,942 - api_automation - INFO - 解析命令行参数完成
+2026-01-13 17:12:03,942 - api_automation - INFO - 参数详情: serve_report=False, generate_report=True, type=csv, file=None, env=None, ai_generate=False
+2026-01-13 17:12:03,943 - api_automation - INFO - 开始执行API自动化测试
+2026-01-13 17:12:03,943 - api_automation - INFO - 测试路径: None
+2026-01-13 17:12:03,943 - api_automation - INFO - 测试类型: csv
+2026-01-13 17:12:03,943 - api_automation - INFO - 运行环境: None
+2026-01-13 17:12:03,945 - api_automation - INFO - 运行CSV测试用例
+2026-01-13 17:12:03,945 - api_automation - INFO - 执行命令: pytest testcases/test_api_csv_driver.py -v --alluredir=./reports/allure_reports --clean-alluredir
+2026-01-13 17:12:03,945 - api_automation - INFO - ['pytest', 'testcases/test_api_csv_driver.py', '-v', '--alluredir=./reports/allure_reports', '--clean-alluredir']
+2026-01-13 17:12:03,965 - api_automation - INFO - 当前操作系统为Windows，使用shell=True
+2026-01-13 17:12:04,473 - api_automation - INFO - 查找所有测试文件，找到 2 个文件
+2026-01-13 17:12:04,474 - api_automation - INFO - 读取测试文件: C:\CodeFiles\PyProjects\ifrit-apitest\data/csv_data\test_case_addr_01.csv
+2026-01-13 17:12:04,474 - api_automation - INFO - 开始读取测试用例文件: C:\CodeFiles\PyProjects\ifrit-apitest\data/csv_data\test_case_addr_01.csv
+2026-01-13 17:12:04,474 - api_automation - INFO - 文件是否存在: True
+2026-01-13 17:12:04,474 - api_automation - INFO - 检测到.csv文件，使用CSV方式读取
+2026-01-13 17:12:04,480 - api_automation - INFO - 成功读取文件，数据行数: 4
+2026-01-13 17:12:04,487 - api_automation - INFO - 从 C:\CodeFiles\PyProjects\ifrit-apitest\data/csv_data\test_case_addr_01.csv 成功读取 4 条测试用例
+2026-01-13 17:12:04,488 - api_automation - INFO - 从 C:\CodeFiles\PyProjects\ifrit-apitest\data/csv_data\test_case_addr_01.csv 加载了 4 条测试用例
+2026-01-13 17:12:04,488 - api_automation - INFO - 读取测试文件: C:\CodeFiles\PyProjects\ifrit-apitest\data/csv_data\test_case_addr_02.csv
+2026-01-13 17:12:04,489 - api_automation - INFO - 开始读取测试用例文件: C:\CodeFiles\PyProjects\ifrit-apitest\data/csv_data\test_case_addr_02.csv
+2026-01-13 17:12:04,489 - api_automation - INFO - 文件是否存在: True
+2026-01-13 17:12:04,489 - api_automation - INFO - 检测到.csv文件，使用CSV方式读取
+2026-01-13 17:12:04,490 - api_automation - INFO - 成功读取文件，数据行数: 3
+2026-01-13 17:12:04,498 - api_automation - INFO - 从 C:\CodeFiles\PyProjects\ifrit-apitest\data/csv_data\test_case_addr_02.csv 成功读取 3 条测试用例
+2026-01-13 17:12:04,498 - api_automation - INFO - 从 C:\CodeFiles\PyProjects\ifrit-apitest\data/csv_data\test_case_addr_02.csv 加载了 3 条测试用例
+2026-01-13 17:12:04,498 - api_automation - INFO - 总共加载了 7 条测试用例
+2026-01-13 17:12:04,505 - api_automation - INFO - 开始执行测试用例: 1 - 登录
+2026-01-13 17:12:04,505 - api_automation - INFO - 发送 POST 请求到 /api/login
+2026-01-13 17:12:04,507 - api_automation - INFO - ==================================================
+2026-01-13 17:12:04,507 - api_automation - INFO - 请求方法: POST
+2026-01-13 17:12:04,507 - api_automation - INFO - Curl命令: curl -X POST --data-raw '{"username": "main", "password": "123456"}' -H 'Content-Type: application/json' http://192.168.31.129:5000/api/login
+2026-01-13 17:12:04,507 - api_automation - INFO - 请求URL: http://192.168.31.129:5000/api/login
+2026-01-13 17:12:04,509 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2026-01-13 17:12:04,509 - api_automation - INFO - 通过content-type检查到为json类型，请求开始发送
+2026-01-13 17:12:04,509 - api_automation - INFO - 请求JSON数据: {
+  "username": "main",
+  "password": "123456"
+}
+2026-01-13 17:12:04,509 - api_automation - INFO - ------------------------------
+2026-01-13 17:12:04,574 - api_automation - INFO - 收到响应
+2026-01-13 17:12:04,574 - api_automation - INFO - 状态码: 200
+2026-01-13 17:12:04,575 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Tue, 13 Jan 2026 09:12:05 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "89",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2026-01-13 17:12:04,575 - api_automation - INFO - 响应体: {"success": true, "message": "登录成功", "token": "7bdb5933aeae425aa148e950e6db569a"}
+2026-01-13 17:12:04,575 - api_automation - INFO - 耗时: 0.052696秒
+2026-01-13 17:12:04,575 - api_automation - INFO - ==================================================
+2026-01-13 17:12:04,576 - api_automation - INFO - 执行状态码断言: 期望 200 实际 200
+2026-01-13 17:12:04,576 - api_automation - INFO - 断言成功: 响应内容包含标准化后的 '200'
+2026-01-13 17:12:04,576 - api_automation - INFO - 开始提取变量（简化格式）: 键=token=token
+2026-01-13 17:12:04,576 - api_automation - INFO - JSON路径提取成功: token -> 7bdb5933aeae425aa148e950e6db569a
+2026-01-13 17:12:04,576 - api_automation - INFO - 设置变量: token = 7bdb5933aeae425aa148e950e6db569a
+2026-01-13 17:12:04,576 - api_automation - INFO - 变量提取成功: token = 7bdb5933aeae425aa148e950e6db569a
+2026-01-13 17:12:04,577 - api_automation - INFO - 测试用例执行完成: 1 - 登录
+2026-01-13 17:12:04,582 - api_automation - INFO - 开始执行测试用例: 2 - 地址列表验证
+2026-01-13 17:12:04,582 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2026-01-13 17:12:04,584 - api_automation - INFO - ==================================================
+2026-01-13 17:12:04,584 - api_automation - INFO - 请求方法: POST
+2026-01-13 17:12:04,584 - api_automation - INFO - Curl命令: curl -X POST --data-raw '{"username": "main", "token": "7bdb5933aeae425aa148e950e6db569a"}' -H 'Content-Type: application/json' http://192.168.31.129:5000/api/address/list
+2026-01-13 17:12:04,584 - api_automation - INFO - 请求URL: http://192.168.31.129:5000/api/address/list
+2026-01-13 17:12:04,584 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2026-01-13 17:12:04,585 - api_automation - INFO - 通过content-type检查到为json类型，请求开始发送
+2026-01-13 17:12:04,585 - api_automation - INFO - 请求JSON数据: {
+  "username": "main",
+  "token": "7bdb5933aeae425aa148e950e6db569a"
+}
+2026-01-13 17:12:04,585 - api_automation - INFO - ------------------------------
+2026-01-13 17:12:04,628 - api_automation - INFO - 收到响应
+2026-01-13 17:12:04,630 - api_automation - INFO - 状态码: 401
+2026-01-13 17:12:04,630 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Tue, 13 Jan 2026 09:12:05 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "129",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2026-01-13 17:12:04,630 - api_automation - INFO - 响应体: {"apiVersion": "1.0", "success": false, "data": null, "message": "\u7f3a\u5c11Token", "timestamp": "2026-01-13T09:12:05.260084Z"}
+2026-01-13 17:12:04,630 - api_automation - INFO - 耗时: 0.031923秒
+2026-01-13 17:12:04,630 - api_automation - INFO - ==================================================
+2026-01-13 17:12:04,630 - api_automation - INFO - 执行状态码断言: 期望 200 实际 401
+2026-01-13 17:12:04,630 - api_automation - ERROR - 内容包含断言失败: 标准化后的期望内容 '200' 未找到. 
+2026-01-13 17:12:04,630 - api_automation - ERROR - 状态码断言失败: 标准化后的期望内容 '200' 未找到. 
+2026-01-13 17:12:04,734 - api_automation - INFO - 开始执行测试用例: 3 - 地址列表传参缺失验证
+2026-01-13 17:12:04,734 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2026-01-13 17:12:04,736 - api_automation - INFO - ==================================================
+2026-01-13 17:12:04,736 - api_automation - INFO - 请求方法: POST
+2026-01-13 17:12:04,736 - api_automation - INFO - Curl命令: curl -X POST --data-raw '{"username": "main"}' -H 'Content-Type: application/json' http://192.168.31.129:5000/api/address/list
+2026-01-13 17:12:04,738 - api_automation - INFO - 请求URL: http://192.168.31.129:5000/api/address/list
+2026-01-13 17:12:04,738 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2026-01-13 17:12:04,738 - api_automation - INFO - 通过content-type检查到为json类型，请求开始发送
+2026-01-13 17:12:04,738 - api_automation - INFO - 请求JSON数据: {
+  "username": "main"
+}
+2026-01-13 17:12:04,738 - api_automation - INFO - ------------------------------
+2026-01-13 17:12:04,768 - api_automation - INFO - 收到响应
+2026-01-13 17:12:04,768 - api_automation - INFO - 状态码: 401
+2026-01-13 17:12:04,768 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Tue, 13 Jan 2026 09:12:05 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "129",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2026-01-13 17:12:04,768 - api_automation - INFO - 响应体: {"apiVersion": "1.0", "success": false, "data": null, "message": "\u7f3a\u5c11Token", "timestamp": "2026-01-13T09:12:05.398678Z"}
+2026-01-13 17:12:04,768 - api_automation - INFO - 耗时: 0.016807秒
+2026-01-13 17:12:04,768 - api_automation - INFO - ==================================================
+2026-01-13 17:12:04,768 - api_automation - INFO - 执行状态码断言: 期望 401 实际 401
+2026-01-13 17:12:04,768 - api_automation - INFO - 断言成功: 响应内容包含标准化后的 '401'
+2026-01-13 17:12:04,768 - api_automation - INFO - 执行内容包含断言: 期望包含 '{"success": false, "message": "缺少用户名或Token"}'
+2026-01-13 17:12:04,768 - api_automation - ERROR - 内容包含断言失败: 标准化后的期望内容 '{"success":false,"message":"缺少用户名或Token"}' 未找到. 
+2026-01-13 17:12:04,769 - api_automation - ERROR - 内容断言失败: 标准化后的期望内容 '{"success":false,"message":"缺少用户名或Token"}' 未找到. 
+2026-01-13 17:12:04,787 - api_automation - INFO - 开始执行测试用例: 4 - 查询地址列表登录失败验证
+2026-01-13 17:12:04,787 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2026-01-13 17:12:04,789 - api_automation - INFO - ==================================================
+2026-01-13 17:12:04,789 - api_automation - INFO - 请求方法: POST
+2026-01-13 17:12:04,789 - api_automation - INFO - Curl命令: curl -X POST --data-raw '{"username": "test", "token": "7bdb5933aeae425aa148e950e6db569a"}' -H 'Content-Type: application/json' http://192.168.31.129:5000/api/address/list
+2026-01-13 17:12:04,789 - api_automation - INFO - 请求URL: http://192.168.31.129:5000/api/address/list
+2026-01-13 17:12:04,790 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2026-01-13 17:12:04,790 - api_automation - INFO - 通过content-type检查到为json类型，请求开始发送
+2026-01-13 17:12:04,790 - api_automation - INFO - 请求JSON数据: {
+  "username": "test",
+  "token": "7bdb5933aeae425aa148e950e6db569a"
+}
+2026-01-13 17:12:04,790 - api_automation - INFO - ------------------------------
+2026-01-13 17:12:04,822 - api_automation - INFO - 收到响应
+2026-01-13 17:12:04,822 - api_automation - INFO - 状态码: 401
+2026-01-13 17:12:04,822 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Tue, 13 Jan 2026 09:12:05 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "129",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2026-01-13 17:12:04,822 - api_automation - INFO - 响应体: {"apiVersion": "1.0", "success": false, "data": null, "message": "\u7f3a\u5c11Token", "timestamp": "2026-01-13T09:12:05.453176Z"}
+2026-01-13 17:12:04,822 - api_automation - INFO - 耗时: 0.018985秒
+2026-01-13 17:12:04,822 - api_automation - INFO - ==================================================
+2026-01-13 17:12:04,822 - api_automation - INFO - 执行状态码断言: 期望 401 实际 401
+2026-01-13 17:12:04,822 - api_automation - INFO - 断言成功: 响应内容包含标准化后的 '401'
+2026-01-13 17:12:04,822 - api_automation - INFO - 执行内容包含断言: 期望包含 '{"success": false, "message": "Token验证失败"}'
+2026-01-13 17:12:04,824 - api_automation - ERROR - 内容包含断言失败: 标准化后的期望内容 '{"success":false,"message":"Token验证失败"}' 未找到. 
+2026-01-13 17:12:04,824 - api_automation - ERROR - 内容断言失败: 标准化后的期望内容 '{"success":false,"message":"Token验证失败"}' 未找到. 
+2026-01-13 17:12:04,856 - api_automation - INFO - 开始执行测试用例: 1 - 地址列表验证
+2026-01-13 17:12:04,856 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2026-01-13 17:12:04,857 - api_automation - INFO - ==================================================
+2026-01-13 17:12:04,857 - api_automation - INFO - 请求方法: POST
+2026-01-13 17:12:04,857 - api_automation - INFO - Curl命令: curl -X POST --data-raw '{"username": "main", "token": "7bdb5933aeae425aa148e950e6db569a"}' -H 'Content-Type: application/json' http://192.168.31.129:5000/api/address/list
+2026-01-13 17:12:04,857 - api_automation - INFO - 请求URL: http://192.168.31.129:5000/api/address/list
+2026-01-13 17:12:04,857 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2026-01-13 17:12:04,859 - api_automation - INFO - 通过content-type检查到为json类型，请求开始发送
+2026-01-13 17:12:04,859 - api_automation - INFO - 请求JSON数据: {
+  "username": "main",
+  "token": "7bdb5933aeae425aa148e950e6db569a"
+}
+2026-01-13 17:12:04,859 - api_automation - INFO - ------------------------------
+2026-01-13 17:12:04,919 - api_automation - INFO - 收到响应
+2026-01-13 17:12:04,919 - api_automation - INFO - 状态码: 401
+2026-01-13 17:12:04,920 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Tue, 13 Jan 2026 09:12:05 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "129",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2026-01-13 17:12:04,920 - api_automation - INFO - 响应体: {"apiVersion": "1.0", "success": false, "data": null, "message": "\u7f3a\u5c11Token", "timestamp": "2026-01-13T09:12:05.546202Z"}
+2026-01-13 17:12:04,920 - api_automation - INFO - 耗时: 0.057627秒
+2026-01-13 17:12:04,920 - api_automation - INFO - ==================================================
+2026-01-13 17:12:04,920 - api_automation - INFO - 执行状态码断言: 期望 200 实际 401
+2026-01-13 17:12:04,920 - api_automation - ERROR - 内容包含断言失败: 标准化后的期望内容 '200' 未找到. 
+2026-01-13 17:12:04,920 - api_automation - ERROR - 状态码断言失败: 标准化后的期望内容 '200' 未找到. 
+2026-01-13 17:12:04,941 - api_automation - INFO - 开始执行测试用例: 2 - 地址列表传参缺失验证
+2026-01-13 17:12:04,941 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2026-01-13 17:12:04,943 - api_automation - INFO - ==================================================
+2026-01-13 17:12:04,943 - api_automation - INFO - 请求方法: POST
+2026-01-13 17:12:04,943 - api_automation - INFO - Curl命令: curl -X POST --data-raw '{"username": "main"}' -H 'Content-Type: application/json' http://192.168.31.129:5000/api/address/list
+2026-01-13 17:12:04,943 - api_automation - INFO - 请求URL: http://192.168.31.129:5000/api/address/list
+2026-01-13 17:12:04,944 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2026-01-13 17:12:04,944 - api_automation - INFO - 通过content-type检查到为json类型，请求开始发送
+2026-01-13 17:12:04,944 - api_automation - INFO - 请求JSON数据: {
+  "username": "main"
+}
+2026-01-13 17:12:04,944 - api_automation - INFO - ------------------------------
+2026-01-13 17:12:04,977 - api_automation - INFO - 收到响应
+2026-01-13 17:12:04,977 - api_automation - INFO - 状态码: 401
+2026-01-13 17:12:04,977 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Tue, 13 Jan 2026 09:12:05 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "129",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2026-01-13 17:12:04,978 - api_automation - INFO - 响应体: {"apiVersion": "1.0", "success": false, "data": null, "message": "\u7f3a\u5c11Token", "timestamp": "2026-01-13T09:12:05.606880Z"}
+2026-01-13 17:12:04,978 - api_automation - INFO - 耗时: 0.022985秒
+2026-01-13 17:12:04,978 - api_automation - INFO - ==================================================
+2026-01-13 17:12:04,978 - api_automation - INFO - 执行状态码断言: 期望 401 实际 401
+2026-01-13 17:12:04,978 - api_automation - INFO - 断言成功: 响应内容包含标准化后的 '401'
+2026-01-13 17:12:04,978 - api_automation - INFO - 执行内容包含断言: 期望包含 '{"success": false, "message": "缺少用户名或Token"}'
+2026-01-13 17:12:04,978 - api_automation - ERROR - 内容包含断言失败: 标准化后的期望内容 '{"success":false,"message":"缺少用户名或Token"}' 未找到. 
+2026-01-13 17:12:04,979 - api_automation - ERROR - 内容断言失败: 标准化后的期望内容 '{"success":false,"message":"缺少用户名或Token"}' 未找到. 
+2026-01-13 17:12:05,001 - api_automation - INFO - 开始执行测试用例: 3 - 查询地址列表登录失败验证
+2026-01-13 17:12:05,001 - api_automation - INFO - 发送 POST 请求到 /api/address/list
+2026-01-13 17:12:05,003 - api_automation - INFO - ==================================================
+2026-01-13 17:12:05,003 - api_automation - INFO - 请求方法: POST
+2026-01-13 17:12:05,003 - api_automation - INFO - Curl命令: curl -X POST --data-raw '{"username": "test", "token": "7bdb5933aeae425aa148e950e6db569a"}' -H 'Content-Type: application/json' http://192.168.31.129:5000/api/address/list
+2026-01-13 17:12:05,003 - api_automation - INFO - 请求URL: http://192.168.31.129:5000/api/address/list
+2026-01-13 17:12:05,005 - api_automation - INFO - 请求头: {
+  "Content-Type": "application/json"
+}
+2026-01-13 17:12:05,005 - api_automation - INFO - 通过content-type检查到为json类型，请求开始发送
+2026-01-13 17:12:05,005 - api_automation - INFO - 请求JSON数据: {
+  "username": "test",
+  "token": "7bdb5933aeae425aa148e950e6db569a"
+}
+2026-01-13 17:12:05,005 - api_automation - INFO - ------------------------------
+2026-01-13 17:12:05,055 - api_automation - INFO - 收到响应
+2026-01-13 17:12:05,055 - api_automation - INFO - 状态码: 401
+2026-01-13 17:12:05,055 - api_automation - INFO - 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Tue, 13 Jan 2026 09:12:05 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "129",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+2026-01-13 17:12:05,055 - api_automation - INFO - 响应体: {"apiVersion": "1.0", "success": false, "data": null, "message": "\u7f3a\u5c11Token", "timestamp": "2026-01-13T09:12:05.683567Z"}
+2026-01-13 17:12:05,057 - api_automation - INFO - 耗时: 0.03474秒
+2026-01-13 17:12:05,057 - api_automation - INFO - ==================================================
+2026-01-13 17:12:05,057 - api_automation - INFO - 执行状态码断言: 期望 200 实际 401
+2026-01-13 17:12:05,057 - api_automation - ERROR - 内容包含断言失败: 标准化后的期望内容 '200' 未找到. 
+2026-01-13 17:12:05,057 - api_automation - ERROR - 状态码断言失败: 标准化后的期望内容 '200' 未找到. 
+2026-01-13 17:12:05,180 - api_automation - INFO - 测试执行完成
+2026-01-13 17:12:05,182 - api_automation - INFO - 测试执行完成，退出码: 1
+2026-01-13 17:12:05,182 - api_automation - INFO - 测试执行完成，将生成HTML报告
+2026-01-13 17:12:05,182 - api_automation - INFO - 生成HTML格式的Allure报告
+2026-01-13 17:12:05,182 - api_automation - INFO - 执行命令: allure generate ./reports/allure_reports -o ./reports/html --clean
+2026-01-13 17:12:05,183 - api_automation - INFO - ['allure', 'generate', './reports/allure_reports', '-o', './reports/html', '--clean']
+2026-01-13 17:12:05,183 - api_automation - INFO - 当前操作系统为Windows，使用shell=True
+2026-01-13 17:12:05,217 - api_automation - ERROR - HTML报告生成失败: 
+2026-01-13 17:13:21,413 - api_automation - INFO - 解析命令行参数完成
+2026-01-13 17:13:21,415 - api_automation - INFO - 参数详情: serve_report=False, generate_report=False, type=None, file=None, env=None, ai_generate=True
+2026-01-13 17:13:21,415 - api_automation - INFO - 开始AI测试用例生成
+2026-01-13 17:13:21,840 - api_automation - INFO - 解析输入文档: data/examples/ecommerce_swagger.json
+2026-01-13 17:13:21,841 - api_automation - INFO - 成功解析出 5 个API接口
+2026-01-13 17:13:21,841 - api_automation - INFO - 为API GET /products 生成测试用例
