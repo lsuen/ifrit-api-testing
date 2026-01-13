@@ -1,6 +1,6 @@
 # 接口自动化测试框架
 
-这是一个基于Python、Pytest和Allure的接口自动化测试框架，支持Excel和CSV格式测试用例管理和数据关联。
+这是一个基于Python、Pytest和Allure的接口自动化测试框架，支持Excel和CSV格式测试用例管理和数据关联。框架集成了AI智能测试用例生成功能，可以从接口文档自动生成全面的测试用例。
 
 ## 目录结构
 
@@ -10,13 +10,20 @@ api_automation_framework/
 │   ├── __init__.py
 │   ├── config.py            # 全局配置
 │   ├── env_config.ini       # 环境配置
-│   └── test_data_config.ini # 测试数据配置
+│   ├── test_data_config.ini # 测试数据配置
+│   ├── ai_config.py         # AI配置管理
+│   └── ai_config.ini        # AI配置文件
 ├── core/                    # 核心功能目录
 │   ├── __init__.py
 │   ├── request_handler.py   # 请求处理工具
 │   ├── assert_handler.py    # 断言工具
 │   ├── data_handler.py      # 数据处理器(含关联和正则)
-│   └── test_executor.py     # 测试执行器（统一执行逻辑）
+│   ├── test_executor.py     # 测试执行器（统一执行逻辑）
+│   ├── ai_client.py         # AI客户端
+│   ├── document_parser.py   # 文档解析器
+│   ├── case_generator.py    # 测试用例生成器
+│   ├── template_engine.py   # 模板引擎
+│   └── quality_validator.py # 质量验证器
 ├── utils/                   # 工具类目录
 │   ├── __init__.py
 │   ├── excel_handler.py     # Excel操作工具
@@ -28,23 +35,29 @@ api_automation_framework/
 │   ├── test_api_excel_driver.py  # Excel测试驱动
 │   └── test_api_csv_driver.py    # CSV测试驱动
 ├── data/                    # 测试数据目录
+│   ├── ai_generated/        # AI生成的测试用例
+│   └── examples/            # 示例文档
 ├── logs/                    # 日志目录
 ├── reports/                 # 测试报告目录
 ├── main.py                  # 主程序入口
+├── ai_case_generator.py     # AI测试用例生成器独立脚本
 └── pytest.ini               # Pytest配置文件
 ```
 
 ## 功能特性
 
 1. **数据驱动测试**：支持Excel和CSV格式测试用例
-2. **数据关联**：支持接口间数据传递和变量提取
-3. **正则表达式支持**：可使用正则表达式提取数据
-4. **配置分离**：环境配置与测试数据配置分离
-5. **日志记录**：完整的请求/响应日志记录
-6. **Allure报告**：生成美观的测试报告，包含curl命令便于问题复现，使用case_name作为测试项标识
-7. **多环境支持**：支持多个测试环境配置切换
-8. **可扩展架构**：模块化设计，易于扩展
-9. **多值变量提取**：支持一次提取多个变量并分别存储
+2. **AI智能生成**：从接口文档自动生成全面的测试用例
+3. **数据关联**：支持接口间数据传递和变量提取
+4. **正则表达式支持**：可使用正则表达式提取数据
+5. **配置分离**：环境配置与测试数据配置分离
+6. **日志记录**：完整的请求/响应日志记录
+7. **Allure报告**：生成美观的测试报告，包含curl命令便于问题复现，使用case_name作为测试项标识
+8. **多环境支持**：支持多个测试环境配置切换
+9. **可扩展架构**：模块化设计，易于扩展
+10. **多值变量提取**：支持一次提取多个变量并分别存储
+11. **文档解析**：支持Markdown和Swagger格式的接口文档
+12. **质量验证**：自动验证生成的测试用例质量并提供修复建议
 
 ## 安装依赖(建议python version>=3.7)
 
@@ -105,6 +118,27 @@ timeout = 30
 CSV格式与Excel格式相同，但以逗号分隔，注意JSON字段需要正确转义。
 
 ### 3. 运行测试
+
+#### AI智能生成测试用例
+
+框架支持从接口文档自动生成测试用例，详细使用方法请参考 [AI驱动指南](AI_GUIDE.md)。
+
+**快速开始AI生成：**
+
+<!-- 点击运行: 从Markdown文档生成CSV测试用例 -->
+```bash
+python main.py --ai-generate --input-doc data/examples/complex_api.md --output-format csv
+```
+
+<!-- 点击运行: 从Swagger文档生成Excel测试用例 -->
+```bash
+python main.py --ai-generate --input-doc data/examples/ecommerce_swagger.json --output-format excel
+```
+
+<!-- 点击运行: 使用独立脚本生成测试用例 -->
+```bash
+python ai_case_generator.py data/examples/complex_api.md --format excel --preview
+```
 
 #### 基础运行命令
 
@@ -190,6 +224,27 @@ python main.py --file data/test_cases.xlsx --serve-report
 python main.py --type csv --env api_dev --generate-report
 ```
 
+#### AI生成用例直接运行
+
+可以将AI生成的测试用例直接用于测试执行：
+
+<!-- 点击运行: 生成测试用例并直接运行 -->
+```bash
+# 1. 生成测试用例
+python main.py --ai-generate --input-doc data/examples/complex_api.md --output-format csv
+
+# 2. 运行生成的测试用例
+python main.py --file data/ai_generated/csv_data/ai_complex_api_*.csv --generate-report
+```
+
+<!-- 点击运行: 一键生成并运行Excel测试用例 -->
+```bash
+# 生成Excel格式测试用例
+python ai_case_generator.py data/examples/ecommerce_swagger.json --format excel
+# 运行生成的Excel测试用例
+python main.py --type excel --generate-report
+```
+
 ### 4. 查看测试报告
 
 测试报告分为两种格式：
@@ -248,6 +303,38 @@ python curltocase_client.py
 2. 选择目标文件(csv或excel)
 3. 自动解析并写入测试用例
 
+## AI功能详细说明
+
+框架集成了强大的AI测试用例生成功能，支持：
+
+- **文档格式**：Markdown、Swagger JSON/YAML
+- **生成类型**：正向、反向、边界、结构、路径、权限测试用例
+- **输出格式**：Excel、CSV、JSON
+- **质量保证**：自动质量验证和修复建议
+- **批量处理**：支持多文档批量生成
+- **在线文档**：支持在线Swagger文档解析
+
+详细使用方法请参考 [AI驱动指南](AI_GUIDE.md)。
+
+### 快速演示脚本
+
+框架提供了几个演示脚本帮助快速上手：
+
+<!-- 点击运行: 运行完整的AI功能演示 -->
+```bash
+python auto_test_demo.py
+```
+
+<!-- 点击运行: Windows批处理脚本处理在线Swagger -->
+```bash
+generate_from_online.bat
+```
+
+<!-- 点击运行: Linux/Mac脚本处理在线Swagger -->
+```bash
+./generate_from_online.sh
+```
+
 ## 常见问题
 
 ### 1. Allure命令未找到
@@ -269,6 +356,30 @@ pip install openpyxl xlrd
 ### 4. 变量无法传递
 
 确保前置用例正确提取变量，且后续用例正确引用变量名。
+
+### 5. AI服务连接失败
+
+检查AI配置文件 `config/ai_config.ini` 中的服务地址是否正确：
+```bash
+# 测试AI服务连接
+curl http://localhost:8000/health
+```
+
+### 6. AI生成用例质量问题
+
+- 检查输入文档格式是否规范
+- 调整生成策略配置参数
+- 使用质量验证功能查看具体问题
+
+### 7. 在线Swagger文档无法访问
+
+```bash
+# 测试网络连接
+curl -I http://192.168.31.129:5000/apispec_1.json
+
+# 下载文档到本地
+curl -o swagger.json http://192.168.31.129:5000/apispec_1.json
+```
 
 ## 扩展框架功能（面向专业人员）
 
@@ -331,5 +442,15 @@ pip install openpyxl xlrd
 2. 测试结果分析工具
 3. 自动化测试维护工具
 4. 测试覆盖率分析工具
+
+### 8. AI功能扩展
+
+框架的AI功能也支持扩展和定制：
+
+1. **自定义提示词模板**：修改 `config/ai_config.ini` 中的提示词配置
+2. **扩展文档解析器**：在 `core/document_parser.py` 中添加新的文档格式支持
+3. **自定义生成策略**：扩展 `core/case_generator.py` 中的用例生成逻辑
+4. **集成其他AI服务**：修改 `core/ai_client.py` 支持不同的AI服务提供商
+5. **质量验证规则**：在 `core/quality_validator.py` 中添加自定义验证规则
 
 通过以上方式，您可以根据项目需求对框架进行定制和扩展，以满足更复杂的测试场景。
