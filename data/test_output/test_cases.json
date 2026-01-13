@@ -1,0 +1,38 @@
+[
+  {
+    "id": "test_001",
+    "name": "用户登录-正常场景",
+    "enabled": "1",
+    "method": "POST",
+    "url": "/api/user/login",
+    "headers": "{\"Content-Type\": \"application/json\"}",
+    "params": "{}",
+    "body": "{\"username\": \"admin\", \"password\": \"123456\"}",
+    "expected_status": "200",
+    "expected_content": "成功",
+    "json_path": "code",
+    "expected_json_value": "200",
+    "extract_key": "",
+    "save_var_name": "",
+    "validate": "",
+    "priority": ""
+  },
+  {
+    "id": "test_002",
+    "name": "用户登录-参数错误",
+    "enabled": "1",
+    "method": "POST",
+    "url": "/api/user/login",
+    "headers": "{\"Content-Type\": \"application/json\"}",
+    "params": "{}",
+    "body": "{\"username\": \"\", \"password\": \"\"}",
+    "expected_status": "400",
+    "expected_content": "参数错误",
+    "json_path": "",
+    "expected_json_value": "",
+    "extract_key": "",
+    "save_var_name": "",
+    "validate": "",
+    "priority": ""
+  }
+]

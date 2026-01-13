@@ -1,0 +1,32 @@
+INFO     api_automation:test_executor.py:28 开始执行测试用例: 3 - 地址列表传参缺失验证
+INFO     api_automation:test_executor.py:92 发送 POST 请求到 /api/address/list
+INFO     api_automation:request_handler.py:163 ==================================================
+INFO     api_automation:request_handler.py:164 请求方法: POST
+INFO     api_automation:request_handler.py:165 Curl命令: curl -X POST --data-raw '{"username": "main"}' -H 'Content-Type: application/json' http://192.168.31.129:5000/api/address/list
+INFO     api_automation:request_handler.py:166 请求URL: http://192.168.31.129:5000/api/address/list
+INFO     api_automation:request_handler.py:167 请求头: {
+  "Content-Type": "application/json"
+}
+INFO     api_automation:request_handler.py:173 通过content-type检查到为json类型，请求开始发送
+INFO     api_automation:request_handler.py:175 请求JSON数据: {
+  "username": "main"
+}
+INFO     api_automation:request_handler.py:206 ------------------------------
+INFO     api_automation:request_handler.py:229 收到响应
+INFO     api_automation:request_handler.py:230 状态码: 401
+INFO     api_automation:request_handler.py:231 响应头: {
+  "Server": "Werkzeug/3.1.3 Python/3.9.2",
+  "Date": "Tue, 13 Jan 2026 08:57:05 GMT",
+  "Content-Type": "text/html; charset=utf-8",
+  "Content-Length": "129",
+  "Access-Control-Allow-Origin": "*",
+  "Connection": "close"
+}
+INFO     api_automation:request_handler.py:232 响应体: {"apiVersion": "1.0", "success": false, "data": null, "message": "\u7f3a\u5c11Token", "timestamp": "2026-01-13T08:57:05.978728Z"}
+INFO     api_automation:request_handler.py:233 耗时: 0.038063秒
+INFO     api_automation:request_handler.py:234 ==================================================
+INFO     api_automation:test_executor.py:113 执行状态码断言: 期望 401 实际 401
+INFO     api_automation:assert_handler.py:119 断言成功: 响应内容包含标准化后的 '401'
+INFO     api_automation:test_executor.py:130 执行内容包含断言: 期望包含 '{"success": false, "message": "缺少用户名或Token"}'
+ERROR    api_automation:assert_handler.py:128 内容包含断言失败: 标准化后的期望内容 '{"success":false,"message":"缺少用户名或Token"}' 未找到. 
+ERROR    api_automation:test_executor.py:134 内容断言失败: 标准化后的期望内容 '{"success":false,"message":"缺少用户名或Token"}' 未找到.
