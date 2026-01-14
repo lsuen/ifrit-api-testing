@@ -57,7 +57,7 @@ class TestAllDrivers:
         """
         测试方法级别的初始化
         """
-        logger.debug("初始化测试方法")
+        logger.debug(f"初始化测试方法")
         # 从conftest.py获取已正确配置的request_handler
         pass
 
@@ -71,6 +71,8 @@ class TestAllDrivers:
             case (dict): 测试用例数据
             request_handler: 请求处理器fixture
         """
+        # 日志打印要执行的用例name
+        logger.info(f"开始执行用例: {case['case_name']}")
         self.assert_handler = AssertHandler()
         # 创建测试执行器实例
         self.test_executor = TestExecutor(request_handler, data_handler, self.assert_handler)

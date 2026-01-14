@@ -4,119 +4,32 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="010db024-a933-406f-8c97-89ba25fab049" name="更改" comment="feat:默认参数修改">
-      <change afterPath="$PROJECT_DIR$/.idea/git_toolbox_prj.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ai_case_generator.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/ai_config.ini" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/ai_config.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/ai_client.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/case_generator.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/document_parser.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/quality_validator.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/template_engine.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/ai_generated/csv_data/ai_sample_api_20260113_154802.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/ai_generated/json_data/ai_sample_api_20260113_160205.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/examples/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/examples/complex_api.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/examples/ecommerce_swagger.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/examples/sample_api.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/examples/sample_api.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/test_checkpoint/csv_data/ai_sample_api_20260113_165621.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/test_output/test_cases.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/test_output/test_cases.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/03c18f1e-45bc-45b1-9d12-0ea2afa7329f-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/0791c564-4aee-4b65-b19b-f0c4261ee653-attachment.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/09726d9f-7dee-4650-85a0-d43553e34099-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/0ede0d4c-ecab-441d-b726-c1448d321a45-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/0f8b2a88-7ef9-4026-ace6-32822d5b4777-attachment.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/13600f5b-6162-4192-8e3a-30a4fff12609-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/1398959d-5489-4b68-9618-c1915023ba79-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/23101efc-ca15-4113-845c-ae43fdfae44d-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/23e50486-ccce-4853-906c-4ed1e0f5eb24-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/24e210a7-6032-4d32-8dcc-3d1521feb9e9-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/2588077e-e5a9-48f7-a6b2-55ad0e8272f7-attachment.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/2624e358-c604-41ef-b1d9-f05c73b5e96b-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/27d0741d-544a-4d0d-946a-9a26d6cc4816-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/2ff57a90-4383-4c03-bc39-e2f7143eaa92-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/38f20359-2928-484b-9ef5-b2b65e834d7b-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/42dfe455-3dca-4113-b1d7-f6289764cd07-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/435e8105-462e-4735-84fd-1fd78f21aee7-attachment.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/46b30cfb-0257-4e71-bc7f-1fbf97f4fc83-attachment.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/4787efde-5cbf-42ef-93e2-61dff73d2108-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/47b36aec-a3e0-4189-9c2c-9a9ac63dda9f-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/486c9e6c-1ffc-4e48-aaf8-53f7d66dcb1a-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/489c5038-49aa-4365-b886-4049efb67279-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/4c14ebde-79c4-417d-b66e-570b714d1d4a-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/4de67f83-8f18-43d5-ab46-cf568acf1c1e-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/4efccfe4-e8a8-4e31-bf86-0d6a66fca94a-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/51bf9be3-840c-4b96-a7b0-6c2a668497e5-attachment.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/531004d7-71c7-497e-bc4c-34c5fa862964-attachment.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/56153fa9-4551-47c9-b241-0f5596ed9571-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/5a026efd-38e0-475c-8334-cd6b133142db-attachment.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/5f001a45-da84-4d64-a36a-b84596068645-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/663c2912-088e-4a86-adc1-975934167116-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/6657a64e-a59e-403a-b91d-6e5de453a8bf-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/67db1526-17ba-43f5-bb19-92613bcf1002-attachment.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/6a09f6c2-336d-4fdc-8324-ae9982e38b0b-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/6ab216e1-851c-4652-a33f-71b6c57db144-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/6c221e7f-6c40-4fe1-9d6a-5f1f1cac6bb3-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/701ac38f-c436-449a-9259-a342761d84d2-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/70a882c7-473f-4a1d-bda7-c0cb19095bd3-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/70c58f8b-ed97-44db-9e2b-30fa643200aa-result.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/77a6d2f8-33f5-4f95-b7cb-244958872b84-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/7a5e907b-9a5a-4d94-a95d-acc2e8ffccb5-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/8165e5f7-6bbd-4e65-ba10-b6582f02c4f8-attachment.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/83a3c267-18af-4b2e-b050-44d99cba45f5-attachment.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/84a6cb94-2364-41d6-bc73-04c079582c60-result.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/87db44b0-5e43-4eeb-81b1-514c265271b4-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/8a2f26eb-d9e2-42ca-acb3-8cefb6b6dd43-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/8b405710-73bc-4e5a-a988-42d322d91e68-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/8d6bc1da-cd99-4039-827e-05be17a71d07-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/8df51500-ead5-44ff-85a2-a61863fe277d-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/912b453c-f551-43b9-a05c-6438261ab4cc-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/9da0f9db-f188-4681-a5b7-57a38747b14a-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/a22bae83-b14a-466e-9d42-a8342eed51c1-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/a416ce51-5e79-4e87-8126-a6484d1c880b-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/ab02b862-b3ef-4977-8fbc-fd2c728a1362-attachment.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/ac96f9fe-d7e2-42f5-a13e-fd251efc0a06-attachment.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/b2271c40-f181-4e56-8025-18f2adb279f8-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/b77339ff-e7c9-4173-8988-c6ebc1f5c975-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/bce4e3f1-267c-468b-a5c1-1cfeba3ce980-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/bead9d3d-8d56-4c2c-a4ce-0de3e7fefced-result.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/c5bf1242-3b8d-422a-8038-840e8e4664b4-attachment.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/c5f629a3-ab2c-4648-93d3-df008d49d270-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/c6ed7400-bd8c-4265-8ad3-5d70762a0e48-attachment.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/c9fd4113-b68b-4981-8f2c-9f593dae9724-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/ca13b822-f522-48e8-9ae5-61b44481143b-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/cdcaf0a3-9c15-4186-9dc6-23b9ca54bc62-attachment.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/d147419f-aec8-442d-95e0-243dc2ed3155-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/d28e249e-29a7-4f38-ab08-37ada258df15-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/d2b67b5a-8c53-4adc-989e-cf0d55bfec69-attachment.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/d59a9611-6aaa-4d2a-ab6d-63ae03a7bb94-attachment.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/d700f296-8f02-4a43-b4f1-e2a024335a06-attachment.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/da38d96a-a47a-445b-8ef7-43ee8bd0488a-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/db5452a3-f10c-468e-8f16-fc454128a7c8-result.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/dc650ccc-cc63-420e-b79a-30dcdebac5d0-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/e0f1a685-9129-4089-900f-5ac68da11b37-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/e1af8604-6d36-44b6-b199-59efb3c96fc1-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/e251e9a2-97d1-4621-8892-e448ceabde70-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/e2ca3531-831b-4e19-85f5-b4ab1776b080-result.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/e6c2110b-789f-4ff2-bf5f-5a002b40b9dd-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/eb16298e-f38f-48d4-82ee-fd9871c4bbad-attachment.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/f1ed5bbb-5580-4b96-b44d-fabec0963f7e-attachment.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/f23175ed-2ff7-4acc-a89b-bd77b8b09e7c-attachment.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/f2970ec3-441a-483c-a721-bc8b283f3253-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/f4727d45-c527-4a22-beb3-5da2e7783846-result.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/f4c51c7c-d6c6-4276-b407-49f42894fe15-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/f7f6b410-f65f-418d-bba2-cda4d133c2b8-attachment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/fb09df7d-c190-4999-a713-ee7cb2e7d081-result.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/fb0d0c8d-209b-4300-b045-c4e74b4151c1-container.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reports/allure_reports/fbd2a3c5-385e-4f22-8fd7-f07626919be8-attachment.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/ifrit.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ifrit.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="010db024-a933-406f-8c97-89ba25fab049" name="更改" comment="fix：说明">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/api_automation.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/api_automation.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AI_GUIDE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/env_config.ini" beforeDir="false" afterPath="$PROJECT_DIR$/config/env_config.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/assert_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/assert_handler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/data_handler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/request_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/request_handler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_executor.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/test_executor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/ai_generated/csv_data/ai_sample_api_20260113_154802.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/ai_generated/excel_data/ai_complex_api_20260113_171123.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/ai_generated/json_data/ai_sample_api_20260113_160205.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/examples/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/examples/complex_api.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/examples/ecommerce_swagger.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/examples/sample_api.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/examples/sample_api.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/test_checkpoint/csv_data/ai_sample_api_20260113_165621.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/test_output/test_cases.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/test_output/test_cases.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/api_automation.log" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testcases/test_api_csv_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/testcases/test_api_csv_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testcases/test_api_excel_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/testcases/test_api_excel_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testcases/test_api_json_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/testcases/test_api_json_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/logger.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/logger.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -144,31 +57,37 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python 测试.Python tests for test_api_excel.TestApiExcel (1).executor&quot;: &quot;Run&quot;,
-    &quot;Python 测试.Python tests for test_api_excel.TestApiExcel.executor&quot;: &quot;Run&quot;,
-    &quot;Python 测试.Python tests in test_api_excel.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python 测试.test_api_excel.TestAPI.test_api_case 的 Python 测试.executor&quot;: &quot;Run&quot;,
-    &quot;Python.assert_handler.executor&quot;: &quot;Run&quot;,
-    &quot;Python.conftest.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/sunwenlong/PythonEducationalProject/ifrit&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python 测试.Python tests for test_api_excel.TestApiExcel (1).executor": "Run",
+    "Python 测试.Python tests for test_api_excel.TestApiExcel.executor": "Run",
+    "Python 测试.Python tests in test_api_excel.py.executor": "Run",
+    "Python 测试.Python 测试 (test_all_drivers.py 内).executor": "Run",
+    "Python 测试.Python 测试 (test_api_csv_driver.py 内).executor": "Run",
+    "Python 测试.Python 测试 (test_api_excel_driver.py 内).executor": "Run",
+    "Python 测试.test_api_excel.TestAPI.test_api_case 的 Python 测试.executor": "Run",
+    "Python 测试.testcases.test_api_csv_driver.TestAllDrivers 的 Python 测试.executor": "Run",
+    "Python 测试.testcases.test_api_csv_driver.TestAllDrivers.test_api_case 的 Python 测试.executor": "Run",
+    "Python 测试.testcases.test_api_json_driver.TestAllDrivers.test_api_case 的 Python 测试.executor": "Run",
+    "Python.assert_handler.executor": "Run",
+    "Python.conftest.executor": "Run",
+    "Python.main.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "master",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "/Users/sunwenlong/PythonEducationalProject/ifrit",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
@@ -177,54 +96,25 @@
       <recent name="$PROJECT_DIR$/data" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\CodeFiles\PyProjects\ifrit-apitest" />
       <recent name="$PROJECT_DIR$/data" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.assert_handler">
-    <configuration name="assert_handler" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python 测试.testcases.test_api_json_driver.TestAllDrivers.test_api_case 的 Python 测试">
+    <configuration name="Python 测试 (test_api_csv_driver.py 内)" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="ifrit" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/core/assert_handler.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="ifrit" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/testcases/test_api_csv_driver.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
     <configuration name="Python 测试 (test_api_excel_driver.py 内)" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
@@ -243,6 +133,38 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
+    <configuration name="testcases.test_api_csv_driver.TestAllDrivers 的 Python 测试" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="ifrit" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;testcases.test_api_csv_driver.TestAllDrivers&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="testcases.test_api_csv_driver.TestAllDrivers.test_api_case 的 Python 测试" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="ifrit" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;testcases.test_api_csv_driver.TestAllDrivers.test_api_case&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
     <configuration name="testcases.test_api_excel_driver 的 Python 测试" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="ifrit" />
       <option name="ENV_FILES" value="" />
@@ -259,45 +181,29 @@
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="testcases.test_api_excel_driver 的 Python 测试" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="testcases.test_api_json_driver.TestAllDrivers.test_api_case 的 Python 测试" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="ifrit" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/testcases" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;testcases.test_api_excel_driver&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration name="testcases.test_api_excel_driver.TestAPI.test_api_case 的 Python 测试" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
-      <module name="ifrit" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/testcases" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;testcases.test_api_excel_driver.TestAPI.test_api_case&quot;" />
+      <option name="_new_target" value="&quot;testcases.test_api_json_driver.TestAllDrivers.test_api_case&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.assert_handler" />
-        <item itemvalue="Python.main" />
-        <item itemvalue="Python 测试.testcases.test_api_excel_driver.TestAPI.test_api_case 的 Python 测试" />
+        <item itemvalue="Python 测试.testcases.test_api_json_driver.TestAllDrivers.test_api_case 的 Python 测试" />
+        <item itemvalue="Python 测试.testcases.test_api_csv_driver.TestAllDrivers.test_api_case 的 Python 测试" />
+        <item itemvalue="Python 测试.testcases.test_api_csv_driver.TestAllDrivers 的 Python 测试" />
         <item itemvalue="Python 测试.Python 测试 (test_api_excel_driver.py 内)" />
-        <item itemvalue="Python 测试.testcases.test_api_excel_driver 的 Python 测试" />
+        <item itemvalue="Python 测试.Python 测试 (test_api_csv_driver.py 内)" />
       </list>
     </recent_temporary>
   </component>
@@ -311,7 +217,7 @@
       <updated>1757398531783</updated>
       <workItem from="1768187281108" duration="74000" />
       <workItem from="1768204608888" duration="2901000" />
-      <workItem from="1768294825219" duration="502000" />
+      <workItem from="1768294825219" duration="10943000" />
     </task>
     <task id="LOCAL-00001" summary="feat:新建">
       <option name="closed" value="true" />
@@ -329,7 +235,23 @@
       <option name="project" value="LOCAL" />
       <updated>1768205110025</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="doc：文档更新">
+      <option name="closed" value="true" />
+      <created>1768296320248</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1768296320248</updated>
+    </task>
+    <task id="LOCAL-00004" summary="fix：说明">
+      <option name="closed" value="true" />
+      <created>1768296345989</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1768296345989</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -338,10 +260,13 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="feat:新建" />
     <MESSAGE value="feat:默认参数修改" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat:默认参数修改" />
+    <MESSAGE value="doc：文档更新" />
+    <MESSAGE value="fix：说明" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix：说明" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/ifrit_apitest$main.coverage" NAME="main 覆盖结果" MODIFIED="1768205068535" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ifrit_apitest$assert_handler.coverage" NAME="assert_handler 覆盖结果" MODIFIED="1768207675724" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/core" />
+    <SUITE FILE_PATH="coverage/ifrit_apitest$.coverage" NAME=" 覆盖结果" MODIFIED="1768370749730" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

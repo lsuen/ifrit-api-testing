@@ -9,7 +9,9 @@
 import json
 import allure
 import pytest
-from utils.logger import logger
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class TestExecutor:
@@ -112,7 +114,8 @@ class TestExecutor:
         if case['expected_status']:
             logger.info(f"执行状态码断言: 期望 {case['expected_status']} 实际 {response.status_code}")
         try:
-            self.assert_handler.assert_content_contains(response.status_code, case['expected_status'])
+            # self.assert_handler.assert_content_contains(response.status_code, case['expected_status'])  # 原始错误代码
+            self.assert_handler.assert_status_code(response, int(case['expected_status']))  # 修复后的代码
         except AssertionError as e:
             logger.error(f"状态码断言失败: {str(e)}")
             pytest.fail(f"状态码断言失败: {str(e)}")

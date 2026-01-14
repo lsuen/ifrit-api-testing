@@ -14,8 +14,11 @@ except ImportError:
     allure = None
     ALLURE_AVAILABLE = False
 
-from utils.logger import logger
+import logging
 
+# 使用增强的日志系统
+from utils.logger import get_logger
+logger = get_logger(__name__)
 
 
 class RequestHandler:

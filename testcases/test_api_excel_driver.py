@@ -72,6 +72,8 @@ class TestAllDrivers:
             case (dict): 测试用例数据
             request_handler: 请求处理器fixture
         """
+        # 日志打印要执行的用例name
+        logger.info(f"开始执行用例: {case['case_name']}")
         self.assert_handler = AssertHandler()
         # 创建测试执行器实例
         self.test_executor = TestExecutor(request_handler, data_handler, self.assert_handler)

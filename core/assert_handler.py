@@ -11,7 +11,9 @@ from typing import Any, Dict
 
 from jsonpath_ng import parse
 
-from utils.logger import logger
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class AssertHandler:
