@@ -382,7 +382,7 @@ class AITestCaseGenerator:
         print("\n--- 批量文档处理 ---")
         
         # 输入文档路径
-        print("请输入文档路径（支持通配符，如 docs/*.md）:")
+        print("请输入文档路径（支持通配符，如 __docs/*.md）:")
         paths_input = input("文档路径: ").strip()
         if not paths_input:
             print("文档路径不能为空")

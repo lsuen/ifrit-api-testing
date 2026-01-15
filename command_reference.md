@@ -81,17 +81,17 @@ python main.py --generate-report
 
 <!-- 点击运行: 使用pytest直接运行所有测试用例 -->
 ```bash
-pytest testcases/ -v
+pytest drivers/ -v
 ```
 
 <!-- 点击运行: 使用pytest运行Excel测试用例 -->
 ```bash
-pytest testcases/test_api_excel_driver.py -v
+pytest drivers/test_api_excel_driver.py -v
 ```
 
 <!-- 点击运行: 使用pytest运行CSV测试用例 -->
 ```bash
-pytest testcases/test_api_csv_driver.py -v
+pytest drivers/test_api_csv_driver.py -v
 ```
 
 ## 工具命令

@@ -203,13 +203,13 @@ python ai_case_generator.py data/examples/complex_api.md --format excel --previe
 
 ```bash
 # 基础生成
-python main.py --ai-generate --input-doc docs/api.md
+python main.py --ai-generate --input-doc __docs/api.md
 
 # 指定输出格式
-python main.py --ai-generate --input-doc docs/api.md --output-format excel
+python main.py --ai-generate --input-doc __docs/api.md --output-format excel
 
 # 指定输出目录
-python main.py --ai-generate --input-doc docs/api.md --output-dir custom_output
+python main.py --ai-generate --input-doc __docs/api.md --output-dir custom_output
 
 # 指定Swagger端点
 python main.py --ai-generate --input-doc swagger.json --swagger-endpoint /api/users --swagger-endpoint /api/orders
@@ -219,13 +219,13 @@ python main.py --ai-generate --input-doc swagger.json --swagger-endpoint /api/us
 
 ```bash
 # 基础生成
-python ai_case_generator.py docs/api.md
+python ai_case_generator.py __docs/api.md
 
 # 预览模式
-python ai_case_generator.py docs/api.md --preview
+python ai_case_generator.py __docs/api.md --preview
 
 # 批量处理
-python ai_case_generator.py docs/*.md --merge
+python ai_case_generator.py __docs/*.md --merge
 
 # 交互式模式
 python ai_case_generator.py --interactive
@@ -426,10 +426,10 @@ python ai_case_generator.py --interactive
 
 ```bash
 # 处理目录下所有Markdown文档
-python ai_case_generator.py docs/*.md --merge --format excel
+python ai_case_generator.py __docs/*.md --merge --format excel
 
 # 处理多种格式文档
-python ai_case_generator.py docs/api.md docs/swagger.json --merge
+python ai_case_generator.py __docs/api.md __docs/swagger.json --merge
 ```
 
 ### 3. 质量验证

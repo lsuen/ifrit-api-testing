@@ -119,7 +119,7 @@ python main.py --serve-report
 - **批量处理**：支持多文档批量生成
 - **在线文档**：支持在线Swagger文档解析
 
-详细使用方法请参考 [docs/AI_GUIDE.md](docs/AI_GUIDE.md)。
+详细使用方法请参考 [docs/AI_GUIDE.md](__docs/AI_GUIDE.md)。
 
 ## 命令行参考
 
@@ -131,13 +131,13 @@ python main.py --serve-report
 
 ```bash
 # 运行所有内部单元测试
-python -m unittest discover internal_tests/
+python -m unittest discover __internal_tests/
 
 # 运行特定的内部单元测试
-python internal_tests/test_engines.py
-python internal_tests/test_parsers.py
-python internal_tests/test_utils.py
-python internal_tests/test_business_logic.py
+python __internal_tests/test_engines.py
+python __internal_tests/test_parsers.py
+python __internal_tests/test_utils.py
+python __internal_tests/test_business_logic.py
 ```
 
 ## 开发规范

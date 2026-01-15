@@ -23,7 +23,7 @@ class Config:
         self.data_dir = os.path.join(BASE_DIR, 'data')
         self.logs_dir = os.path.join(BASE_DIR, 'logs')
         self.reports_dir = os.path.join(BASE_DIR, 'reports')
-        self.testcases_dir = os.path.join(BASE_DIR, 'testcases')
+        self.testcases_dir = os.path.join(BASE_DIR, 'drivers')
         self.utils_dir = os.path.join(BASE_DIR, 'utils')
         self.core_dir = os.path.join(BASE_DIR, 'core')
 
