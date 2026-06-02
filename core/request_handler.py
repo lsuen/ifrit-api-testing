@@ -16,6 +16,8 @@ except ImportError:
 
 import logging
 
+from core.allure_helper import AllureReporter
+
 # 使用增强的日志系统
 from utils.logger import get_logger
 logger = get_logger(__name__)
@@ -161,21 +163,16 @@ class RequestHandler:
             method, url, headers=headers, params=params, data=data, json_data=json_data, plain_text=plain_text
         )
 
-        # 记录请求信息（Allure和日志）
-        if ALLURE_AVAILABLE and allure:
-            allure.attach(curl_command, "Curl命令", allure.attachment_type.TEXT)
-            allure.attach(url, "请求URL", allure.attachment_type.TEXT)
-            if headers:
-                allure.attach(json.dumps(headers, ensure_ascii=False, indent=2), "请求头", allure.attachment_type.JSON)
-            if params:
-                allure.attach(json.dumps(params, ensure_ascii=False, indent=2), "URL参数", allure.attachment_type.JSON)
-            if json_data:
-                allure.attach(json.dumps(json_data, ensure_ascii=False, indent=2), "请求JSON数据",
-                              allure.attachment_type.JSON)
-            elif plain_text:
-                allure.attach(plain_text, "请求纯文本数据", allure.attachment_type.TEXT)
-            elif data:
-                allure.attach(json.dumps(data, ensure_ascii=False, indent=2), "请求表单数据", allure.attachment_type.JSON)
+        # 记录请求信息（Allure 统一步骤 + 日志）
+        request_body = request_json if request_json is not None else (request_data if request_data is not None else None)
+        AllureReporter.step_request(
+            method=method.upper(),
+            url=url,
+            headers=request_headers,
+            params=params,
+            body=request_body,
+            curl_command=curl_command,
+        )
 
         logger.info("=" * 50)
         logger.info(f"请求方法: {method}")
@@ -236,12 +233,7 @@ class RequestHandler:
                 **kwargs
             )
 
-            # 记录响应信息
-            if ALLURE_AVAILABLE and allure:
-                allure.attach(str(response.status_code), "响应状态码", allure.attachment_type.TEXT)
-                allure.attach(json.dumps(dict(response.headers), ensure_ascii=False, indent=2), "响应头",
-                              allure.attachment_type.JSON)
-                allure.attach(response.text, "响应体", allure.attachment_type.TEXT)
+            AllureReporter.step_response(response)
 
             logger.info("收到响应")
             logger.info(f"状态码: {response.status_code}")
@@ -254,16 +246,13 @@ class RequestHandler:
 
         except requests.exceptions.Timeout as e:
             logger.error(f"请求超时: {e}")
-            if ALLURE_AVAILABLE and allure:
-                allure.attach(str(e), "请求超时", allure.attachment_type.TEXT)
+            AllureReporter.attach_error("请求超时", str(e))
         except requests.exceptions.RequestException as e:
             logger.error(f"请求失败: {e}")
-            if ALLURE_AVAILABLE and allure:
-                allure.attach(str(e), "请求异常", allure.attachment_type.TEXT)
+            AllureReporter.attach_error("请求异常", str(e))
         except Exception as e:
             logger.error(f"未知错误: {e}")
-            if ALLURE_AVAILABLE and allure:
-                allure.attach(str(e), "未知错误", allure.attachment_type.TEXT)
+            AllureReporter.attach_error("未知错误", str(e))
         return None
 
     # 快捷方法

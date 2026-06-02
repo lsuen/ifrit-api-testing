@@ -115,6 +115,8 @@ class CLIManager:
         # 如果测试执行成功且指定了生成报告，则生成HTML报告
         elif args.generate_report or exit_code == 0:
             report_manager = ReportManager()
-            report_manager.generate_html_report()
+            report_path = report_manager.generate_html_report()
+            if report_path:
+                print(f"[IFRIT] 报告=reports/html/index.html")
 
         sys.exit(exit_code)
