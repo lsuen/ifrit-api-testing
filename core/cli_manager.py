@@ -101,6 +101,11 @@ class CLIManager:
             action="store_true",
             help="仅预览将被清理的文件，不实际删除"
         )
+        parser.add_argument(
+            "--chat",
+            nargs=argparse.REMAINDER,
+            help="进入 AI 交互模式；可选跟随单行命令，如 --chat doc api.json generate"
+        )
 
         return parser
     
@@ -121,6 +126,13 @@ class CLIManager:
         from agent.pipeline.generator import AIGenerator
 
         args = self.parse_args()
+
+        if args.chat is not None:
+            from agent.pipeline.chat import AIChatSession
+
+            chat_argv = [item for item in (args.chat or []) if item != "--"]
+            session = AIChatSession()
+            sys.exit(session.run(chat_argv or None))
 
         if args.clean:
             if args.clean == "logs":
