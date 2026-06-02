@@ -1,5 +1,8 @@
 # ifrit自动化测试框架命令手册
 
+> **命令速查（含鉴权说明）：** [用户详细使用手册.md](../用户详细使用手册.md#12-命令速查表)  
+> 本文档为完整参数列表，部分默认值以当前代码为准（AI 输出目录默认为 `fixtures/ai/csv`）。
+
 ## 一、参数介绍
 
 ### 1.1 基础参数
@@ -8,13 +11,20 @@
 - `--type`: 指定测试类型，可选值：`excel`、`csv`、`all`、`json`
 - `--file`: 指定测试文件路径
 - `--env`: 指定运行环境，可以多次使用以指定多个环境
+- `--suite`: 用例套件 `manual` / `ai` / `smoke` / `all`
+- `--global-auth`: 启用全局鉴权（`config/settings/auth.ini`，默认 test/123456）
+- `--clean`: 清理 `logs` / `reports` / `all`
+- `--keep-days` / `--dry-run`: 清理策略
 
 ### 1.2 AI功能参数
 - `--ai-generate`: 启用AI测试用例生成功能
 - `--input-doc`: 指定输入文档路径（支持Markdown、Swagger JSON/YAML格式）
+- `--input-url`: 指定远程文档 URL（Apifox MD / Swagger JSON 等，自动缓存到 `api_docs/cache/`）
 - `--swagger-endpoint`: 指定要解析的Swagger端点，可以多次使用
+- `--skill`: 指定 Agent Skill（如 `case_generation`、`doc_url_generation`）
+- `--chat`: 进入 AI 交互模式；可选跟随单行命令
 - `--output-format`: 指定生成的测试用例格式，可选值：`excel`、`csv`、`json`（默认：csv）
-- `--output-dir`: 指定输出目录（默认：data/ai_generated）
+- `--output-dir`: 指定输出目录（默认：`fixtures/ai/csv`）
 
 ## 二、基本命令
 

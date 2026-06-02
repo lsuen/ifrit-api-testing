@@ -2,6 +2,8 @@
 
 一个功能强大、灵活易用的API自动化测试框架，支持数据驱动、AI智能生成测试用例等功能。
 
+> **面向测试/业务同学：** 请优先阅读 **[用户详细使用手册.md](用户详细使用手册.md)**（含 AI 生成、鉴权、报告、FAQ，无需编程基础）。
+
 ## 目录结构
 
 ```
@@ -72,7 +74,8 @@ ifrit/
 ├── logs/                    # 日志目录（daily/、errors/，默认不写 api_automation.log）
 ├── reports/                 # 测试报告（runs/YYYYMMDD_HHMMSS/ + latest.txt）
 ├── main.py                  # 主程序入口
-├── ai_case_generator.py     # AI测试用例生成器独立脚本
+├── 用户详细使用手册.md        # 面向用户端的详细操作手册（推荐入口）
+├── ai_case_generator.py     # AI测试用例生成器独立脚本（已废弃，请用 main.py）
 ├── curltocase_client.py     # Curl转测试用例工具客户端
 ├── pytest.ini               # Pytest配置文件
 └── requirements.txt         # 依赖包列表
@@ -102,6 +105,18 @@ pip install -r requirements.txt
 ```
 
 ## 快速开始
+
+> 完整图文步骤见 **[用户详细使用手册.md](用户详细使用手册.md)**。
+
+### 0. 鉴权：手工用例 vs AI 用例
+
+| 类型 | 用例位置 | 鉴权方式 | 典型命令 |
+|------|----------|----------|----------|
+| **手工用例** | `fixtures/manual/csv/` | 用例内第 1 步登录，后续用 `{{token}}` | `python main.py --type csv --suite manual` |
+| **手工用例 + 全局登录** | 同上 | `config/settings/auth.ini`（默认 test/123456）+ `--global-auth` | `python main.py --type csv --suite manual --global-auth` |
+| **AI 生成用例** | `fixtures/ai/csv/` | **必须** `--global-auth`（用例不含登录行） | `python main.py --file fixtures/ai/csv/xxx.csv --global-auth --suite ai` |
+
+登录配置：`config/settings/auth.ini`（当前账号 **test / 123456**，登录接口 `POST /api/login`）。
 
 ### 1. 从API文档生成测试用例
 
@@ -169,7 +184,7 @@ python main.py --clean reports
 python main.py --clean all --keep-days 7
 ```
 
-> **详细使用方法请查看** [__docs/ifrit使用手册.md](file:///C:/CodeFiles/PyProjects/ifrit-apitest/__docs/ifrit使用手册.md)
+> **详细使用方法请查看** [用户详细使用手册.md](用户详细使用手册.md) · [__docs/ifrit使用手册.md](__docs/ifrit使用手册.md)
 
 ## 简单二次开发教程
 
@@ -209,11 +224,11 @@ python main.py --clean all --keep-days 7
 - **批量处理**：支持多文档批量生成
 - **在线文档**：支持在线Swagger文档解析
 
-详细使用方法请参考 [__docs/AI_GUIDE.md](file:///C:/CodeFiles/PyProjects/ifrit-apitest/__docs/AI_GUIDE.md)。
+详细使用方法请参考 [用户详细使用手册.md](../用户详细使用手册.md) 与 [__docs/AI_GUIDE.md](AI_GUIDE.md)。
 
 ## 命令行参考
 
-详细命令行参数说明请参考 [__docs/ifrit命令手册.md](file:///C:/CodeFiles/PyProjects/ifrit-apitest/__docs/ifrit命令手册.md)。
+详细命令行参数说明请参考 [用户详细使用手册.md](../用户详细使用手册.md) 与 [__docs/ifrit命令手册.md](ifrit命令手册.md)。
 
 ## 运行内部单元测试
 
@@ -242,11 +257,13 @@ python __internal_tests/test_business_logic.py
 
 ## 其他资源
 
-- [__docs/ifrit使用手册.md](file:///C:/CodeFiles/PyProjects/ifrit-apitest/__docs/ifrit使用手册.md) - 详细的使用说明
-- [__docs/ifrit命令手册.md](file:///C:/CodeFiles/PyProjects/ifrit-apitest/__docs/ifrit命令手册.md) - 完整的命令参数说明
-- [__docs/ifrit-二次开发详细手册.md](file:///C:/CodeFiles/PyProjects/ifrit-apitest/__docs/ifrit-二次开发详细手册.md) - 二次开发指导
-- [__docs/ifrit-yaml数据驱动手册.md](file:///C:/CodeFiles/PyProjects/ifrit-apitest/__docs/ifrit-yaml数据驱动手册.md) - YAML数据驱动使用说明
-- [__docs/ifrit-数据库数据驱动.md](file:///C:/CodeFiles/PyProjects/ifrit-apitest/__docs/ifrit-数据库数据驱动.md) - 数据库数据驱动使用说明
+- **[用户详细使用手册.md](用户详细使用手册.md)** — 面向用户端，AI 流程 + 鉴权 + FAQ（**推荐**）
+- [__docs/ifrit使用手册.md](__docs/ifrit使用手册.md) - 技术向使用说明（含 Allure 部署）
+- [__docs/AI_GUIDE.md](__docs/AI_GUIDE.md) - AI 功能与生成策略
+- [__docs/ifrit命令手册.md](__docs/ifrit命令手册.md) - 完整的命令参数说明
+- [__docs/ifrit-二次开发详细手册.md](__docs/ifrit-二次开发详细手册.md) - 二次开发指导
+- [__docs/ifrit-yaml数据驱动手册.md](__docs/ifrit-yaml数据驱动手册.md) - YAML数据驱动使用说明
+- [__docs/ifrit-数据库数据驱动.md](__docs/ifrit-数据库数据驱动.md) - 数据库数据驱动使用说明
 
 ## 开发规范
 

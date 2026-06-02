@@ -18,6 +18,16 @@
 | `ai` | `fixtures/ai/csv/` |
 | `all` | manual + ai + smoke |
 
+## 鉴权与执行
+
+| 套件 | 鉴权建议 | 示例命令 |
+|------|----------|----------|
+| `manual` | 用例内登录（`{{token}}`）或 `--global-auth` | `python main.py --type csv --suite manual` |
+| `ai` | **必须** `--global-auth` | `python main.py --file fixtures/ai/csv/xxx.csv --global-auth --suite ai` |
+| `smoke` | 一般无需鉴权 | `python main.py --file fixtures/smoke/csv/api_test_smoke.csv` |
+
+账号配置：`config/settings/auth.ini`（默认 test/123456）。详见 [用户详细使用手册.md](../用户详细使用手册.md#4-鉴权说明手工用例-vs-ai-用例)。
+
 ## 暂挂用例
 
 与现网 API 行为不一致的 manual 用例已设 `enabled=0`，待按 Swagger 校准后再启用。
