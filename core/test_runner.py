@@ -11,6 +11,8 @@ import subprocess
 
 from config.config import Config
 from core.case_discovery import format_cli_plan, format_cli_result, parse_pytest_result
+from core.retention import maybe_auto_clean_before_run
+from core.run_artifacts import create_run_directory
 from utils.logger import configure_logging, set_console_level
 
 
@@ -42,6 +44,15 @@ class TestRunner:
             configure_logging(console_level=logging.WARNING)
             set_console_level(logging.WARNING)
 
+            cfg = Config(env_names=env_names)
+            maybe_auto_clean_before_run(cfg)
+            run_paths = create_run_directory(
+                config=cfg,
+                suite=resolved_suite,
+                test_type=test_type,
+            )
+            os.environ["IFRIT_RUN_ID"] = run_paths["run_id"]
+
             plan = format_cli_plan(
                 data_format=test_type if test_type and test_type != "all" else None,
                 suite=resolved_suite,
@@ -50,15 +61,16 @@ class TestRunner:
                 global_auth=global_auth,
             )
             print(plan)
+            print(f"[IFRIT] 报告目录=reports/runs/{run_paths['run_id']}")
 
-            os.makedirs("./reports/allure_reports", exist_ok=True)
+            allure_dir = run_paths["allure_dir"]
 
             cmd = [
                 "pytest",
                 "-q",
                 "--no-header",
                 "--tb=line",
-                "--alluredir=./reports/allure_reports",
+                f"--alluredir={allure_dir}",
                 "--clean-alluredir",
             ]
 
@@ -99,6 +111,7 @@ class TestRunner:
                 print("[IFRIT] 失败详情见 logs/errors/ 与 Allure 报告")
 
             os.environ.pop("IFRIT_CLI_MODE", None)
+            os.environ.pop("IFRIT_RUN_ID", None)
             configure_logging(console_level=logging.INFO)
 
             return result.returncode
@@ -110,6 +123,7 @@ class TestRunner:
             self.logger.error("详细错误信息:\n%s", traceback.format_exc())
             print(f"[IFRIT] ── 执行结果 ── status=ERROR exit=1 msg={error}")
             os.environ.pop("IFRIT_CLI_MODE", None)
+            os.environ.pop("IFRIT_RUN_ID", None)
             configure_logging(console_level=logging.INFO)
             return 1
 

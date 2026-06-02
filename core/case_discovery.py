@@ -310,7 +310,7 @@ def format_cli_plan(
             f"[IFRIT] 用例={discovery.total_cases} 文件={discovery.total_files} "
             f"来源={'; '.join(file_parts) or '指定文件'}{suite_hint}"
         )
-        lines.append(f"[IFRIT] 详细日志=logs/api_automation.log")
+        lines.append(f"[IFRIT] 详细日志=logs/daily/ 失败=logs/errors/")
 
     return "\n".join(lines)
 

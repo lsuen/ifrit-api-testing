@@ -69,8 +69,8 @@ ifrit/
 ├── tests/                   # 单元测试目录（新增测试优先放此）
 ├── build/                   # 构建产物目录
 ├── .cursor/skills/          # Cursor Agent 项目技能（含开发规范）
-├── logs/                    # 日志目录
-├── reports/                 # 测试报告目录
+├── logs/                    # 日志目录（daily/、errors/，默认不写 api_automation.log）
+├── reports/                 # 测试报告（runs/YYYYMMDD_HHMMSS/ + latest.txt）
 ├── main.py                  # 主程序入口
 ├── ai_case_generator.py     # AI测试用例生成器独立脚本
 ├── curltocase_client.py     # Curl转测试用例工具客户端
@@ -148,9 +148,18 @@ python main.py --type csv
 ```
 
 ### 4. 查看报告
+每次运行写入 `reports/runs/<时间戳>/allure-results`，HTML 报告在同 run 的 `html/` 下；最新 run 见 `reports/latest.txt`。
+
 测试完成后，可以通过以下命令启动报告服务器：
 ```
 python main.py --serve-report
+```
+
+清理过期产物（保留策略见 `config/settings/app.ini` `[retention]`）：
+```
+python main.py --clean logs --dry-run
+python main.py --clean reports
+python main.py --clean all --keep-days 7
 ```
 
 > **详细使用方法请查看** [__docs/ifrit使用手册.md](file:///C:/CodeFiles/PyProjects/ifrit-apitest/__docs/ifrit使用手册.md)

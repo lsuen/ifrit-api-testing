@@ -51,13 +51,14 @@ def configure_logging(console_level: Optional[int] = None) -> None:
     root.handlers.clear()
     root.setLevel(logging.DEBUG)
 
-    main_log = os.path.join(_LOG_DIR, "api_automation.log")
-    main_handler = logging.FileHandler(main_log, encoding="utf-8")
-    main_handler.setFormatter(FORMATTER)
-    main_handler.setLevel(logging.DEBUG)
-    root.addHandler(main_handler)
-
     config = Config()
+    if config.is_main_log_enabled():
+        main_log = os.path.join(_LOG_DIR, "api_automation.log")
+        main_handler = logging.FileHandler(main_log, encoding="utf-8")
+        main_handler.setFormatter(FORMATTER)
+        main_handler.setLevel(logging.DEBUG)
+        root.addHandler(main_handler)
+
     if config.app_config.getboolean("logging", "daily_logs_enabled", fallback=True):
         today = datetime.now().strftime("%Y%m%d")
         daily_handler = logging.FileHandler(

@@ -78,7 +78,22 @@ class CLIManager:
             action="store_true",
             help="启用全局鉴权（session 登录）"
         )
-        
+        parser.add_argument(
+            "--clean",
+            choices=["logs", "reports", "all"],
+            help="清理过期日志或报告（不执行测试）"
+        )
+        parser.add_argument(
+            "--keep-days",
+            type=int,
+            help="清理时覆盖 app.ini 中的保留天数"
+        )
+        parser.add_argument(
+            "--dry-run",
+            action="store_true",
+            help="仅预览将被清理的文件，不实际删除"
+        )
+
         return parser
     
     def parse_args(self):
@@ -89,10 +104,28 @@ class CLIManager:
         """运行CLI应用"""
         from core.test_runner import TestRunner
         from core.report_manager import ReportManager
+        from core.retention import (
+            clean_all,
+            clean_logs,
+            clean_reports,
+            format_clean_summary,
+        )
         from agent.pipeline.generator import AIGenerator
-        
+
         args = self.parse_args()
-        
+
+        if args.clean:
+            if args.clean == "logs":
+                results = [clean_logs(keep_days=args.keep_days, dry_run=args.dry_run)]
+            elif args.clean == "reports":
+                results = [
+                    clean_reports(keep_days=args.keep_days, dry_run=args.dry_run)
+                ]
+            else:
+                results = clean_all(keep_days=args.keep_days, dry_run=args.dry_run)
+            print(format_clean_summary(results))
+            sys.exit(0)
+
         # 如果启用AI生成功能
         if args.ai_generate:
             generator = AIGenerator()
@@ -122,6 +155,6 @@ class CLIManager:
             report_ok = report_manager.generate_html_report()
             configure_logging(console_level=logging.INFO)
             if report_ok:
-                print("[IFRIT] 报告=reports/html/index.html")
+                print(f"[IFRIT] 报告={report_manager.latest_report_path()}")
 
         sys.exit(exit_code)

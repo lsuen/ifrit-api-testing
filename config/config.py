@@ -66,6 +66,29 @@ class Config:
         """获取日志级别。"""
         return self.app_config.get("logging", "level", fallback="INFO")
 
+    def get_retention_config(self) -> Dict[str, Any]:
+        """获取日志/报告保留策略。"""
+        section = "retention"
+        if not self.app_config.has_section(section):
+            return {
+                "logs_keep_days": 14,
+                "reports_keep_days": 7,
+                "reports_keep_last": 20,
+                "auto_clean_before_run": False,
+            }
+        return {
+            "logs_keep_days": self.app_config.getint(section, "logs_keep_days", fallback=14),
+            "reports_keep_days": self.app_config.getint(section, "reports_keep_days", fallback=7),
+            "reports_keep_last": self.app_config.getint(section, "reports_keep_last", fallback=20),
+            "auto_clean_before_run": self.app_config.getboolean(
+                section, "auto_clean_before_run", fallback=False
+            ),
+        }
+
+    def is_main_log_enabled(self) -> bool:
+        """是否写入 logs/api_automation.log（默认关闭，避免与 daily 重复增长）。"""
+        return self.app_config.getboolean("logging", "main_log_enabled", fallback=False)
+
     def get_database_config(self) -> Dict[str, Any]:
         """获取数据库连接配置（账号密码来自 .env）。"""
         if not self.env_config.has_section("database"):
