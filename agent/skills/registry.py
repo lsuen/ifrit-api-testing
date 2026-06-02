@@ -9,6 +9,7 @@
 from typing import Dict, List
 
 from agent.actions.base import Action
+from agent.actions.fetch_document import FetchDocumentAction
 from agent.actions.parse_document import ParseDocumentAction
 from agent.actions.generate_cases import GenerateCasesAction
 from agent.actions.validate_cases import ValidateCasesAction
@@ -20,6 +21,13 @@ from agent.actions.prune_failed_cases import PruneFailedCasesAction
 # 预置 skill：名称 -> Action 列表
 _SKILL_ACTIONS: Dict[str, List[Action]] = {
     "case_generation": [
+        ParseDocumentAction(),
+        GenerateCasesAction(),
+        ValidateCasesAction(),
+        SaveCasesAction(),
+    ],
+    "doc_url_generation": [
+        FetchDocumentAction(),
         ParseDocumentAction(),
         GenerateCasesAction(),
         ValidateCasesAction(),

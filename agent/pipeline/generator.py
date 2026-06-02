@@ -9,6 +9,7 @@ import logging
 import os
 import time
 from typing import Any, Optional
+from urllib.parse import urlparse
 
 from agent.generator.case_generator import CaseGenerator
 from agent.generator.quality_validator import QualityValidator
@@ -16,7 +17,7 @@ from agent.generator.template_engine import TemplateEngine
 from agent.llm.client import AIClient
 from agent.parser.document_parser import DocumentParser
 from agent.react.loop import ReActLoop
-from agent.skills.registry import get_actions
+from agent.skills.registry import get_actions, list_skills
 from config.ai_config import AIConfig
 
 logger = logging.getLogger(__name__)
@@ -31,9 +32,38 @@ FORMAT_SUBDIRS = {
 class AIGenerator:
     """AI 测试用例生成器（ReAct + Skill 驱动）。"""
 
-    def __init__(self, skill_name: str = "case_generation"):
+    def __init__(self, skill_name: Optional[str] = None):
         self.skill_name = skill_name
         self.logger = logger
+
+    def _resolve_skill_name(self, args: Any) -> str:
+        if getattr(args, "skill", None):
+            return args.skill
+        if self.skill_name:
+            return self.skill_name
+        if getattr(args, "input_url", None):
+            return "doc_url_generation"
+        return "case_generation"
+
+    def _resolve_doc_source(self, args: Any) -> None:
+        """校验并归一化 input_doc / input_url。"""
+        input_url = getattr(args, "input_url", None)
+        input_doc = getattr(args, "input_doc", None)
+
+        if not input_url and not input_doc:
+            raise ValueError("必须指定 --input-doc 或 --input-url")
+
+        if input_doc and not os.path.exists(input_doc):
+            raise FileNotFoundError(f"输入文档不存在: {input_doc}")
+
+    def _doc_basename(self, args: Any) -> str:
+        if getattr(args, "input_doc", None):
+            return os.path.splitext(os.path.basename(args.input_doc))[0]
+        if getattr(args, "input_url", None):
+            path = urlparse(args.input_url).path
+            name = os.path.splitext(os.path.basename(path))[0]
+            return name or "remote_doc"
+        return "ai_doc"
 
     def _resolve_output_path(self, args: Any, output_config: dict) -> str:
         """计算输出文件路径。"""
@@ -56,7 +86,7 @@ class AIGenerator:
             else ""
         )
         prefix = output_config.get("file_prefix", "ai_")
-        doc_name = os.path.splitext(os.path.basename(args.input_doc))[0]
+        doc_name = self._doc_basename(args)
         extension = "xlsx" if args.output_format.lower() == "excel" else args.output_format
 
         if timestamp:
@@ -105,17 +135,16 @@ class AIGenerator:
     def run(self, args) -> int:
         """运行 AI 用例生成流水线。"""
         try:
-            if not args.input_doc:
-                self.logger.error("使用 AI 生成功能时必须指定 --input-doc")
-                return 1
-
-            if not os.path.exists(args.input_doc):
-                self.logger.error("输入文档不存在: %s", args.input_doc)
-                return 1
+            self._resolve_doc_source(args)
 
             ai_config = AIConfig()
             if not ai_config.validate_config():
                 self.logger.error("AI 配置验证失败")
+                return 1
+
+            skill_name = self._resolve_skill_name(args)
+            if skill_name not in list_skills():
+                self.logger.error("未知 skill: %s", skill_name)
                 return 1
 
             openai_config = ai_config.get_openai_config()
@@ -131,6 +160,7 @@ class AIGenerator:
 
             context = {
                 "input_doc": args.input_doc,
+                "input_url": getattr(args, "input_url", None),
                 "endpoints": args.swagger_endpoint,
                 "parser": DocumentParser(),
                 "generator": case_generator,
@@ -140,8 +170,8 @@ class AIGenerator:
                 "quality_check": output_config.get("quality_check", True),
             }
 
-            self.logger.info("启动 Skill: %s", self.skill_name)
-            react_loop = ReActLoop(get_actions(self.skill_name))
+            self.logger.info("启动 Skill: %s", skill_name)
+            react_loop = ReActLoop(get_actions(skill_name))
             final_context = react_loop.run(context)
 
             test_cases = final_context.get("test_cases", [])
@@ -154,7 +184,8 @@ class AIGenerator:
                 stats["total_response_time"],
                 stats["total_tokens"],
             )
-            self.logger.info("用例已保存: %s（共 %s 条）", output_path, len(test_cases))
+            saved_path = final_context.get("output_path", output_path)
+            print(f"[IFRIT] AI用例已保存={saved_path} 条数={len(test_cases)} skill={skill_name}")
             return 0
 
         except Exception as error:
@@ -162,6 +193,7 @@ class AIGenerator:
             import traceback
 
             self.logger.error(traceback.format_exc())
+            print(f"[IFRIT] AI生成失败: {error}")
             return 1
 
     @staticmethod

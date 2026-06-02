@@ -24,6 +24,7 @@ class TestAgentSkills(unittest.TestCase):
     def test_list_skills(self):
         skills = list_skills()
         self.assertIn("case_generation", skills)
+        self.assertIn("doc_url_generation", skills)
         self.assertIn("parse_only", skills)
 
     def test_parse_document_action(self):

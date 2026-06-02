@@ -56,6 +56,29 @@ class DocumentParser:
         except Exception as e:
             logger.error(f"解析文档失败: {str(e)}")
             return []
+
+    def parse_content(self, content: str, endpoints: List[str] = None, source: str = "content") -> List[Dict[str, Any]]:
+        """从字符串内容解析 API（用于 Apifox 等内嵌 OpenAPI 场景）。"""
+        embedded = self._extract_openapi_from_markdown(content)
+        if embedded:
+            logger.info("从 %s 检测到内嵌 OpenAPI，按 Swagger 解析", source)
+            return self._parse_swagger_data(embedded, endpoints)
+        return self._parse_markdown_content(content, endpoints)
+
+    def _extract_openapi_from_markdown(self, content: str) -> Optional[Dict[str, Any]]:
+        """提取 Apifox 等 Markdown 中 ```yaml/json``` 内嵌的 OpenAPI 块。"""
+        block_pattern = r"```(?:yaml|yml|json)\s*\n(.*?)```"
+        for match in re.finditer(block_pattern, content, re.DOTALL | re.IGNORECASE):
+            block = match.group(1).strip()
+            if not block:
+                continue
+            lowered = block.lower()
+            if "openapi:" not in lowered and "swagger:" not in lowered and '"openapi"' not in block:
+                continue
+            if block.startswith("{"):
+                return json.loads(block)
+            return yaml.safe_load(block)
+        return None
     
     def parse_markdown(self, file_path: str, endpoints: List[str] = None) -> List[Dict[str, Any]]:
         """
@@ -72,7 +95,16 @@ class DocumentParser:
         
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
-        
+
+        embedded = self._extract_openapi_from_markdown(content)
+        if embedded:
+            logger.info("检测到 Apifox/OpenAPI 内嵌块，按 Swagger 解析")
+            return self._parse_swagger_data(embedded, endpoints)
+
+        return self._parse_markdown_content(content, endpoints)
+
+    def _parse_markdown_content(self, content: str, endpoints: List[str] = None) -> List[Dict[str, Any]]:
+        """解析标准 Markdown 接口文档（## METHOD /path 格式）。"""
         apis = []
         
         # 使用正则表达式匹配API接口信息
@@ -370,16 +402,21 @@ class DocumentParser:
     
     def _check_swagger_auth_required(self, method_data: Dict[str, Any], swagger_data: Dict[str, Any]) -> bool:
         """检查Swagger接口是否需要认证"""
+        for param in method_data.get('parameters', []):
+            name = str(param.get('name', '')).lower()
+            if name in ('authorization', 'x-access-token') and param.get('required'):
+                return True
+
         # 检查方法级别的安全要求
         if 'security' in method_data:
             return len(method_data['security']) > 0
         
         # 检查全局安全要求
-        if 'security' in swagger_data:
+        if swagger_data.get('security'):
             return len(swagger_data['security']) > 0
         
         # 检查安全定义
-        if 'securityDefinitions' in swagger_data or 'components' in swagger_data:
+        if swagger_data.get('securityDefinitions') or swagger_data.get('components', {}).get('securitySchemes'):
             return True
         
         return False

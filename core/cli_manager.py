@@ -54,6 +54,14 @@ class CLIManager:
             help="指定输入文档路径（支持Markdown、Swagger JSON/YAML格式）"
         )
         parser.add_argument(
+            "--input-url",
+            help="指定远程接口文档 URL（Apifox MD / Swagger JSON 等）"
+        )
+        parser.add_argument(
+            "--skill",
+            help="AI Skill 名称（如 case_generation、doc_url_generation）"
+        )
+        parser.add_argument(
             "--swagger-endpoint",
             action="append",
             help="指定要解析的Swagger端点，可以多次使用"
@@ -128,8 +136,9 @@ class CLIManager:
 
         # 如果启用AI生成功能
         if args.ai_generate:
-            generator = AIGenerator()
-            return generator.run(args)
+            generator = AIGenerator(skill_name=args.skill)
+            exit_code = generator.run(args)
+            sys.exit(exit_code)
         
         # 运行测试
         runner = TestRunner()
