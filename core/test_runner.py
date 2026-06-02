@@ -5,13 +5,13 @@
 负责执行API自动化测试
 """
 
-import os
-import platform
-import subprocess
 import logging
+import os
+import subprocess
 
 from config.config import Config
 from core.case_discovery import format_cli_plan, format_cli_result, parse_pytest_result
+from utils.logger import configure_logging, set_console_level
 
 
 class TestRunner:
@@ -28,13 +28,19 @@ class TestRunner:
         suite=None,
         global_auth=False,
     ):
-        """运行测试并输出 CI 友好摘要。"""
+        """运行测试：控制台仅输出计划/逐条结果/汇总，详细 IO 写入 logs/。"""
         try:
             resolved_suite = suite
-            if not resolved_suite and test_path:
+            if not resolved_suite and test_type == "all":
+                resolved_suite = Config.SUITE_ALL
+            elif not resolved_suite and test_path:
                 from core.case_discovery import infer_suite_from_path
 
                 resolved_suite = infer_suite_from_path(test_path)
+
+            os.environ["IFRIT_CLI_MODE"] = "1"
+            configure_logging(console_level=logging.WARNING)
+            set_console_level(logging.WARNING)
 
             plan = format_cli_plan(
                 data_format=test_type if test_type and test_type != "all" else None,
@@ -45,12 +51,13 @@ class TestRunner:
             )
             print(plan)
 
-            config = Config(env_names=env_names)
             os.makedirs("./reports/allure_reports", exist_ok=True)
 
             cmd = [
                 "pytest",
-                "-v",
+                "-q",
+                "--no-header",
+                "--tb=line",
                 "--alluredir=./reports/allure_reports",
                 "--clean-alluredir",
             ]
@@ -78,18 +85,21 @@ class TestRunner:
             cmd.insert(1, driver_path)
 
             self.logger.info("执行命令: %s", " ".join(cmd))
-            if platform.system().lower() == "windows":
-                result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-            else:
-                result = subprocess.run(cmd, capture_output=True, text=True)
+            result = subprocess.run(cmd, capture_output=True, text=True)
 
-            if result.stdout:
-                print(result.stdout)
-            if result.stderr:
-                print(result.stderr, file=__import__("sys").stderr)
+            for line in f"{result.stdout}\n{result.stderr}".splitlines():
+                idx = line.find("[IFRIT]")
+                if idx >= 0:
+                    print(line[idx:])
 
             summary = parse_pytest_result(result.stdout, result.stderr, result.returncode)
             print(format_cli_result(summary))
+
+            if summary.get("failed", 0) > 0 or summary.get("error", 0) > 0:
+                print("[IFRIT] 失败详情见 logs/errors/ 与 Allure 报告")
+
+            os.environ.pop("IFRIT_CLI_MODE", None)
+            configure_logging(console_level=logging.INFO)
 
             return result.returncode
 
@@ -99,6 +109,8 @@ class TestRunner:
 
             self.logger.error("详细错误信息:\n%s", traceback.format_exc())
             print(f"[IFRIT] ── 执行结果 ── status=ERROR exit=1 msg={error}")
+            os.environ.pop("IFRIT_CLI_MODE", None)
+            configure_logging(console_level=logging.INFO)
             return 1
 
     @staticmethod

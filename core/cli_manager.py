@@ -70,8 +70,8 @@ class CLIManager:
         )
         parser.add_argument(
             "--suite",
-            choices=["manual", "ai", "smoke"],
-            help="用例套件：manual/ai/smoke（传给 pytest）"
+            choices=["manual", "ai", "smoke", "all"],
+            help="用例套件：manual/ai/smoke/all（传给 pytest）"
         )
         parser.add_argument(
             "--global-auth",
@@ -114,9 +114,14 @@ class CLIManager:
             report_manager.serve_report()
         # 如果测试执行成功且指定了生成报告，则生成HTML报告
         elif args.generate_report or exit_code == 0:
+            from utils.logger import configure_logging, set_console_level
+            import logging
+
+            set_console_level(logging.WARNING)
             report_manager = ReportManager()
-            report_path = report_manager.generate_html_report()
-            if report_path:
-                print(f"[IFRIT] 报告=reports/html/index.html")
+            report_ok = report_manager.generate_html_report()
+            configure_logging(console_level=logging.INFO)
+            if report_ok:
+                print("[IFRIT] 报告=reports/html/index.html")
 
         sys.exit(exit_code)

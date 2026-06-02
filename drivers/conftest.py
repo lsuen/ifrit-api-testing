@@ -15,6 +15,8 @@ os.environ['LC_ALL'] = 'zh_CN.UTF-8'
 ENV_NAMES = []
 AUTH_MANAGER = None
 
+pytest_plugins = ["drivers.pytest_cli_plugin"]
+
 
 def pytest_addoption(parser):
     """添加自定义命令行选项"""
@@ -33,8 +35,8 @@ def pytest_addoption(parser):
         "--suite",
         action="store",
         default="manual",
-        choices=["manual", "ai", "smoke"],
-        help="用例套件：manual（人工）/ ai（AI生成）/ smoke（冒烟）",
+        choices=["manual", "ai", "smoke", "all"],
+        help="用例套件：manual（人工）/ ai（AI生成）/ smoke（冒烟）/ all（全部目录）",
     )
     parser.addoption(
         "--global-auth",

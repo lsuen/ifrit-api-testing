@@ -1,101 +1,105 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time    : 2025/9/9 上午10:07
-# @Author  : sunwl
-# @Site    :
-# @File    : logger.py
-# @Software: PyCharm
+"""
+作者：孙文龙
+文件用途：统一日志配置（文件详细 + 控制台可控）
+"""
 import logging
 import os
-from datetime import datetime
 import sys
-from pathlib import Path
+from datetime import datetime
+from typing import Optional
 
 from config.config import Config
 
-# 创建日志目录（如果不存在）
-log_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'logs')
-os.makedirs(log_dir, exist_ok=True)
+_LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs")
+_CONFIGURED = False
+_CONSOLE_HANDLER: Optional[logging.Handler] = None
 
-class EnhancedLogger:
-    """增强的日志记录器类"""
-    
-    def __init__(self, name: str = __name__):
-        self.logger = logging.getLogger(name)
-        self.config = Config()
-        self.current_date = datetime.now().strftime("%Y%m%d")
-        self.setup_handlers()
-    
-    def setup_handlers(self):
-        """设置日志处理器"""
-        # 清除现有的处理器
-        self.logger.handlers.clear()
-        self.logger.setLevel(logging.DEBUG)
-        
-        # 通用格式
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        
-        # 1. 总日志文件 - 存储所有日志
-        main_log_path = os.path.join(log_dir, 'api_automation.log')
-        main_handler = logging.FileHandler(main_log_path, encoding='utf-8')
-        main_handler.setFormatter(formatter)
-        main_handler.setLevel(logging.DEBUG)
-        self.logger.addHandler(main_handler)
-        
-        # 2. 按天分割的日志文件（可配置开关）
-        daily_logs_enabled = self.config.app_config.getboolean(
-            'logging', 'daily_logs_enabled', fallback=True
-        )
-        if daily_logs_enabled:
-            daily_log_path = os.path.join(log_dir, 'daily')
-            os.makedirs(daily_log_path, exist_ok=True)
-            # 按天命名的日志处理器（每天创建一个新文件）
-            daily_log_file = os.path.join(daily_log_path, f'daily_{self.current_date}.log')
-            daily_handler = logging.FileHandler(daily_log_file, encoding='utf-8')
-            daily_handler.setFormatter(formatter)
-            daily_handler.setLevel(logging.DEBUG)
-            self.logger.addHandler(daily_handler)
-        
-        # 3. 错误日志按天单独存储（可配置开关）
-        error_daily_logs_enabled = self.config.app_config.getboolean(
-            'logging', 'error_daily_logs_enabled', fallback=True
-        )
-        if error_daily_logs_enabled:
-            error_daily_log_path = os.path.join(log_dir, 'errors')
-            os.makedirs(error_daily_log_path, exist_ok=True)
-            # 专门记录错误的按天命名日志处理器
-            error_daily_log_file = os.path.join(error_daily_log_path, f'error_{self.current_date}.log')
-            error_daily_handler = logging.FileHandler(error_daily_log_file, encoding='utf-8')
-            error_daily_handler.setFormatter(formatter)
-            error_daily_handler.setLevel(logging.ERROR)  # 只记录错误及以上级别
-            # 添加过滤器，只处理错误级别及以上的消息
-            class ErrorFilter(logging.Filter):
-                def filter(self, record):
-                    return record.levelno >= logging.ERROR
-            error_daily_handler.addFilter(ErrorFilter())
-            self.logger.addHandler(error_daily_handler)
-        
-        # 控制台处理器
-        console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setFormatter(formatter)
-        console_handler.setLevel(logging.INFO)
-        self.logger.addHandler(console_handler)
+FORMATTER = logging.Formatter(
+    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 
-# 全局日志记录器实例
-_enhanced_logger = EnhancedLogger()
-logger = _enhanced_logger.logger
+
+def _ensure_log_dirs() -> None:
+    os.makedirs(_LOG_DIR, exist_ok=True)
+    os.makedirs(os.path.join(_LOG_DIR, "daily"), exist_ok=True)
+    os.makedirs(os.path.join(_LOG_DIR, "errors"), exist_ok=True)
+
+
+def configure_logging(console_level: Optional[int] = None) -> None:
+    """
+    配置 root logger：文件 DEBUG，控制台级别可动态调整。
+
+    CLI 模式建议 console_level=logging.WARNING，详细 IO 仅写入 logs/。
+    """
+    global _CONFIGURED, _CONSOLE_HANDLER
+
+    if console_level is None:
+        env_level = os.getenv("IFRIT_CONSOLE_LOG_LEVEL", "").upper()
+        if env_level == "DEBUG":
+            console_level = logging.DEBUG
+        elif env_level == "WARNING":
+            console_level = logging.WARNING
+        elif env_level == "ERROR":
+            console_level = logging.ERROR
+        else:
+            console_level = logging.INFO
+
+    _ensure_log_dirs()
+    root = logging.getLogger()
+    root.handlers.clear()
+    root.setLevel(logging.DEBUG)
+
+    main_log = os.path.join(_LOG_DIR, "api_automation.log")
+    main_handler = logging.FileHandler(main_log, encoding="utf-8")
+    main_handler.setFormatter(FORMATTER)
+    main_handler.setLevel(logging.DEBUG)
+    root.addHandler(main_handler)
+
+    config = Config()
+    if config.app_config.getboolean("logging", "daily_logs_enabled", fallback=True):
+        today = datetime.now().strftime("%Y%m%d")
+        daily_handler = logging.FileHandler(
+            os.path.join(_LOG_DIR, "daily", f"daily_{today}.log"),
+            encoding="utf-8",
+        )
+        daily_handler.setFormatter(FORMATTER)
+        daily_handler.setLevel(logging.DEBUG)
+        root.addHandler(daily_handler)
+
+    if config.app_config.getboolean("logging", "error_daily_logs_enabled", fallback=True):
+        today = datetime.now().strftime("%Y%m%d")
+        error_handler = logging.FileHandler(
+            os.path.join(_LOG_DIR, "errors", f"error_{today}.log"),
+            encoding="utf-8",
+        )
+        error_handler.setFormatter(FORMATTER)
+        error_handler.setLevel(logging.ERROR)
+        root.addHandler(error_handler)
+
+    _CONSOLE_HANDLER = logging.StreamHandler(sys.stdout)
+    _CONSOLE_HANDLER.setFormatter(FORMATTER)
+    _CONSOLE_HANDLER.setLevel(console_level)
+    root.addHandler(_CONSOLE_HANDLER)
+
+    _CONFIGURED = True
+
+
+def set_console_level(level: int) -> None:
+    """运行时调整控制台日志级别（不影响文件日志）。"""
+    if _CONSOLE_HANDLER is not None:
+        _CONSOLE_HANDLER.setLevel(level)
 
 
 def get_logger(name: str = None) -> logging.Logger:
-    """
-    获取日志记录器实例
-
-    Args:
-        name (str): 日志记录器名称，默认为模块名
-
-    Returns:
-        logging.Logger: 日志记录器实例
-    """
+    """获取 logger（首次调用时完成 root 配置）。"""
+    if not _CONFIGURED:
+        configure_logging()
     if name is None:
-        return logger
+        return logging.getLogger("ifrit")
     return logging.getLogger(name)
+
+
+# 向后兼容
+logger = get_logger("ifrit")

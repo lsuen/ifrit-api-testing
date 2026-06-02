@@ -32,7 +32,7 @@ class TestCaseExecutor:
         data_format = case.get("_format", "csv")
         AllureReporter.set_case_labels(case, suite, data_format)
 
-        logger.info("开始执行测试用例: %s - %s", case["case_id"], case["case_name"])
+        logger.debug("开始执行测试用例: %s - %s", case["case_id"], case["case_name"])
         return self._execute_case_logic(case)
 
     def _execute_case_logic(self, case):
@@ -75,7 +75,7 @@ class TestCaseExecutor:
             if isinstance(body, dict):
                 body = self.auth_manager.apply_to_body(body, url)
 
-        logger.info("发送 %s 请求到 %s", case["method"], url)
+        logger.debug("发送 %s 请求到 %s", case["method"], url)
         if "text/plain" in content_type and isinstance(body, str):
             response = self.request_handler.send_request(
                 method=case["method"],
@@ -145,7 +145,7 @@ class TestCaseExecutor:
         if extracted:
             AllureReporter.attach_extracted_variables(extracted)
 
-        logger.info("测试用例执行完成: %s - %s", case["case_id"], case["case_name"])
+        logger.debug("测试用例执行完成: %s - %s", case["case_id"], case["case_name"])
 
     def _extract_variables(self, case, response) -> dict:
         """提取变量并写入 data_handler，返回本次提取结果。"""

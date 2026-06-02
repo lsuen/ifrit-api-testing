@@ -18,6 +18,8 @@ class Config:
     SUITE_MANUAL = "manual"
     SUITE_AI = "ai"
     SUITE_SMOKE = "smoke"
+    SUITE_ALL = "all"
+    ALL_SUITES = (SUITE_MANUAL, SUITE_AI, SUITE_SMOKE)
 
     def __init__(self, env_names: Optional[List[str]] = None):
         self.base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -88,8 +90,10 @@ class Config:
         return self._resolve_path(root)
 
     def get_suite_csv_dir(self, suite: str = SUITE_MANUAL) -> str:
-        """按套件（manual/ai/smoke）获取 CSV 目录。"""
-        section = suite if suite in (self.SUITE_MANUAL, self.SUITE_AI, self.SUITE_SMOKE) else self.SUITE_MANUAL
+        """按套件（manual/ai/smoke/all）获取 CSV 目录。"""
+        if suite == self.SUITE_ALL:
+            return self.get_manual_csv_dir()
+        section = suite if suite in self.ALL_SUITES else self.SUITE_MANUAL
         csv_dir = self.test_data_config.get(section, "csv_dir", fallback=f"fixtures/{section}/csv")
         return self._resolve_path(csv_dir)
 
@@ -154,19 +158,38 @@ class Config:
         )
 
     def get_all_test_files(self, suite: str = SUITE_MANUAL) -> List[str]:
-        """获取 Excel + CSV 测试文件路径。"""
-        return self.get_excel_test_files(suite) + self.get_csv_test_files(suite)
-
-    def get_excel_test_files(self, suite: str = SUITE_MANUAL) -> List[str]:
-        """获取 Excel 测试文件路径。"""
-        return self._collect_files_from_dir(self.get_excel_dir(suite), (".xlsx", ".xls"))
+        """获取 CSV + Excel + JSON 测试文件路径。"""
+        return (
+            self.get_csv_test_files(suite)
+            + self.get_excel_test_files(suite)
+            + self.get_json_test_files(suite)
+        )
 
     def get_csv_test_files(self, suite: str = SUITE_MANUAL) -> List[str]:
         """获取 CSV 测试文件路径。"""
+        if suite == self.SUITE_ALL:
+            files: List[str] = []
+            for item in self.ALL_SUITES:
+                files.extend(self._collect_files_from_dir(self.get_suite_csv_dir(item), (".csv",)))
+            return sorted(set(files))
         return self._collect_files_from_dir(self.get_csv_dir(suite), (".csv",))
+
+    def get_excel_test_files(self, suite: str = SUITE_MANUAL) -> List[str]:
+        """获取 Excel 测试文件路径。"""
+        if suite == self.SUITE_ALL:
+            files: List[str] = []
+            for item in self.ALL_SUITES:
+                files.extend(self._collect_files_from_dir(self.get_excel_dir(item), (".xlsx", ".xls")))
+            return sorted(set(files))
+        return self._collect_files_from_dir(self.get_excel_dir(suite), (".xlsx", ".xls"))
 
     def get_json_test_files(self, suite: str = SUITE_MANUAL) -> List[str]:
         """获取 JSON 测试文件路径。"""
+        if suite == self.SUITE_ALL:
+            files: List[str] = []
+            for item in self.ALL_SUITES:
+                files.extend(self._collect_files_from_dir(self.get_json_dir(item), (".json",)))
+            return sorted(set(files))
         return self._collect_files_from_dir(self.get_json_dir(suite), (".json",))
 
 

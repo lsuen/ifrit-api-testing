@@ -9,7 +9,7 @@
 import pytest
 
 from core.assert_handler import AssertHandler
-from core.case_discovery import FORMAT_CSV, discover_and_load
+from core.case_discovery import FORMAT_CSV, build_case_param_id, discover_and_load
 from core.test_executor import TestExecutor
 
 
@@ -39,7 +39,7 @@ def pytest_generate_tests(metafunc):
     if not cases:
         pytest.skip("未找到任何 CSV 测试用例（检查 --suite manual|ai|smoke）")
 
-    case_ids = [f"{case['case_id']} - {case['case_name']}" for case in cases]
+    case_ids = [build_case_param_id(case) for case in cases]
     metafunc.parametrize("case", cases, ids=case_ids)
 
 

@@ -24,8 +24,8 @@ class DataHandler:
         Returns:
             list: 测试用例列表
         """
-        logger.info(f"开始读取测试用例文件: {file_path}")
-        logger.info(f"文件是否存在: {os.path.exists(file_path)}")
+        logger.debug("开始读取测试用例文件: %s", file_path)
+        logger.debug("文件是否存在: %s", os.path.exists(file_path))
 
         if not os.path.exists(file_path):
             logger.error(f"测试文件不存在: {file_path}")
@@ -34,16 +34,16 @@ class DataHandler:
         try:
             # 根据文件扩展名选择读取方法
             if file_path.endswith('.xlsx'):
-                logger.info("检测到.xlsx文件，使用openpyxl引擎读取")
+                logger.debug("检测到.xlsx文件，使用openpyxl引擎读取")
                 df = pd.read_excel(file_path, dtype=str, engine='openpyxl')
             elif file_path.endswith('.xls'):
-                logger.info("检测到.xls文件，使用xlrd引擎读取")
+                logger.debug("检测到.xls文件，使用xlrd引擎读取")
                 df = pd.read_excel(file_path, dtype=str, engine='xlrd')
             elif file_path.endswith('.csv'):
-                logger.info("检测到.csv文件，使用CSV方式读取")
+                logger.debug("检测到.csv文件，使用CSV方式读取")
                 df = pd.read_csv(file_path, dtype=str)
             elif file_path.endswith('.json'):
-                logger.info("检测到.json文件，使用JSON方式读取")
+                logger.debug("检测到.json文件，使用JSON方式读取")
                 import json
                 with open(file_path, 'r', encoding='utf-8') as f:
                     data = json.load(f)
@@ -63,7 +63,7 @@ class DataHandler:
                 logger.error(f"不支持的文件格式: {file_path}")
                 return []
 
-            logger.info(f"成功读取文件，数据行数: {len(df)}")
+            logger.debug("成功读取文件，数据行数: %s", len(df))
             logger.debug(f"数据列名: {list(df.columns)}")
 
             # 处理空值
@@ -112,7 +112,7 @@ class DataHandler:
                 test_cases.append(case)
                 logger.debug(f"添加测试用例: {case['case_id']} - {case['case_name']}")
 
-            logger.info(f"从 {file_path} 成功读取 {len(test_cases)} 条测试用例")
+            logger.debug("从 %s 成功读取 %s 条测试用例", file_path, len(test_cases))
             return test_cases
 
         except Exception as e:

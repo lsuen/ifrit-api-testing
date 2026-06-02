@@ -174,50 +174,22 @@ class RequestHandler:
             curl_command=curl_command,
         )
 
-        logger.info("=" * 50)
-        logger.info(f"请求方法: {method}")
-        logger.info(f"Curl命令: {curl_command}")
-        logger.info(f"请求URL: {url}")
-        logger.info(f"请求头: {json.dumps(request_headers, ensure_ascii=False, indent=2)}")
+        logger.debug("=" * 50)
+        logger.debug("请求方法: %s", method)
+        logger.debug("Curl命令: %s", curl_command)
+        logger.debug("请求URL: %s", url)
+        logger.debug("请求头: %s", json.dumps(request_headers, ensure_ascii=False, indent=2))
         if params:
-            logger.info(f"URL参数: {json.dumps(params, ensure_ascii=False, indent=2)}")
-        
-        # 根据Content-Type类型打印不同的日志信息
-        if 'application/json' in content_type:
-            logger.info("通过content-type检查到为json类型，请求开始发送")
-            if json_data is not None:
-                logger.info(f"请求JSON数据: {json.dumps(json_data, ensure_ascii=False, indent=2)}")
-        elif 'text/plain' in content_type:
-            logger.info("通过content-type检查到为text/plain类型，请求开始发送")
-            if plain_text is not None:
-                logger.info(f"请求纯文本数据: {plain_text}")
-        elif 'application/x-www-form-urlencoded' in content_type:
-            logger.info("通过content-type检查到为form类型，请求开始发送")
-            if data is not None:
-                logger.info(f"请求表单数据: {json.dumps(data, ensure_ascii=False, indent=2)}")
-            elif json_data is not None:
-                logger.info(f"请求表单数据: {json.dumps(json_data, ensure_ascii=False, indent=2)}")
-        elif content_type:
-            # 其他类型的Content-Type
-            logger.info(f"通过content-type检查到为{content_type}类型，请求开始发送")
-            if plain_text is not None:
-                logger.info(f"请求纯文本数据: {plain_text}")
-            elif data is not None:
-                logger.info(f"请求表单数据: {json.dumps(data, ensure_ascii=False, indent=2)}")
-            elif json_data is not None:
-                logger.info(f"请求数据: {json.dumps(json_data, ensure_ascii=False, indent=2)}")
-        else:
-            # 没有指定Content-Type的情况
-            if json_data is not None:
-                logger.info("通过content-type检查到为json类型，请求开始发送")
-                logger.info(f"请求JSON数据: {json.dumps(json_data, ensure_ascii=False, indent=2)}")
-            elif plain_text is not None:
-                logger.info("通过content-type检查到为text/plain类型，请求开始发送")
-                logger.info(f"请求纯文本数据: {plain_text}")
-            elif data is not None:
-                logger.info("通过content-type检查到为form类型，请求开始发送")
-                logger.info(f"请求表单数据: {json.dumps(data, ensure_ascii=False, indent=2)}")
-        logger.info("-" * 30)
+            logger.debug("URL参数: %s", json.dumps(params, ensure_ascii=False, indent=2))
+
+        if json_data is not None:
+            logger.debug("请求JSON: %s", json.dumps(json_data, ensure_ascii=False, indent=2))
+        elif plain_text is not None:
+            logger.debug("请求文本: %s", plain_text)
+        elif data is not None:
+            logger.debug("请求数据: %s", json.dumps(data, ensure_ascii=False, indent=2))
+
+        logger.debug("-" * 30)
 
         try:
             # 发送请求
@@ -235,12 +207,10 @@ class RequestHandler:
 
             AllureReporter.step_response(response)
 
-            logger.info("收到响应")
-            logger.info(f"状态码: {response.status_code}")
-            logger.info(f"响应头: {json.dumps(dict(response.headers), ensure_ascii=False, indent=2)}")
-            logger.info(f"响应体: {response.text}")
-            logger.info(f"耗时: {response.elapsed.total_seconds()}秒")
-            logger.info("=" * 50)
+            logger.debug("收到响应 status=%s elapsed=%ss", response.status_code, response.elapsed.total_seconds())
+            logger.debug("响应头: %s", json.dumps(dict(response.headers), ensure_ascii=False, indent=2))
+            logger.debug("响应体: %s", response.text)
+            logger.debug("=" * 50)
 
             return response
 

@@ -85,19 +85,24 @@ def resolve_suite(
 
 def get_scan_dirs(config: Config, data_format: str, suite: str) -> List[str]:
     """获取指定格式与套件下的扫描目录列表。"""
-    if data_format == FORMAT_CSV:
-        return [config.get_csv_dir(suite)]
-    if data_format == FORMAT_EXCEL:
-        return [config.get_excel_dir(suite)]
-    if data_format == FORMAT_JSON:
-        return [config.get_json_dir(suite)]
-    if data_format == FORMAT_ALL:
-        return [
-            config.get_csv_dir(suite),
-            config.get_excel_dir(suite),
-            config.get_json_dir(suite),
-        ]
-    return []
+    suites = list(Config.ALL_SUITES) if suite == Config.SUITE_ALL else [suite]
+    dirs: List[str] = []
+
+    for item in suites:
+        if data_format == FORMAT_CSV:
+            dirs.append(config.get_csv_dir(item))
+        elif data_format == FORMAT_EXCEL:
+            dirs.append(config.get_excel_dir(item))
+        elif data_format == FORMAT_JSON:
+            dirs.append(config.get_json_dir(item))
+        elif data_format == FORMAT_ALL:
+            dirs.extend([
+                config.get_csv_dir(item),
+                config.get_excel_dir(item),
+                config.get_json_dir(item),
+            ])
+
+    return sorted(set(dirs))
 
 
 def resolve_file_paths(
@@ -182,9 +187,11 @@ def discover_and_load(
 
         if exists and load_cases:
             cases = reader.read_test_cases(file_path)
+            rel = _relative_path(file_path)
             for case in cases:
                 case["_source_file"] = file_path
                 case["_format"] = fmt
+                case["_unique_id"] = f"{rel}#{case['case_id']}"
             case_count = len(cases)
             result.cases.extend(cases)
         elif exists:
@@ -204,9 +211,13 @@ def discover_and_load(
 
 
 def log_discovery(result: DiscoveryResult) -> None:
-    """输出详细发现日志（pytest / 调试）。"""
+    """输出发现日志（CLI 模式下仅写文件，控制台已有 plan 摘要）。"""
+    import os
+
+    level = logging.DEBUG if os.getenv("IFRIT_CLI_MODE") == "1" else logging.INFO
     if result.single_file:
-        logger.info(
+        logger.log(
+            level,
             "用例发现 | 格式=%s 套件=%s 单文件=%s",
             result.data_format,
             result.suite,
@@ -214,7 +225,8 @@ def log_discovery(result: DiscoveryResult) -> None:
         )
     else:
         dirs = ", ".join(result.scan_dirs) or "(未扫描目录)"
-        logger.info(
+        logger.log(
+            level,
             "用例发现 | 格式=%s 套件=%s 扫描目录=%s",
             result.data_format,
             result.suite,
@@ -224,24 +236,24 @@ def log_discovery(result: DiscoveryResult) -> None:
     if not result.files:
         logger.warning(
             "未发现任何 %s 用例文件（套件=%s）。"
-            "AI 用例请使用 --suite ai；冒烟用例请使用 --suite smoke。",
+            "AI 用例请使用 --suite ai；冒烟用例请使用 --suite smoke；全部请用 --suite all。",
             result.data_format.upper(),
             result.suite,
         )
         return
 
-    logger.info("发现 %s 个文件:", result.total_files)
+    logger.log(level, "发现 %s 个文件:", result.total_files)
     for item in result.files:
         rel = _relative_path(item.path)
         if not item.exists:
             logger.warning("  [缺失] %s", rel)
         elif item.case_count >= 0:
-            logger.info("  %s (%s 条) <- %s", rel, item.case_count, item.data_format)
+            logger.log(level, "  %s (%s 条) <- %s", rel, item.case_count, item.data_format)
         else:
-            logger.info("  %s <- %s", rel, item.data_format)
+            logger.log(level, "  %s <- %s", rel, item.data_format)
 
     if result.cases:
-        logger.info("合计加载 %s 条用例", result.total_cases)
+        logger.log(level, "合计加载 %s 条用例", result.total_cases)
 
 
 def _relative_path(path: str) -> str:
@@ -249,6 +261,12 @@ def _relative_path(path: str) -> str:
     if path.startswith(base):
         return os.path.relpath(path, base).replace("\\", "/")
     return path.replace("\\", "/")
+
+
+def build_case_param_id(case: dict) -> str:
+    """生成 pytest 参数化唯一 ID（避免跨文件 case_id 冲突）。"""
+    unique_id = case.get("_unique_id") or case.get("case_id", "")
+    return f"{unique_id} · {case.get('case_name', '')}"
 
 
 def format_cli_plan(
@@ -285,10 +303,14 @@ def format_cli_plan(
         for item in discovery.files:
             if item.exists and item.case_count > 0:
                 file_parts.append(f"{_relative_path(item.path)}({item.case_count})")
+        suite_hint = ""
+        if discovery.suite == Config.SUITE_MANUAL and fmt == FORMAT_CSV:
+            suite_hint = " | 提示: --suite all 含 smoke/ai"
         lines.append(
             f"[IFRIT] 用例={discovery.total_cases} 文件={discovery.total_files} "
-            f"来源={'; '.join(file_parts) or '指定文件'}"
+            f"来源={'; '.join(file_parts) or '指定文件'}{suite_hint}"
         )
+        lines.append(f"[IFRIT] 详细日志=logs/api_automation.log")
 
     return "\n".join(lines)
 
