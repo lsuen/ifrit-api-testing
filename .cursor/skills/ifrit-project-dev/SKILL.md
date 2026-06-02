@@ -14,10 +14,10 @@ disable-model-invocation: false
 1. 读取项目根目录 `.MemoryForAI/`，梳理历史与当前状态
 2. 若目录不存在或为空，按 1.2 初始化
 
-任务结束（有效代码/文档迭代后）：
+任务结束（有 commit 时 **必须** 闭环）：
 1. 编写/运行单元测试（`tests/` 或既有 `__internal_tests/`）
-2. 用户要求提交时，按 1.4 规范 commit
-3. 每次有效 commit 后执行钉钉通知脚本（见下方命令）
+2. 按 1.4 规范执行 `git commit`（中文、feat/fix/refactor/doc）
+3. **每个 commit 必须立即发钉钉**（无例外，含 doc/refactor 等所有类型）
 4. 更新 `.MemoryForAI/` 与 README（如有变更）
 
 ## 1.1 目录规范（强制）
@@ -66,7 +66,7 @@ disable-model-invocation: false
    - doc：文档更新、注释补充、说明文案优化
    - 所有提交描述统一使用中文，内容清晰具体，不模糊笼统
 
-5. 钉钉通知推送：每完成一次有效git commit提交，必须推送钉钉机器人通知，使用统一标准MD格式报告
+5. **钉钉通知推送（强制）**：**每一个** git commit 成功后 **必须立即** 推送钉钉，概要须说明本次做了什么（来自 commit message + 变更模块），禁止遗漏
 6. 文档与记忆更新：更新 .MemoryForAI 项目记忆目录、项目README文档及相关配套文档，留存迭代记录
 
 ## 二、钉钉机器人通知标准报告格式
@@ -109,14 +109,28 @@ disable-model-invocation: false
 
 ### 2.3 通知内容要求
 
-- 内容必须详细具体，禁止敷衍、笼统描述，清晰说明本次做了什么、改了什么、解决了什么问题
-- 必须完整填写测试结果，真实反馈自测情况，体现交付质量
-- 严格使用上述MD排版结构，保证每次通知格式统一、规整、可追溯
-- 仅有效代码迭代、修复、文档更新commit需要推送，无实质改动的空提交无需通知
+- **每个 commit 必发**，Agent 或开发者 commit 后不得跳过钉钉步骤
+- 概要须清晰说明：**做了什么、改了哪些模块、解决什么问题**（优先从 commit message 提取）
+- 内容必须具体，禁止「更新了代码」等空泛描述
+- 必须填写测试结果，真实反馈自测情况
+- 严格使用上述 MD 排版结构
+- 仅 **空提交、纯 merge 无实质变更** 可不发；其余一律发送
 
 ## 钉钉通知脚本用法
 
-commit 完成后，从项目根目录执行：
+**推荐：commit 后立即执行（自动读最近一次 commit 概要）**
+
+```bash
+python .cursor/skills/ifrit-project-dev/scripts/send_dingtalk_notify.py --from-last-commit
+```
+
+**启用 Git Hook（本地一次配置，之后每次 commit 自动发）**
+
+```bash
+git config core.hooksPath .githooks
+```
+
+手动指定内容（可选）：
 
 ```bash
 python .cursor/skills/ifrit-project-dev/scripts/send_dingtalk_notify.py \
