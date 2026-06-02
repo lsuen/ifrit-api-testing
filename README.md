@@ -107,7 +107,14 @@ pip install -r requirements.txt
 
 ```
 # 从 Swagger 生成 CSV（输出到 fixtures/ai/csv/）
-python main.py --ai-generate --input-doc api_docs/apispec_1.json --swagger-endpoint /api/test --output-format csv
+python main.py --ai-generate --input-doc api_docs/apispec_1.json --swagger-endpoint /api/address --output-format csv
+
+# 从远程 URL 拉取文档（Apifox MD / 内网 Swagger）
+python main.py --ai-generate --input-url http://192.168.31.129:5000/apispec_1.json --swagger-endpoint /api/address/add
+
+# AI 交互模式（REPL 或单行）
+python main.py --chat
+python main.py --chat -- doc api_docs/apispec_1.json endpoint /api/address generate
 
 # 指定输出目录
 python main.py --ai-generate --input-doc api_docs/apispec_1.json --output-format csv --output-dir fixtures/ai/csv
@@ -123,7 +130,7 @@ python main.py --type csv
 python main.py --file fixtures/smoke/csv/api_test_smoke.csv
 
 # 运行 AI 生成用例（建议加 --global-auth）
-python main.py --file fixtures/ai/csv/ai_xxx.csv --global-auth --suite ai
+python main.py --file fixtures/ai/csv/ai_address_business.csv --global-auth --suite ai
 
 # 运行指定环境的测试
 python main.py --env environment

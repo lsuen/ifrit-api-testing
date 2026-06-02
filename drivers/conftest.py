@@ -110,7 +110,7 @@ def auth_manager():
 def preserve_auth_vars(data_handler):
     """每个用例前清空变量，但保留 token/username。"""
     protected = {}
-    for key in ("token", "username"):
+    for key in ("token", "username", "address_id"):
         value = data_handler.get_variable(key)
         if value:
             protected[key] = value
