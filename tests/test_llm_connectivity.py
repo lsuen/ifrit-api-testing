@@ -12,7 +12,7 @@ if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
 from config.ai_config import AIConfig
-from core.ai_client import AIClient
+from agent.llm.client import AIClient
 
 
 def test_raw_request(cfg: dict) -> int:

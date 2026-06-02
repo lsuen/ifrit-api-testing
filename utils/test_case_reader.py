@@ -74,17 +74,19 @@ class DataHandler:
 
             # 转换为字典列表
             test_cases = []
-            for index, row in df.iterrows():
-                # 只处理启用的测试用例
-                # 检查用例是否启用
-                enabled_value = str(row.get('enabled', '1')).strip().lower()
-                is_enabled = enabled_value in ['1', 'true', 'yes', 'enabled', 'enable', 'y', 't']
-                
-                # 提前提取case_id和case_name用于日志记录
-                case_id = str(row.get('case_id', row.get('id', '')))
-                case_name = str(row.get('case_name', row.get('name', '')))
-                
-                logger.debug(f"用例行 {index + 1} 是否启用: {is_enabled} (enabled值: {enabled_value})")
+            for row_number, (_, row) in enumerate(df.iterrows(), start=1):
+                enabled_value = str(row.get("enabled", "1")).strip().lower()
+                is_enabled = enabled_value in ["1", "true", "yes", "enabled", "enable", "y", "t"]
+
+                case_id = str(row.get("case_id", row.get("id", "")))
+                case_name = str(row.get("case_name", row.get("name", "")))
+
+                logger.debug(
+                    "用例行 %s 是否启用: %s (enabled值: %s)",
+                    row_number,
+                    is_enabled,
+                    enabled_value,
+                )
 
                 if not is_enabled:
                     logger.debug(f"用例 {case_id} - {case_name} 未启用，跳过")

@@ -26,6 +26,12 @@ def pytest_addoption(parser):
         action="append",
         help="指定运行环境，可以多次使用以指定多个环境，如 --env dev --env prod"
     )
+    parser.addoption(
+        "--test-data-file",
+        action="store",
+        default="",
+        help="指定单个测试数据文件（csv/xlsx/json），仅加载该文件用例",
+    )
 
 
 def pytest_configure(config):

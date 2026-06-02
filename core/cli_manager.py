@@ -79,7 +79,7 @@ class CLIManager:
         """运行CLI应用"""
         from core.test_runner import TestRunner
         from core.report_manager import ReportManager
-        from core.ai_generator import AIGenerator
+        from agent.pipeline.generator import AIGenerator
         
         args = self.parse_args()
         

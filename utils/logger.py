@@ -97,5 +97,5 @@ def get_logger(name: str = None) -> logging.Logger:
         logging.Logger: 日志记录器实例
     """
     if name is None:
-        name = __name__
-    return logger  # 返回全局logger实例，保持一致性
+        return logger
+    return logging.getLogger(name)

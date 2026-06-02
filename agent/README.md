@@ -1,34 +1,42 @@
-# Agent 模块（规划中）
+# Agent 模块
 
-本目录用于将 AI Agent 能力从 `core/` 解耦，后续支持：
+AI 用例生成、LLM 调用、ReAct 编排与 Skill 注册。
 
-- **ReAct**：推理 + 行动循环
-- **Action**：可注册、可组合的工具动作
-- **Function Calling**：OpenAI 兼容 tools / functions 协议
-- **Skill**：与 `.cursor/skills/` 及项目内 skill 注册机制对接
-
-## 当前状态
-
-- LLM 客户端暂仍在 `core/ai_client.py`（用例生成）
-- 配置统一由 `config/ai_config.py` + `config/settings/ai.ini` + `.env` 提供
-- 新 Agent 代码请放入本目录，避免继续膨胀 `core/`
-
-## 规划结构
+## 目录结构
 
 ```
 agent/
-├── actions/      # 原子动作（HTTP、解析、写文件等）
-├── react/        # ReAct 循环与状态机
-├── skills/       # Skill 注册与加载
-└── llm/          # （后续）从 core 迁入的 LLM 客户端封装
+├── llm/client.py           # OpenAI 兼容 LLM 客户端
+├── parser/document_parser.py
+├── generator/              # 用例生成、模板、质量验证
+├── pipeline/generator.py   # CLI 入口 AIGenerator（ReAct + Skill）
+├── actions/                # 可组合 Action
+├── react/loop.py           # ReAct 顺序执行
+└── skills/registry.py      # Skill -> Action 列表
 ```
 
-## 配置约定
+## 预置 Skill
 
-| 类型 | 位置 |
-|------|------|
-| LLM endpoint / model / prompt | `config/settings/ai.ini` |
-| API Key / 个人 base_url、model override | `.env` |
-| 被测 API 环境 | `config/settings/env_config.ini` |
+| Skill | Actions |
+|-------|---------|
+| `case_generation` | parse → generate → validate → save |
+| `parse_only` | parse |
+| `generate_and_validate` | parse → generate → validate |
 
-Agent 模块应通过 `from config import AIConfig` 获取 LLM 配置，不直接读 ini。
+## CLI 示例
+
+```bash
+# 从 Swagger 生成 /api/test 用例
+python main.py --ai-generate \
+  --input-doc api_docs/apispec_1.json \
+  --swagger-endpoint /api/test \
+  --output-format csv \
+  --output-dir data/csv_data
+
+# 执行 smoke 用例（与 Swagger 响应一致）
+python main.py --type csv \
+  --file data/csv_data/api_test_smoke.csv \
+  --env environment
+```
+
+配置：`config/settings/ai.ini` + `.env`（`OPENAI_API_KEY` 等）。

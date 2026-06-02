@@ -18,10 +18,10 @@ from unittest.mock import patch, MagicMock
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from core.test_executor import TestExecutor
-from core.case_generator import CaseGenerator
-from core.ai_client import AIClient
-from core.template_engine import TemplateEngine
-from core.quality_validator import QualityValidator
+from agent.generator.case_generator import CaseGenerator
+from agent.llm.client import AIClient
+from agent.generator.template_engine import TemplateEngine
+from agent.generator.quality_validator import QualityValidator
 from core.data_handler import DataHandler
 from core.assert_handler import AssertHandler
 from core.request_handler import RequestHandler

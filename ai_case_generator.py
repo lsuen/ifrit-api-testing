@@ -16,11 +16,11 @@ from typing import List, Dict, Any
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from config.ai_config import AIConfig
-from core.document_parser import DocumentParser
-from core.ai_client import AIClient
-from core.case_generator import CaseGenerator
-from core.template_engine import TemplateEngine
-from core.quality_validator import QualityValidator
+from agent.parser.document_parser import DocumentParser
+from agent.llm.client import AIClient
+from agent.generator.case_generator import CaseGenerator
+from agent.generator.template_engine import TemplateEngine
+from agent.generator.quality_validator import QualityValidator
 from utils.logger import logger
 
 

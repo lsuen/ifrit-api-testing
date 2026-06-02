@@ -52,6 +52,9 @@ class TestRunner:
                 for env_name in env_names:
                     cmd.extend(["--env", env_name])
 
+            if test_path and test_path.endswith((".csv", ".xlsx", ".xls", ".json")):
+                cmd.extend(["--test-data-file", test_path])
+
             # 根据参数添加测试路径
             if test_path:
                 # 检查文件类型并选择合适的测试驱动
