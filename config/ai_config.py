@@ -66,7 +66,7 @@ class AIConfig:
         )
 
         self.config.add_section("output")
-        self.config.set("output", "default_output_dir", "data/ai_generated")
+        self.config.set("output", "default_output_dir", "fixtures/ai/csv")
         self.config.set("output", "add_timestamp", "true")
         self.config.set("output", "file_prefix", "ai_")
         self.config.set("output", "quality_check", "true")
@@ -145,7 +145,7 @@ class AIConfig:
         """获取 AI 输出配置。"""
         return {
             "default_output_dir": self.config.get(
-                "output", "default_output_dir", fallback="data/ai_generated"
+                "output", "default_output_dir", fallback="fixtures/ai/csv"
             ),
             "add_timestamp": self.config.getboolean(
                 "output", "add_timestamp", fallback=True

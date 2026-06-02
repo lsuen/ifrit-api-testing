@@ -40,9 +40,13 @@ class AIGenerator:
         if args.output_dir:
             output_dir = args.output_dir
         else:
-            base_dir = output_config.get("default_output_dir", "data/ai_generated")
+            base_dir = output_config.get("default_output_dir", "fixtures/ai/csv")
             sub_dir = FORMAT_SUBDIRS.get(args.output_format, "")
-            output_dir = os.path.join(base_dir, sub_dir) if sub_dir else base_dir
+            normalized = base_dir.replace("\\", "/").rstrip("/")
+            if sub_dir and not normalized.endswith(sub_dir):
+                output_dir = os.path.join(base_dir, sub_dir)
+            else:
+                output_dir = base_dir
 
         os.makedirs(output_dir, exist_ok=True)
 

@@ -18,7 +18,7 @@ class TestRunner:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
     
-    def run(self, test_path=None, test_type=None, env_names=None):
+    def run(self, test_path=None, test_type=None, env_names=None, suite=None, global_auth=False):
         """
         运行测试
         
@@ -54,6 +54,16 @@ class TestRunner:
 
             if test_path and test_path.endswith((".csv", ".xlsx", ".xls", ".json")):
                 cmd.extend(["--test-data-file", test_path])
+
+            if suite:
+                cmd.extend(["--suite", suite])
+            elif test_path and "fixtures/ai" in test_path.replace("\\", "/"):
+                cmd.extend(["--suite", "ai"])
+            elif test_path and "fixtures/smoke" in test_path.replace("\\", "/"):
+                cmd.extend(["--suite", "smoke"])
+
+            if global_auth:
+                cmd.append("--global-auth")
 
             # 根据参数添加测试路径
             if test_path:

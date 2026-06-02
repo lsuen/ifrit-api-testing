@@ -13,6 +13,9 @@ from agent.actions.parse_document import ParseDocumentAction
 from agent.actions.generate_cases import GenerateCasesAction
 from agent.actions.validate_cases import ValidateCasesAction
 from agent.actions.save_cases import SaveCasesAction
+from agent.actions.probe_endpoint import ProbeEndpointAction
+from agent.actions.discover_auth import DiscoverAuthAction
+from agent.actions.prune_failed_cases import PruneFailedCasesAction
 
 # 预置 skill：名称 -> Action 列表
 _SKILL_ACTIONS: Dict[str, List[Action]] = {
@@ -29,6 +32,20 @@ _SKILL_ACTIONS: Dict[str, List[Action]] = {
         ParseDocumentAction(),
         GenerateCasesAction(),
         ValidateCasesAction(),
+    ],
+    "auth_discovery": [
+        DiscoverAuthAction(),
+    ],
+    "endpoint_probe": [
+        ProbeEndpointAction(),
+    ],
+    "ai_quality_loop": [
+        ProbeEndpointAction(),
+        ParseDocumentAction(),
+        GenerateCasesAction(),
+        ValidateCasesAction(),
+        SaveCasesAction(),
+        PruneFailedCasesAction(),
     ],
 }
 

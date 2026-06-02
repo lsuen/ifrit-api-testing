@@ -13,25 +13,25 @@ import pytest
 
 from config.config import Config
 from core.assert_handler import AssertHandler
-from core.data_handler import DataHandler as GlobalDataHandler
 from core.test_executor import TestExecutor
 from utils.test_case_reader import DataHandler
 from utils.logger import logger
 
-data_handler = GlobalDataHandler()
 config = Config()
 
 
 def load_csv_test_cases(pytest_config) -> list:
     """根据 pytest 配置加载 CSV 测试用例。"""
     single_file = pytest_config.getoption("--test-data-file") or ""
+    suite = pytest_config.getoption("--suite") or Config.SUITE_MANUAL
+
     if single_file:
         if os.path.isabs(single_file):
             test_files = [single_file]
         else:
             test_files = [os.path.join(config.base_dir, single_file)]
     else:
-        test_files = config.get_csv_test_files()
+        test_files = config.get_csv_test_files(suite)
 
     all_cases = []
     logger.info("查找 CSV 测试文件，共 %s 个", len(test_files))
@@ -66,9 +66,11 @@ class TestCsvDriver:
     """CSV 测试用例执行器。"""
 
     @allure.story("CSV测试用例执行")
-    def test_api_case(self, case, request_handler):
+    def test_api_case(self, case, request_handler, auth_manager, data_handler):
         """执行单条 CSV API 测试用例。"""
         logger.info("开始执行用例: %s", case["case_name"])
         assert_handler = AssertHandler()
-        executor = TestExecutor(request_handler, data_handler, assert_handler)
+        executor = TestExecutor(
+            request_handler, data_handler, assert_handler, auth_manager=auth_manager
+        )
         executor.execute_test_case(case)

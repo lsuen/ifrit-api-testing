@@ -38,6 +38,18 @@ class RequestHandler:
         adapter = HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("http://", adapter)
         self.session.mount("https://", adapter)
+        self._default_headers: Dict[str, str] = {}
+
+    def set_default_header(self, name: str, value: str) -> None:
+        """设置 session 级默认请求头（如 Authorization）。"""
+        self._default_headers[name] = value
+        self.session.headers[name] = value
+
+    def clear_default_headers(self) -> None:
+        """清除 session 级默认请求头。"""
+        for name in list(self._default_headers):
+            self.session.headers.pop(name, None)
+        self._default_headers.clear()
 
     def _generate_curl_command(self, method: str, url: str,
                                headers: Optional[Dict[str, str]] = None,
@@ -114,8 +126,10 @@ class RequestHandler:
             path = url if url.startswith('/') else '/' + url
             url = base + path if self.base_url else url
 
-        # 处理请求头
-        request_headers = dict(headers) if headers else {}
+        # 处理请求头（合并 session 默认头，显式 headers 优先）
+        request_headers = dict(self._default_headers)
+        if headers:
+            request_headers.update(headers)
         content_type = request_headers.get('Content-Type', '').lower()
 
         # 根据Content-Type判断发送数据的格式

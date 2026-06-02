@@ -42,12 +42,21 @@ ifrit/
 │   ├── test_api_csv_driver.py    # CSV测试驱动
 │   ├── test_api_json_driver.py   # JSON测试驱动
 │   └── test_all_drivers.py       # 统一测试驱动
-├── data/                    # 测试数据目录
-│   ├── ai_generated/        # AI生成的测试用例
-│   ├── examples/            # 示例文档
-│   ├── csv_data/            # CSV格式测试数据
-│   ├── excel_data/          # Excel格式测试数据
-│   └── json_data/           # JSON格式测试数据
+├── fixtures/                # 测试用例数据（人工 / AI / 冒烟 分离）
+│   ├── manual/              # 人工编写用例
+│   │   ├── csv/
+│   │   ├── json/
+│   │   └── excel/
+│   ├── ai/                  # AI 生成用例（可 prune）
+│   │   └── csv/
+│   └── smoke/               # curl 验证过的冒烟用例
+│       └── csv/
+├── core/
+│   └── auth_manager.py      # 全局鉴权（与用例内 login 解耦）
+├── scripts/
+│   └── debug_workflow.py    # 全流程调试脚本
+├── debug.sh                 # Linux/WSL 调试入口
+├── debug.bat                # Windows 调试入口
 ├── __docs/                      # 文档目录
 │   ├── AI_GUIDE.md                  # AI功能使用指南
 │   ├── command_reference.md         # 命令行参考
@@ -97,39 +106,31 @@ pip install -r requirements.txt
 ### 1. 从API文档生成测试用例
 
 ```
-# 从Markdown文档生成CSV格式测试用例
-python main.py --ai-generate --input-doc data/examples/sample_api.md --output-format csv
-
-# 从Swagger文档生成Excel格式测试用例
-python main.py --ai-generate --input-doc data/examples/sample_api.json --output-format excel
+# 从 Swagger 生成 CSV（输出到 fixtures/ai/csv/）
+python main.py --ai-generate --input-doc api_docs/apispec_1.json --swagger-endpoint /api/test --output-format csv
 
 # 指定输出目录
-python main.py --ai-generate --input-doc data/examples/complex_api.md --output-format json --output-dir output/custom
+python main.py --ai-generate --input-doc api_docs/apispec_1.json --output-format csv --output-dir fixtures/ai/csv
 ```
 
 ### 2. 执行测试用例
 
 ```
-# 运行Excel格式的测试用例
-python main.py --type excel
-
-# 运行CSV格式的测试用例
+# 运行人工 CSV 用例（默认 manual 套件）
 python main.py --type csv
 
-# 运行JSON格式的测试用例
-python main.py --type json
+# 运行冒烟用例
+python main.py --file fixtures/smoke/csv/api_test_smoke.csv
 
-# 运行指定文件的测试用例
-python main.py --file data/test_cases.xlsx
+# 运行 AI 生成用例（建议加 --global-auth）
+python main.py --file fixtures/ai/csv/ai_xxx.csv --global-auth --suite ai
 
 # 运行指定环境的测试
-python main.py --env dev --env staging
+python main.py --env environment
 
-# 生成HTML报告
-python main.py --generate-report
-
-# 启动Allure报告服务器
-python main.py --serve-report
+# 全流程调试（probe → auth → 生成 → 验证 → prune）
+debug.bat
+# 或 WSL/Linux: bash debug.sh
 ```
 
 ## 简单使用教程

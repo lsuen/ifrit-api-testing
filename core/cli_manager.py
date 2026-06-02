@@ -66,7 +66,17 @@ class CLIManager:
         )
         parser.add_argument(
             "--output-dir",
-            help="指定输出目录（默认：data/ai_generated）"
+            help="指定输出目录（默认：fixtures/ai/csv）"
+        )
+        parser.add_argument(
+            "--suite",
+            choices=["manual", "ai", "smoke"],
+            help="用例套件：manual/ai/smoke（传给 pytest）"
+        )
+        parser.add_argument(
+            "--global-auth",
+            action="store_true",
+            help="启用全局鉴权（session 登录）"
         )
         
         return parser
@@ -90,7 +100,13 @@ class CLIManager:
         
         # 运行测试
         runner = TestRunner()
-        exit_code = runner.run(test_path=args.file, test_type=args.type, env_names=args.env)
+        exit_code = runner.run(
+            test_path=args.file,
+            test_type=args.type,
+            env_names=args.env,
+            suite=args.suite,
+            global_auth=args.global_auth,
+        )
 
         # 如果指定了--serve-report参数，则启动报告服务器
         if args.serve_report:

@@ -15,10 +15,11 @@ logger = logging.getLogger(__name__)
 
 
 class TestExecutor:
-    def __init__(self, request_handler, data_handler, assert_handler):
+    def __init__(self, request_handler, data_handler, assert_handler, auth_manager=None):
         self.request_handler = request_handler
         self.data_handler = data_handler
         self.assert_handler = assert_handler
+        self.auth_manager = auth_manager
 
     def execute_test_case(self, case):
         """
@@ -90,6 +91,11 @@ class TestExecutor:
 
         logger.debug("请求参数变量替换完成")
 
+        if self.auth_manager:
+            headers = self.auth_manager.apply_to_headers(headers, url)
+            if isinstance(body, dict):
+                body = self.auth_manager.apply_to_body(body, url)
+
         # 发送请求
         logger.info(f"发送 {case['method']} 请求到 {url}")
         # 根据Content-Type决定使用哪个参数发送body
@@ -118,6 +124,12 @@ class TestExecutor:
             self.assert_handler.assert_status_code(response, int(case['expected_status']))  # 修复后的代码
         except AssertionError as e:
             logger.error(f"状态码断言失败: {str(e)}")
+            if (
+                self.auth_manager
+                and response is not None
+                and self.auth_manager.handle_auth_failure(response.status_code)
+            ):
+                logger.info("鉴权已恢复，请重新运行用例")
             pytest.fail(f"状态码断言失败: {str(e)}")
         except Exception as e:
             logger.error(f"状态码断言异常: {str(e)}")

@@ -15,11 +15,15 @@ from config.loader import get_env_value, load_ini
 class Config:
     """全局配置类"""
 
+    SUITE_MANUAL = "manual"
+    SUITE_AI = "ai"
+    SUITE_SMOKE = "smoke"
+
     def __init__(self, env_names: Optional[List[str]] = None):
         self.base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.config_dir = os.path.join(self.base_dir, "config")
         self.settings_dir = os.path.join(self.config_dir, "settings")
-        self.data_dir = os.path.join(self.base_dir, "data")
+        self.fixtures_dir = os.path.join(self.base_dir, "fixtures")
         self.logs_dir = os.path.join(self.base_dir, "logs")
         self.reports_dir = os.path.join(self.base_dir, "reports")
         self.testcases_dir = os.path.join(self.base_dir, "drivers")
@@ -28,12 +32,13 @@ class Config:
 
         os.makedirs(self.logs_dir, exist_ok=True)
         os.makedirs(self.reports_dir, exist_ok=True)
-        os.makedirs(self.data_dir, exist_ok=True)
+        os.makedirs(self.fixtures_dir, exist_ok=True)
 
         self.app_config = load_ini("app.ini")
         self.env_config = load_ini("env_config.ini")
         self.test_data_config = load_ini("test_data.ini")
         self.column_mapping_config = load_ini("column_mapping.ini")
+        self.auth_config = load_ini("auth.ini")
         self.current_envs = env_names or ["environment"]
 
     def get_base_url(self) -> str:
@@ -71,70 +76,101 @@ class Config:
             "password": get_env_value("DB_PASSWORD"),
         }
 
+    def _resolve_path(self, relative_path: str) -> str:
+        """将 ini 中的相对路径转为绝对路径。"""
+        if os.path.isabs(relative_path):
+            return relative_path
+        return os.path.join(self.base_dir, relative_path)
+
+    def get_fixtures_root(self) -> str:
+        """获取 fixtures 根目录。"""
+        root = self.test_data_config.get("paths", "root", fallback="fixtures")
+        return self._resolve_path(root)
+
+    def get_suite_csv_dir(self, suite: str = SUITE_MANUAL) -> str:
+        """按套件（manual/ai/smoke）获取 CSV 目录。"""
+        section = suite if suite in (self.SUITE_MANUAL, self.SUITE_AI, self.SUITE_SMOKE) else self.SUITE_MANUAL
+        csv_dir = self.test_data_config.get(section, "csv_dir", fallback=f"fixtures/{section}/csv")
+        return self._resolve_path(csv_dir)
+
+    def get_manual_csv_dir(self) -> str:
+        return self.get_suite_csv_dir(self.SUITE_MANUAL)
+
+    def get_ai_csv_dir(self) -> str:
+        return self.get_suite_csv_dir(self.SUITE_AI)
+
+    def get_smoke_csv_dir(self) -> str:
+        return self.get_suite_csv_dir(self.SUITE_SMOKE)
+
+    def get_ai_output_dir(self) -> str:
+        """AI 生成用例默认输出目录。"""
+        output_dir = self.test_data_config.get(
+            "ai", "default_output_dir", fallback="fixtures/ai/csv"
+        )
+        return self._resolve_path(output_dir)
+
     def get_test_files(self) -> Any:
         """获取测试文件列表配置。"""
         files = self.test_data_config.get("test_files", "files", fallback="all")
         if files.lower() == "all":
             return "all"
         file_list = [item.strip() for item in files.split(",")]
-        data_dir = self.get_data_dir()
+        manual_dir = self.get_manual_csv_dir()
         return [
-            os.path.join(data_dir, file_name) if not os.path.isabs(file_name) else file_name
+            os.path.join(manual_dir, file_name) if not os.path.isabs(file_name) else file_name
             for file_name in file_list
         ]
 
     def get_data_dir(self) -> str:
-        """获取测试数据根目录。"""
-        data_dir = self.test_data_config.get("test_files", "data_dir", fallback="data")
-        return os.path.join(self.base_dir, data_dir)
+        """兼容旧接口：返回 fixtures 根目录。"""
+        return self.get_fixtures_root()
 
-    def get_excel_dir(self) -> str:
+    def get_excel_dir(self, suite: str = SUITE_MANUAL) -> str:
         """获取 Excel 测试数据目录。"""
         excel_dir = self.test_data_config.get(
-            "excel_files", "excel_dir", fallback="data/excel_data"
+            suite, "excel_dir", fallback=f"fixtures/{suite}/excel"
         )
-        return os.path.join(self.base_dir, excel_dir)
+        return self._resolve_path(excel_dir)
 
-    def get_csv_dir(self) -> str:
-        """获取 CSV 测试数据目录。"""
-        csv_dir = self.test_data_config.get(
-            "csv_files", "csv_dir", fallback="data/csv_data"
-        )
-        return os.path.join(self.base_dir, csv_dir)
+    def get_csv_dir(self, suite: str = SUITE_MANUAL) -> str:
+        """获取 CSV 测试数据目录（默认 manual）。"""
+        return self.get_suite_csv_dir(suite)
 
-    def get_json_dir(self) -> str:
+    def get_json_dir(self, suite: str = SUITE_MANUAL) -> str:
         """获取 JSON 测试数据目录。"""
         json_dir = self.test_data_config.get(
-            "json_files", "json_dir", fallback="data/json_data"
+            suite, "json_dir", fallback=f"fixtures/{suite}/json"
         )
-        return os.path.join(self.base_dir, json_dir)
+        return self._resolve_path(json_dir)
 
     def _collect_files_from_dir(self, directory: str, extensions: tuple) -> List[str]:
         """扫描目录下指定后缀的文件。"""
         if not os.path.exists(directory):
             return []
-        return [
+        return sorted(
             os.path.join(directory, file_name)
             for file_name in os.listdir(directory)
             if file_name.endswith(extensions)
-        ]
+        )
 
-    def get_all_test_files(self) -> List[str]:
+    def get_all_test_files(self, suite: str = SUITE_MANUAL) -> List[str]:
         """获取 Excel + CSV 测试文件路径。"""
-        return self.get_excel_test_files() + self.get_csv_test_files()
+        return self.get_excel_test_files(suite) + self.get_csv_test_files(suite)
 
-    def get_excel_test_files(self) -> List[str]:
+    def get_excel_test_files(self, suite: str = SUITE_MANUAL) -> List[str]:
         """获取 Excel 测试文件路径。"""
-        return self._collect_files_from_dir(self.get_excel_dir(), (".xlsx", ".xls"))
+        return self._collect_files_from_dir(self.get_excel_dir(suite), (".xlsx", ".xls"))
 
-    def get_csv_test_files(self) -> List[str]:
+    def get_csv_test_files(self, suite: str = SUITE_MANUAL) -> List[str]:
         """获取 CSV 测试文件路径。"""
-        return self._collect_files_from_dir(self.get_csv_dir(), (".csv",))
+        return self._collect_files_from_dir(self.get_csv_dir(suite), (".csv",))
 
-    def get_json_test_files(self) -> List[str]:
+    def get_json_test_files(self, suite: str = SUITE_MANUAL) -> List[str]:
         """获取 JSON 测试文件路径。"""
-        return self._collect_files_from_dir(self.get_json_dir(), (".json",))
+        return self._collect_files_from_dir(self.get_json_dir(suite), (".json",))
 
 
 if __name__ == "__main__":
-    print(Config().get_json_test_files())
+    cfg = Config()
+    print("manual csv:", cfg.get_csv_test_files())
+    print("smoke csv:", cfg.get_csv_test_files(Config.SUITE_SMOKE))
