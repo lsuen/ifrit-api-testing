@@ -8,7 +8,7 @@
 git config core.hooksPath .githooks
 ```
 
-Windows 使用 `.githooks/post-commit`（bat），Unix 可将 `post-commit.sample` 复制为 `post-commit` 并 chmod +x。
+Windows / Unix 均使用 `.githooks/post-commit`（Git Bash 下 sh 脚本）。
 
 ## 手动发送（最近一次 commit）
 
