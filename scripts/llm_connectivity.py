@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""临时 LLM 连通性探测脚本（手动运行）。"""
+"""LLM 连通性探测（手动运行，非 pytest 用例）。"""
 import json
 import os
 import sys
@@ -15,8 +15,7 @@ from config.ai_config import AIConfig
 from agent.llm.client import AIClient
 
 
-def test_raw_request(cfg: dict) -> int:
-    """直接 HTTP 请求，打印原始响应。"""
+def run_raw_request(cfg: dict) -> int:
     url = cfg["base_url"].rstrip("/") + "/chat/completions"
     headers = {
         "Content-Type": "application/json",
@@ -40,8 +39,7 @@ def test_raw_request(cfg: dict) -> int:
     return response.status_code
 
 
-def test_ai_client(cfg: dict) -> bool:
-    """通过 AIClient 调用。"""
+def run_ai_client(cfg: dict) -> bool:
     client = AIClient(cfg)
     print("client endpoint:", client.base_url)
     content = client._call_openai_api("请只回复两个字：通过", max_retries=1)
@@ -60,9 +58,9 @@ def main() -> int:
     print("model:", cfg["model"])
     print("api_key:", "已设置" if cfg["api_key"] else "未设置")
     print("--- raw ---")
-    status = test_raw_request(cfg)
+    status = run_raw_request(cfg)
     print("--- client ---")
-    ok = test_ai_client(cfg)
+    ok = run_ai_client(cfg)
     return 0 if status == 200 and ok else 1
 
 

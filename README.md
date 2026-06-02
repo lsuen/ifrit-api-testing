@@ -258,8 +258,6 @@ python __internal_tests/test_business_logic.py
 | `__docs/` | 项目文档 |
 | `__internal_tests/` | 历史内部单元测试 |
 
-### 钉钉迭代通知
-
 ### 配置分层
 
 | 类型 | 位置 | 示例 |
@@ -268,6 +266,18 @@ python __internal_tests/test_business_logic.py
 | 团队稳定 | `config/settings/*.ini` | 测试环境 URL、LLM endpoint、列映射 |
 
 首次使用：`cp .env.example .env` 并填写本地密钥。
+
+### Git Hooks（钉钉 post-commit）
+
+```bash
+git config core.hooksPath .githooks
+```
+
+此后每次 `git commit` 会自动调用钉钉通知脚本（需 `.env` 配置 `DINGTALK_ACCESS_TOKEN`）。
+
+### CI
+
+GitHub Actions 见 `.github/workflows/ci.yml`：PR 跑单元测试；smoke 需配置仓库 Secret `IFRIT_BASE_URL`。
 
 ### 钉钉迭代通知
 

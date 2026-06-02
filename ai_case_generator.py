@@ -463,7 +463,8 @@ class AITestCaseGenerator:
 
 def main():
     """主函数"""
-    parser = argparse.ArgumentParser(description="AI测试用例生成器")
+    print("[IFRIT] 提示: ai_case_generator.py 已废弃，请改用 python main.py --ai-generate ...")
+    parser = argparse.ArgumentParser(description="AI测试用例生成器（已废弃，请用 main.py --ai-generate）")
     parser.add_argument(
         "input_docs",
         nargs="*",

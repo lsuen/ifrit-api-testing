@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class TestCaseExecutor:
     """API 测试用例执行器（避免与 pytest 收集冲突）。"""
 
-    __test__ = False  # 防止 pytest 误收集
+    __test__ = False
 
     def __init__(self, request_handler, data_handler, assert_handler, auth_manager=None):
         self.request_handler = request_handler
@@ -31,11 +31,10 @@ class TestCaseExecutor:
         suite = case.get("_suite", "manual")
         data_format = case.get("_format", "csv")
         AllureReporter.set_case_labels(case, suite, data_format)
-
         logger.debug("开始执行测试用例: %s - %s", case["case_id"], case["case_name"])
-        return self._execute_case_logic(case)
+        self._execute_case_logic(case, allow_auth_retry=True)
 
-    def _execute_case_logic(self, case):
+    def _execute_case_logic(self, case, allow_auth_retry=True):
         url = self.data_handler.replace_variables(case["url"])
         headers_str = self.data_handler.replace_variables(case["headers"])
         params_str = self.data_handler.replace_variables(case["params"])
@@ -107,11 +106,8 @@ class TestCaseExecutor:
                 self.assert_handler.assert_status_code(response, expected)
             except AssertionError as error:
                 logger.error("状态码断言失败: %s", error)
-                if (
-                    self.auth_manager
-                    and self.auth_manager.handle_auth_failure(response.status_code)
-                ):
-                    logger.info("鉴权已恢复，请重新运行用例")
+                if self._retry_after_auth_failure(case, response.status_code, allow_auth_retry):
+                    return
                 pytest.fail(f"状态码断言失败: {error}")
             except Exception as error:
                 logger.error("状态码断言异常: %s", error)
@@ -126,6 +122,8 @@ class TestCaseExecutor:
                 self.assert_handler.assert_content_contains(response, case["expected_content"])
             except AssertionError as error:
                 logger.error("内容断言失败: %s", error)
+                if self._retry_after_auth_failure(case, response.status_code, allow_auth_retry):
+                    return
                 pytest.fail(f"内容断言失败: {error}")
 
         if case["json_path"] and case["expected_json_value"]:
@@ -147,8 +145,17 @@ class TestCaseExecutor:
 
         logger.debug("测试用例执行完成: %s - %s", case["case_id"], case["case_name"])
 
+    def _retry_after_auth_failure(self, case, status_code, allow_auth_retry) -> bool:
+        """401/403 时尝试恢复鉴权并重跑当前用例一次。"""
+        if not allow_auth_retry or status_code not in (401, 403) or not self.auth_manager:
+            return False
+        if not self.auth_manager.handle_auth_failure(status_code):
+            return False
+        logger.info("鉴权已恢复，重试用例: %s", case.get("case_name"))
+        self._execute_case_logic(case, allow_auth_retry=False)
+        return True
+
     def _extract_variables(self, case, response) -> dict:
-        """提取变量并写入 data_handler，返回本次提取结果。"""
         extract_key = case.get("extract_key") or ""
         if not extract_key:
             return {}
@@ -190,5 +197,4 @@ class TestCaseExecutor:
         return extracted
 
 
-# 向后兼容别名
 TestExecutor = TestCaseExecutor

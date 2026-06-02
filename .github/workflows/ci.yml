@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run unit tests
+        run: pytest __internal_tests tests/test_agent_skills.py -q --tb=short
+
+      - name: Validate case discovery
+        run: |
+          python -c "
+          from core.case_discovery import discover_and_load, FORMAT_CSV
+          r = discover_and_load(FORMAT_CSV, suite='smoke', load_cases=True)
+          assert r.total_cases >= 1, 'smoke cases missing'
+          print('discovery ok:', r.total_cases, 'cases')
+          "
+
+  smoke-api:
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Smoke tests (requires reachable API)
+        env:
+          IFRIT_BASE_URL: ${{ secrets.IFRIT_BASE_URL }}
+        run: |
+          if [ -z "$IFRIT_BASE_URL" ]; then
+            echo "IFRIT_BASE_URL not set, skip smoke"
+            exit 0
+          fi
+          python main.py --file fixtures/smoke/csv/api_test_smoke.csv --env environment

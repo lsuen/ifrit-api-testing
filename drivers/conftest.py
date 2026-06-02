@@ -53,6 +53,21 @@ def pytest_configure(config):
     logging.info("Pytest configured with envs: %s", ENV_NAMES)
 
 
+def pytest_sessionstart(session):
+    """写入 Allure 环境信息。"""
+    allure_dir = session.config.getoption("--alluredir")
+    if not allure_dir:
+        return
+    from core.allure_env import write_allure_environment
+
+    write_allure_environment(
+        allure_dir=allure_dir,
+        env_names=session.config.getoption("--env") or None,
+        suite=session.config.getoption("--suite"),
+        test_path=session.config.getoption("--test-data-file") or None,
+    )
+
+
 @pytest.fixture(scope="session")
 def request_handler():
     """请求处理器 fixture"""
