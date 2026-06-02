@@ -33,7 +33,7 @@ class TemplateEngine:
             config: 框架配置实例
         """
         self.config = config or Config()
-        self.test_data_config = self.config.test_data_config
+        self.column_mapping_config = self.config.column_mapping_config
         
         # 加载字段映射配置
         self.excel_mapping = self._load_field_mapping('excel')
@@ -54,8 +54,8 @@ class TemplateEngine:
         """
         mapping = {}
         
-        if self.test_data_config.has_section(format_type):
-            for key, value in self.test_data_config.items(format_type):
+        if self.column_mapping_config.has_section(format_type):
+            for key, value in self.column_mapping_config.items(format_type):
                 mapping[key] = value
         
         logger.debug(f"加载 {format_type} 字段映射: {mapping}")

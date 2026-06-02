@@ -1,0 +1,38 @@
+---
+description: ifrit-apitest 永久开发规范——每次任务自动读取 Skill 与 .MemoryForAI，闭环执行开发/测试/提交/通知
+alwaysApply: true
+---
+
+# ifrit 项目永久执行规范（每次必触发）
+
+**收到本仓库任意任务时，必须先执行本规则，并完整遵循：**
+
+`.cursor/skills/ifrit-project-dev/SKILL.md`
+
+不得跳过、不得等用户再次提醒。
+
+## 任务开始（强制）
+
+1. 读取 `.MemoryForAI/`（`PROJECT_STATE.md`、`CHANGELOG.md`），梳理历史与现状
+2. 目录/配置/代码改动遵守 Skill 1.1～1.3（tests/、build/、中文注释、无硬编码密钥等）
+
+## 任务结束（有效迭代后）
+
+1. 编写或运行相关测试（`tests/` 或 `__internal_tests/`）
+2. 用户要求提交时：中文 commit（feat/fix/refactor/doc）
+3. 有效 commit 后：钉钉通知（`.env` + `send_dingtalk_notify.py`）
+4. 更新 `.MemoryForAI/` 与 README（如有变更）
+
+## 配置分层（快速参考）
+
+| 放 `.env` | 放 `config/settings/` |
+|-----------|------------------------|
+| `OPENAI_API_KEY`、`OPENAI_MODEL`、`OPENAI_BASE_URL` | 测试环境 URL、LLM 默认、列映射 |
+| `DINGTALK_ACCESS_TOKEN` | |
+| `DB_USER` / `DB_PASSWORD` | |
+
+## Agent 演进
+
+新 AI Agent 能力放入 `agent/`，配置走 `config/ai_config.py`，勿继续堆在 `core/`。
+
+完整模板与脚本用法见 Skill 正文。

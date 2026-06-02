@@ -6,14 +6,17 @@
 
 ```
 ifrit/
-├── config/                  # 配置文件目录
-│   ├── __init__.py
-│   ├── config.py            # 全局配置
-│   ├── env_config.ini       # 环境配置
-│   ├── test_data_config.ini # 测试数据配置
-│   ├── ai_config.py         # AI配置管理
-│   └── ai_config.ini        # AI配置文件
-├── core/                    # 核心功能目录
+├── config/                  # 配置模块
+│   ├── loader.py            # 统一加载 .env + settings/*.ini
+│   ├── config.py            # 被测 API / 测试数据配置
+│   ├── ai_config.py         # LLM / AI 生成配置
+│   └── settings/            # 可提交的团队默认配置
+│       ├── app.ini
+│       ├── env_config.ini
+│       ├── test_data.ini
+│       ├── column_mapping.ini
+│       └── ai.ini
+├── agent/                   # AI Agent（ReAct/Action/Skill，规划中）
 │   ├── __init__.py
 │   ├── request_handler.py   # 请求处理工具
 │   ├── assert_handler.py    # 断言工具
@@ -53,7 +56,10 @@ ifrit/
 │   ├── ifrit-二次开发详细手册.md    # 二次开发手册
 │   ├── ifrit-yaml数据驱动手册.md    # YAML数据驱动手册
 │   └── ifrit-数据库数据驱动.md      # 数据库数据驱动手册
-├── __internal_tests/        # 内部单元测试目录
+├── __internal_tests/        # 内部单元测试目录（历史）
+├── tests/                   # 单元测试目录（新增测试优先放此）
+├── build/                   # 构建产物目录
+├── .cursor/skills/          # Cursor Agent 项目技能（含开发规范）
 ├── logs/                    # 日志目录
 ├── reports/                 # 测试报告目录
 ├── main.py                  # 主程序入口
@@ -132,7 +138,7 @@ python main.py --serve-report
 要运行一个简单的测试，首先需要准备测试数据。框架支持多种格式的数据源，最简单的方式是使用Excel或CSV文件定义测试用例。
 
 ### 2. 环境配置
-修改 [config/env_config.ini](file:///C:/CodeFiles/PyProjects/ifrit-apitest/config/env_config.ini) 文件中的 `base_url` 为你想要测试的API地址。
+修改 `config/settings/env_config.ini` 中对应环境的 `base_url`。
 
 ### 3. 运行测试
 使用如下命令运行测试：
@@ -168,7 +174,7 @@ python main.py --serve-report
 
 ### 2. 添加数据库支持
 框架支持从数据库读取测试数据，需要：
-1. 配置数据库连接信息到 [config/env_config.ini](file:///C:/CodeFiles/PyProjects/ifrit-apitest/config/env_config.ini)
+1. 配置数据库 host/port 到 `config/settings/env_config.ini`，账号密码写入 `.env`（`DB_USER` / `DB_PASSWORD`）
 2. 编写数据库查询语句来获取测试数据
 
 > **YAML数据驱动详细方法请查看** [__docs/ifrit-yaml数据驱动手册.md](file:///C:/CodeFiles/PyProjects/ifrit-apitest/__docs/ifrit-yaml数据驱动手册.md)
@@ -209,7 +215,7 @@ python __internal_tests/test_business_logic.py
 
 ## 注意事项
 
-1. **环境配置**：确保在运行测试前正确配置 [config/env_config.ini](file:///C:/CodeFiles/PyProjects/ifrit-apitest/config/env_config.ini) 文件中的API基础URL
+1. **环境配置**：确保 `config/settings/env_config.ini` 中 API 地址正确；个人临时 override 可用 `.env` 的 `IFRIT_BASE_URL`
 2. **依赖安装**：运行前请确保已安装所有依赖包
 3. **Allure报告**：如需使用报告功能，需要安装Allure命令行工具
 4. **权限问题**：确保框架有权限读取测试数据文件和写入报告目录
@@ -227,12 +233,59 @@ python __internal_tests/test_business_logic.py
 
 ## 开发规范
 
-1. 所有核心功能应位于core目录
-2. 工具类应位于utils目录
-3. 配置文件应位于config目录
-4. 测试用例应位于testcases目录
-5. 文档应位于docs目录
-6. 内部单元测试应位于internal_tests目录
+本项目采用永久执行规范，详见 [`.cursor/skills/ifrit-project-dev/SKILL.md`](.cursor/skills/ifrit-project-dev/SKILL.md)。
+
+### 任务闭环流程
+
+1. 读取/更新 `.MemoryForAI/` 项目记忆
+2. 按代码规范完成开发（中文注释、语义化命名、参数校验等）
+3. 编写并运行单元测试（`tests/` 或 `__internal_tests/`）
+4. Git 提交（`feat` / `fix` / `refactor` / `doc`，中文描述）
+5. 推送钉钉迭代通知（见下方）
+6. 同步更新 README 与项目记忆
+
+### 目录约束
+
+| 目录 | 用途 |
+|------|------|
+| `tests/` | 单元测试、测试脚本、测试配置 |
+| `build/` | 打包产物、编译文件、部署包 |
+| `core/` | 核心业务逻辑 |
+| `utils/` | 工具类 |
+| `config/` | 配置文件 |
+| `drivers/` | 测试驱动 |
+| `__docs/` | 项目文档 |
+| `__internal_tests/` | 历史内部单元测试 |
+
+### 钉钉迭代通知
+
+### 配置分层
+
+| 类型 | 位置 | 示例 |
+|------|------|------|
+| 敏感 / 个人 | `.env`（gitignore） | `OPENAI_API_KEY`、`OPENAI_BASE_URL`、`OPENAI_MODEL`、`DINGTALK_ACCESS_TOKEN` |
+| 团队稳定 | `config/settings/*.ini` | 测试环境 URL、LLM endpoint、列映射 |
+
+首次使用：`cp .env.example .env` 并填写本地密钥。
+
+### 钉钉迭代通知
+
+commit 后发送（需 `.env` 中配置 `DINGTALK_ACCESS_TOKEN`）：
+
+```bash
+python .cursor/skills/ifrit-project-dev/scripts/send_dingtalk_notify.py \
+  --commit-type feat \
+  --commit-hash <提交哈希> \
+  --summary "本次修改说明" \
+  --modules "core/, tests/" \
+  --reason "改动原因"
+```
+
+预览报告不发送：追加 `--dry-run`。
+
+### _legacy 说明
+
+早期 README 中的 `testcases`、`docs`、`internal_tests` 等路径已统一为当前目录结构，请以本节为准。
 
 ## 贡献
 

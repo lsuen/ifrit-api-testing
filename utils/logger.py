@@ -43,7 +43,9 @@ class EnhancedLogger:
         self.logger.addHandler(main_handler)
         
         # 2. 按天分割的日志文件（可配置开关）
-        daily_logs_enabled = self.config.env_config.getboolean('logging', 'daily_logs_enabled', fallback=True)
+        daily_logs_enabled = self.config.app_config.getboolean(
+            'logging', 'daily_logs_enabled', fallback=True
+        )
         if daily_logs_enabled:
             daily_log_path = os.path.join(log_dir, 'daily')
             os.makedirs(daily_log_path, exist_ok=True)
@@ -55,7 +57,9 @@ class EnhancedLogger:
             self.logger.addHandler(daily_handler)
         
         # 3. 错误日志按天单独存储（可配置开关）
-        error_daily_logs_enabled = self.config.env_config.getboolean('logging', 'error_daily_logs_enabled', fallback=True)
+        error_daily_logs_enabled = self.config.app_config.getboolean(
+            'logging', 'error_daily_logs_enabled', fallback=True
+        )
         if error_daily_logs_enabled:
             error_daily_log_path = os.path.join(log_dir, 'errors')
             os.makedirs(error_daily_log_path, exist_ok=True)

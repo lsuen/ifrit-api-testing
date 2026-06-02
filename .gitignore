@@ -1,0 +1,40 @@
+# AI 项目记忆目录（本地追溯，不纳入版本库）
+.MemoryForAI/
+
+# Cursor：保留 rules/skills 进仓库，其余本地忽略
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
+!.cursor/skills/
+!.cursor/skills/**
+
+# 本地敏感配置
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+*.egg
+
+# 虚拟环境
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+
+# 日志与报告产物
+logs/
+reports/
+
+# 构建产物（保留 build/README.md）
+build/*
+!build/README.md
+
+# 系统文件
+.DS_Store
+Thumbs.db
