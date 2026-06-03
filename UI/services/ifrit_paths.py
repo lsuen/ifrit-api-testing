@@ -90,10 +90,11 @@ def get_latest_run_id(config: Dict[str, Any]) -> Optional[str]:
     return latest_file.read_text(encoding="utf-8").strip() or None
 
 
-def count_cases_in_dir(directory: Path) -> int:
-    total = 0
+def count_cases_in_dir(directory: Path) -> Optional[int]:
+    """统计目录下 CSV 用例行数；目录不存在返回 None。"""
     if not directory.is_dir():
-        return 0
+        return None
+    total = 0
     for csv_path in directory.rglob("*.csv"):
         try:
             with open(csv_path, "r", encoding="utf-8") as handle:
@@ -107,16 +108,17 @@ def count_cases_in_dir(directory: Path) -> int:
 def dashboard_stats(config: Dict[str, Any]) -> Dict[str, Any]:
     root = config["ifrit"]["root_path_resolved"]
     fixtures = root / "fixtures"
+    runs_dir = project_path(config, "reports_runs")
     manual = count_cases_in_dir(fixtures / "manual" / "csv")
     ai = count_cases_in_dir(fixtures / "ai" / "csv")
     smoke = count_cases_in_dir(fixtures / "smoke" / "csv")
-    runs = list_report_runs(config)
+    runs = list_report_runs(config) if runs_dir.is_dir() else []
     latest = get_latest_run_id(config)
     return {
         "manual_cases": manual,
         "ai_cases": ai,
         "smoke_cases": smoke,
-        "report_runs": len(runs),
+        "report_runs": len(runs) if runs_dir.is_dir() else None,
         "latest_run": latest,
         "latest_runs": runs[:5],
     }

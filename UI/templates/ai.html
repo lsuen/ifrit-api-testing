@@ -22,26 +22,43 @@
                         <div class="mb-3">
                             <label class="form-label">文档来源</label>
                             <select class="form-select" id="docSource">
-                                <option value="local">本地文档</option>
-                                <option value="url">远程 URL</option>
+                                <option value="local" {% if not docs %}disabled{% endif %}>本地文档</option>
+                                <option value="url" {% if not swagger_url %}disabled{% endif %}>远程 URL</option>
                             </select>
+                            {% if not docs and not swagger_url %}
+                            <p class="small text-muted mt-1 mb-0">本地 api_docs 与远程 Swagger URL 均 {{ unavailable }}</p>
+                            {% elif not docs %}
+                            <p class="small text-muted mt-1 mb-0">api_docs 目录无文档，请使用远程 URL</p>
+                            {% elif not swagger_url %}
+                            <p class="small text-muted mt-1 mb-0">远程 URL {{ unavailable }}（需 env_config.ini + auth.ini discovery）</p>
+                            {% endif %}
                         </div>
                         <div class="mb-3" id="localDocGroup">
                             <label class="form-label">本地 API 文档</label>
+                            {% if docs %}
                             <select class="form-select" id="docSelect">
                                 <option value="">-- 选择 --</option>
                                 {% for doc in docs %}
-                                <option value="{{ doc.relative }}">{{ doc.relative }}</option>
+                                <option value="{{ doc.relative }}" {% if doc.relative == default_doc %}selected{% endif %}>{{ doc.relative }}</option>
                                 {% endfor %}
                             </select>
+                            {% else %}
+                            <p class="text-muted small mb-0">{{ unavailable }}（api_docs 目录为空或不存在）</p>
+                            {% endif %}
                         </div>
                         <div class="mb-3" id="urlDocGroup" style="display:none;">
                             <label class="form-label">文档 URL</label>
-                            <input type="url" class="form-control" id="docUrl" placeholder="http://.../apispec_1.json 或 Apifox MD 链接">
+                            {% if swagger_url %}
+                            <input type="url" class="form-control" id="docUrl" value="{{ swagger_url }}">
+                            <p class="small text-muted mt-1 mb-0">来自 env base_url + auth.ini discovery</p>
+                            {% else %}
+                            <input type="url" class="form-control" id="docUrl" placeholder="请输入 Swagger / Apifox URL" disabled>
+                            <p class="text-muted small mt-1 mb-0">{{ unavailable }}</p>
+                            {% endif %}
                         </div>
                         <div class="mb-3">
                             <label class="form-label">端点过滤（可选，每行一个）</label>
-                            <textarea class="form-control" id="endpoints" rows="2" placeholder="/api/address">/api/address</textarea>
+                            <textarea class="form-control" id="endpoints" rows="2" placeholder="如 /api/address，留空则生成全部"></textarea>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Skill</label>
@@ -61,7 +78,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">输出目录</label>
-                            <input type="text" class="form-control" id="outputDir" value="fixtures/ai/csv">
+                            <input type="text" class="form-control" id="outputDir" value="{{ default_output_dir }}">
                         </div>
                         <div class="form-check form-switch mb-3">
                             <input class="form-check-input" type="checkbox" id="runAfterGenerate">
@@ -91,14 +108,21 @@
                     <div class="card-header">交互命令</div>
                     <div class="card-body">
                         <p class="small text-muted">等效于 <code>python main.py --chat</code>，按顺序发送命令：</p>
-                        <div class="mb-2">
-                            <button type="button" class="btn-ifrit btn-secondary-ifrit w-100 mb-2 chat-cmd" data-cmd="doc api_docs/apispec_1.json">doc 本地 Swagger</button>
-                            <button type="button" class="btn-ifrit btn-secondary-ifrit w-100 mb-2 chat-cmd" data-cmd="url http://192.168.31.129:5000/apispec_1.json">url 内网 Swagger</button>
-                            <button type="button" class="btn-ifrit btn-secondary-ifrit w-100 mb-2 chat-cmd" data-cmd="endpoint /api/address">endpoint 过滤</button>
-                            <button type="button" class="btn-ifrit btn-secondary-ifrit w-100 mb-2 chat-cmd" data-cmd="out fixtures/ai/csv">out 输出目录</button>
+                        <div class="mb-2" id="chatQuickBtns">
+                            {% if default_doc %}
+                            <button type="button" class="btn-ifrit btn-secondary-ifrit w-100 mb-2 chat-cmd" data-cmd="doc {{ default_doc }}">doc {{ default_doc }}</button>
+                            {% endif %}
+                            {% if swagger_url %}
+                            <button type="button" class="btn-ifrit btn-secondary-ifrit w-100 mb-2 chat-cmd" data-cmd="url {{ swagger_url }}">url 远程 Swagger</button>
+                            {% endif %}
+                            <button type="button" class="btn-ifrit btn-secondary-ifrit w-100 mb-2 chat-cmd" data-cmd="out {{ default_output_dir }}">out {{ default_output_dir }}</button>
+                            <button type="button" class="btn-ifrit btn-secondary-ifrit w-100 mb-2 chat-cmd" data-cmd="generate">generate</button>
+                            {% if not default_doc and not swagger_url %}
+                            <p class="text-muted small">快捷命令 {{ unavailable }}，请手动输入命令队列</p>
+                            {% endif %}
                         </div>
                         <label class="form-label">命令队列（空格分隔）</label>
-                        <textarea class="form-control mb-3" id="chatCommands" rows="4">doc api_docs/apispec_1.json endpoint /api/address out fixtures/ai/csv generate</textarea>
+                        <textarea class="form-control mb-3" id="chatCommands" rows="4" placeholder="例：doc api_docs/xxx.json endpoint /api/foo out fixtures/ai/csv generate">{% if default_doc %}doc {{ default_doc }} out {{ default_output_dir }} generate{% endif %}</textarea>
                         <button class="btn-ifrit btn-primary-ifrit w-100 justify-content-center" id="chatRunBtn">
                             <i class="bi bi-chat-dots"></i> 执行交互命令
                         </button>
@@ -120,11 +144,25 @@
 
 {% block extra_js %}
 <script>
-document.getElementById('docSource').addEventListener('change', function() {
-    const isUrl = this.value === 'url';
-    document.getElementById('localDocGroup').style.display = isUrl ? 'none' : 'block';
-    document.getElementById('urlDocGroup').style.display = isUrl ? 'block' : 'none';
-});
+(function() {
+    const hasLocal = {{ 'true' if docs else 'false' }};
+    const hasUrl = {{ 'true' if swagger_url else 'false' }};
+    const docSource = document.getElementById('docSource');
+
+    if (!hasLocal && hasUrl) {
+        docSource.value = 'url';
+        document.getElementById('localDocGroup').style.display = 'none';
+        document.getElementById('urlDocGroup').style.display = 'block';
+    } else if (!hasLocal && !hasUrl) {
+        document.getElementById('generateBtn').disabled = true;
+    }
+
+    docSource.addEventListener('change', function() {
+        const isUrl = this.value === 'url';
+        document.getElementById('localDocGroup').style.display = isUrl ? 'none' : 'block';
+        document.getElementById('urlDocGroup').style.display = isUrl ? 'block' : 'none';
+    });
+})();
 
 document.getElementById('generateBtn').addEventListener('click', async () => {
     const source = document.getElementById('docSource').value;
@@ -132,14 +170,16 @@ document.getElementById('generateBtn').addEventListener('click', async () => {
         format: document.getElementById('formatSelect').value,
         output_dir: document.getElementById('outputDir').value,
         skill: document.getElementById('skillSelect').value || undefined,
-        endpoints: document.getElementById('endpoints').value.split('\n').filter(Boolean),
+        endpoints: document.getElementById('endpoints').value.split('\n').map(s => s.trim()).filter(Boolean),
     };
     if (source === 'url') {
-        payload.input_url = document.getElementById('docUrl').value.trim();
-        if (!payload.input_url) return alert('请输入 URL');
+        const urlInput = document.getElementById('docUrl');
+        payload.input_url = urlInput ? urlInput.value.trim() : '';
+        if (!payload.input_url) return alert('远程 URL 获取不到，请检查 env_config.ini 与 auth.ini');
     } else {
-        payload.input_doc = document.getElementById('docSelect').value;
-        if (!payload.input_doc) return alert('请选择文档');
+        const sel = document.getElementById('docSelect');
+        payload.input_doc = sel ? sel.value : '';
+        if (!payload.input_doc) return alert('请选择本地文档，或 api_docs 目录为空');
     }
 
     document.getElementById('generateBtn').disabled = true;

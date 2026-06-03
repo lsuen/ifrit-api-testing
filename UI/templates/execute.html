@@ -15,8 +15,10 @@
                 <div class="row g-2" id="presetGrid">
                     <div class="col-12">
                         <div class="preset-card selected" data-preset="smoke">
-                            <h6><i class="bi bi-shield-check"></i> 冒烟测试</h6>
-                            <p>fixtures/smoke · 无需鉴权</p>
+                            <h6><i class="bi bi-shield-check"></i> 冒烟测试
+                                {% if not preset_status.get('smoke_file', {}).get('exists') %}<span class="badge bg-warning text-dark ms-1">文件缺失</span>{% endif %}
+                            </h6>
+                            <p>{{ presets.smoke_file }}</p>
                         </div>
                     </div>
                     <div class="col-12">
@@ -27,8 +29,10 @@
                     </div>
                     <div class="col-12">
                         <div class="preset-card" data-preset="ai_business">
-                            <h6><i class="bi bi-geo-alt"></i> 地址业务流</h6>
-                            <p>AI 4 步链路 · 需全局鉴权</p>
+                            <h6><i class="bi bi-geo-alt"></i> 地址业务流
+                                {% if not preset_status.get('ai_business_file', {}).get('exists') %}<span class="badge bg-warning text-dark ms-1">文件缺失</span>{% endif %}
+                            </h6>
+                            <p>{{ presets.ai_business_file }} · 需全局鉴权</p>
                         </div>
                     </div>
                     <div class="col-12">
@@ -46,11 +50,16 @@
             <div class="card-body">
                 <div class="mb-3">
                     <label class="form-label">运行环境</label>
+                    {% if environments %}
                     <select class="form-select" id="envSelect">
                         {% for env in environments %}
                         <option value="{{ env }}">{{ env }}</option>
                         {% endfor %}
                     </select>
+                    {% else %}
+                    <p class="text-muted small mb-0">{{ unavailable }}（env_config.ini 不存在或为空）</p>
+                    <input type="hidden" id="envSelect" value="">
+                    {% endif %}
                 </div>
                 <div class="mb-3" id="suiteGroup">
                     <label class="form-label">套件</label>
@@ -63,16 +72,23 @@
                 </div>
                 <div class="mb-3" id="fileGroup" style="display:none;">
                     <label class="form-label">测试文件</label>
+                    {% if files %}
                     <select class="form-select" id="fileSelect">
                         <option value="">-- 选择文件 --</option>
                         {% for f in files %}
                         <option value="{{ f.relative }}">{{ f.relative }}</option>
                         {% endfor %}
                     </select>
+                    {% else %}
+                    <p class="text-muted small mb-0">{{ unavailable }}（fixtures 目录无可用文件）</p>
+                    <select class="form-select d-none" id="fileSelect"><option value=""></option></select>
+                    {% endif %}
                 </div>
                 <div class="form-check form-switch mb-2">
                     <input class="form-check-input" type="checkbox" id="globalAuthCheck">
-                    <label class="form-check-label" for="globalAuthCheck">全局鉴权 ({{ auth.username }})</label>
+                    <label class="form-check-label" for="globalAuthCheck">
+                        全局鉴权 {% if auth.available %}({{ auth.username }}){% else %}<span class="text-muted">({{ unavailable }})</span>{% endif %}
+                    </label>
                 </div>
                 <div class="form-check form-switch mb-3">
                     <input class="form-check-input" type="checkbox" id="reportCheck" checked>
@@ -115,10 +131,20 @@
 {% block extra_js %}
 <script>
 const PRESETS = {
-    smoke: { file: {{ presets.smoke_file|tojson }}, suite: 'smoke', global_auth: false },
-    manual: { type: 'csv', suite: 'manual', global_auth: false },
-    ai_business: { file: {{ presets.ai_business_file|tojson }}, suite: 'ai', global_auth: true },
-    custom: { custom: true }
+    smoke: {
+        file: {{ presets.smoke_file|tojson }},
+        suite: 'smoke',
+        global_auth: false,
+        exists: {{ 'true' if preset_status.get('smoke_file', {}).get('exists') else 'false' }}
+    },
+    manual: { type: 'csv', suite: 'manual', global_auth: false, exists: true },
+    ai_business: {
+        file: {{ presets.ai_business_file|tojson }},
+        suite: 'ai',
+        global_auth: true,
+        exists: {{ 'true' if preset_status.get('ai_business_file', {}).get('exists') else 'false' }}
+    },
+    custom: { custom: true, exists: true }
 };
 
 let currentPreset = 'smoke';
@@ -145,10 +171,11 @@ function applyPreset(name) {
 function buildParams() {
     const p = PRESETS[currentPreset];
     const params = {
-        env: document.getElementById('envSelect').value,
         global_auth: document.getElementById('globalAuthCheck').checked,
         generate_report: document.getElementById('reportCheck').checked,
     };
+    const envVal = document.getElementById('envSelect').value;
+    if (envVal) params.env = envVal;
     if (p.file) params.file = p.file;
     if (p.suite) params.suite = p.suite;
     if (p.type) params.type = p.type;
@@ -162,6 +189,11 @@ function buildParams() {
 
 document.getElementById('runBtn').addEventListener('click', async () => {
     const params = buildParams();
+    const preset = PRESETS[currentPreset];
+    if (preset.file && preset.exists === false) {
+        alert('预设用例文件不存在: ' + preset.file);
+        return;
+    }
     if (currentPreset === 'custom' && !params.file && !params.suite) {
         alert('请选择文件或套件');
         return;
@@ -180,7 +212,14 @@ document.getElementById('runBtn').addEventListener('click', async () => {
             document.getElementById('statusBadge').style.display = 'none';
             if (status.status === 'completed') {
                 IfritUI.showToast('执行完成', 'success');
-                setTimeout(() => location.reload(), 1500);
+                if (document.getElementById('reportCheck').checked) {
+                    IfritUI.showLatestReport(
+                        document.getElementById('reportLink'),
+                        document.getElementById('reportLinkBox')
+                    );
+                }
+            } else if (status.status === 'failed') {
+                IfritUI.showToast('执行失败，请查看日志', 'error');
             }
         });
     } catch (e) {

@@ -217,7 +217,6 @@ def build_ai_generate_command(config: Dict[str, Any], params: Dict[str, Any]) ->
 def build_ai_chat_command(config: Dict[str, Any], chat_args: List[str]) -> List[str]:
     cmd = build_python_cmd(config) + [str(build_main_script(config)), "--chat"]
     if chat_args:
-        cmd.append("--")
         cmd.extend(chat_args)
     return cmd
 
@@ -232,4 +231,37 @@ def build_clean_command(config: Dict[str, Any], target: str, keep_days: Optional
         cmd.extend(["--keep-days", str(keep_days)])
     if dry_run:
         cmd.append("--dry-run")
+    return cmd
+
+
+def build_import_command(config: Dict[str, Any], params: Dict[str, Any]) -> List[str]:
+    root = config["ifrit"]["root_path_resolved"]
+    import_file = params.get("import_file")
+    if not import_file:
+        raise ValueError("缺少 import_file")
+
+    rel = Path(import_file)
+    if rel.is_absolute():
+        try:
+            import_file = str(rel.relative_to(root)).replace("\\", "/")
+        except ValueError:
+            import_file = str(rel).replace("\\", "/")
+    else:
+        import_file = str(import_file).replace("\\", "/")
+
+    cmd = build_python_cmd(config) + [
+        str(build_main_script(config)),
+        "--import",
+        import_file,
+        "--import-format",
+        params.get("format", "postman"),
+        "--import-suite",
+        params.get("suite", "manual"),
+    ]
+    if params.get("output"):
+        cmd.extend(["--import-output", str(params["output"]).replace("\\", "/")])
+    if params.get("dry_run"):
+        cmd.append("--import-dry-run")
+    if params.get("ai_enhance"):
+        cmd.append("--import-ai-enhance")
     return cmd

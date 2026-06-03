@@ -9,7 +9,12 @@ UI_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(UI_DIR))
 
 from app import app, init_app_config
-from services.cli_runner import build_ai_generate_command, build_test_command
+from services.cli_runner import (
+    build_ai_chat_command,
+    build_ai_generate_command,
+    build_import_command,
+    build_test_command,
+)
 from services.config_loader import load_config
 
 
@@ -35,6 +40,45 @@ class TestUIPlatform(unittest.TestCase):
 
     def test_advanced_page(self):
         self.assertEqual(self.client.get("/advanced").status_code, 200)
+
+    def test_import_page(self):
+        response = self.client.get("/import")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("导入中心".encode(), response.data)
+
+    def test_api_import_dry_run(self):
+        sample = (
+            load_config()["ifrit"]["root_path_resolved"]
+            / "tests/fixtures/postman/ifrit_address_smoke.postman_collection.json"
+        )
+        self.assertTrue(sample.is_file())
+        response = self.client.post(
+            "/api/import",
+            data={
+                "source_path": "tests/fixtures/postman/ifrit_address_smoke.postman_collection.json",
+                "suite": "manual",
+                "dry_run": "1",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.get_json()
+        self.assertIn("process_id", data)
+        self.assertIn("--import-dry-run", data["command"])
+
+    def test_build_import_command(self):
+        config = load_config()
+        cmd = build_import_command(
+            config,
+            {
+                "import_file": "tests/fixtures/postman/ifrit_address_smoke.postman_collection.json",
+                "suite": "manual",
+                "format": "postman",
+            },
+        )
+        joined = " ".join(cmd)
+        self.assertIn("--import", joined)
+        self.assertIn("--import-format postman", joined)
+        self.assertIn("--import-suite manual", joined)
 
     def test_api_overview(self):
         response = self.client.get("/api/overview")
@@ -65,6 +109,14 @@ class TestUIPlatform(unittest.TestCase):
         joined = " ".join(cmd)
         self.assertIn("--input-url", joined)
         self.assertIn("--swagger-endpoint", joined)
+
+    def test_build_ai_chat_command_no_double_dash(self):
+        config = load_config()
+        cmd = build_ai_chat_command(config, ["doc", "api_docs/apispec_1.json", "generate"])
+        self.assertIn("--chat", cmd)
+        chat_idx = cmd.index("--chat")
+        self.assertEqual(cmd[chat_idx + 1], "doc")
+        self.assertNotIn("--", cmd[chat_idx + 1 :])
 
 
 if __name__ == "__main__":

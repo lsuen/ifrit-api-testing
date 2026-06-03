@@ -12,6 +12,7 @@ if str(UI_DIR) not in sys.path:
     sys.path.insert(0, str(UI_DIR))
 
 import json
+import os
 from typing import Any, Dict, List
 
 from flask import (
@@ -23,16 +24,27 @@ from flask import (
     send_file,
     stream_with_context,
 )
+from werkzeug.utils import secure_filename
 
 from services.cli_runner import (
     build_ai_chat_command,
     build_ai_generate_command,
     build_clean_command,
+    build_import_command,
     build_simple_command,
     build_test_command,
     process_manager,
 )
-from services.config_loader import get_base_url, load_auth_summary, load_config, load_environments, project_path
+from services.config_loader import (
+    UNAVAILABLE,
+    get_preset_status,
+    get_remote_swagger_url,
+    load_auth_summary,
+    load_config,
+    load_environment_options,
+    load_environments,
+    project_path,
+)
 from services.file_service import ACE_MODE_MAP, build_file_tree, read_file_content, save_file_content
 from services.ifrit_paths import (
     dashboard_stats,
@@ -56,13 +68,15 @@ def register_routes(app: Flask) -> None:
     def dashboard():
         stats = dashboard_stats(CONFIG)
         auth = load_auth_summary(CONFIG)
-        envs = load_environments(CONFIG)
-        base_url = get_base_url(CONFIG, envs[0] if envs else "environment")
+        env_options = load_environment_options(CONFIG)
+        base_url = env_options[0]["base_url"] if env_options else UNAVAILABLE
         return render_template(
             "dashboard.html",
             stats=stats,
             auth=auth,
             base_url=base_url,
+            env_options=env_options,
+            unavailable=UNAVAILABLE,
             presets=CONFIG.get("presets", {}),
         )
 
@@ -73,18 +87,49 @@ def register_routes(app: Flask) -> None:
         project_root = CONFIG["ifrit"]["root_path_resolved"]
         files = list_test_files(root, project_root=project_root)
         presets = CONFIG.get("presets", {})
+        preset_status = get_preset_status(CONFIG)
         return render_template(
             "execute.html",
             environments=envs,
             files=files,
             presets=presets,
+            preset_status=preset_status,
             auth=load_auth_summary(CONFIG),
+            unavailable=UNAVAILABLE,
+        )
+
+    @app.route("/import")
+    def import_page():
+        root = CONFIG["ifrit"]["root_path_resolved"]
+        sample_rel = "tests/fixtures/postman/ifrit_address_smoke.postman_collection.json"
+        sample_path = sample_rel if (root / sample_rel).is_file() else None
+        return render_template(
+            "import.html",
+            sample_path=sample_path,
         )
 
     @app.route("/ai")
     def ai_page():
         docs = list_api_docs(CONFIG)
-        return render_template("ai.html", docs=docs, auth=load_auth_summary(CONFIG))
+        default_doc = docs[0]["relative"] if docs else None
+        swagger_url = get_remote_swagger_url(CONFIG)
+        root = CONFIG["ifrit"]["root_path_resolved"]
+        output_dir = "fixtures/ai/csv"
+        ai_csv = root / "fixtures" / "ai" / "csv"
+        if ai_csv.is_dir():
+            try:
+                output_dir = str(ai_csv.relative_to(root)).replace("\\", "/")
+            except ValueError:
+                pass
+        return render_template(
+            "ai.html",
+            docs=docs,
+            default_doc=default_doc,
+            swagger_url=swagger_url,
+            default_output_dir=output_dir,
+            auth=load_auth_summary(CONFIG),
+            unavailable=UNAVAILABLE,
+        )
 
     @app.route("/reports")
     def reports_page():
@@ -105,11 +150,15 @@ def register_routes(app: Flask) -> None:
 
     @app.route("/api/overview")
     def api_overview():
+        env_options = load_environment_options(CONFIG)
         return jsonify(
             {
                 "stats": dashboard_stats(CONFIG),
                 "auth": load_auth_summary(CONFIG),
                 "environments": load_environments(CONFIG),
+                "environment_options": env_options,
+                "swagger_url": get_remote_swagger_url(CONFIG),
+                "presets": get_preset_status(CONFIG),
             }
         )
 
@@ -156,6 +205,67 @@ def register_routes(app: Flask) -> None:
         cmd = build_ai_chat_command(CONFIG, chat_args)
         process_id = process_manager.start(cmd, CONFIG["ifrit"]["root_path_resolved"], label="ai_chat")
         return jsonify({"process_id": process_id, "command": " ".join(cmd)})
+
+    @app.route("/api/import", methods=["POST"])
+    def api_import():
+        root = CONFIG["ifrit"]["root_path_resolved"]
+        import_rel = ""
+        output_file = ""
+
+        if request.files.get("file"):
+            upload = request.files["file"]
+            filename = secure_filename(upload.filename or "collection.json")
+            if not filename.lower().endswith(".json"):
+                return jsonify({"error": "仅支持 Postman JSON 文件"}), 400
+            save_dir = root / "fixtures" / "import" / "postman"
+            save_dir.mkdir(parents=True, exist_ok=True)
+            save_path = save_dir / filename
+            upload.save(save_path)
+            import_rel = str(save_path.relative_to(root)).replace("\\", "/")
+        else:
+            source_path = (request.form.get("source_path") or "").strip()
+            if not source_path:
+                return jsonify({"error": "请上传 Postman 文件或指定 source_path"}), 400
+            candidate = Path(source_path)
+            if not candidate.is_absolute():
+                candidate = root / source_path.replace("/", os.sep)
+            if not candidate.is_file():
+                return jsonify({"error": f"文件不存在: {source_path}"}), 400
+            import_rel = str(candidate.relative_to(root)).replace("\\", "/")
+
+        suite = request.form.get("suite", "manual")
+        output = (request.form.get("output") or "").strip()
+        dry_run = request.form.get("dry_run") in ("1", "true", "True", "on")
+        ai_enhance = request.form.get("ai_enhance") in ("1", "true", "True", "on")
+
+        params: Dict[str, Any] = {
+            "import_file": import_rel,
+            "format": request.form.get("format", "postman"),
+            "suite": suite,
+            "dry_run": dry_run,
+            "ai_enhance": ai_enhance,
+        }
+        if output:
+            out_path = Path(output)
+            if not out_path.is_absolute():
+                out_path = root / output.replace("/", os.sep)
+            params["output"] = str(out_path.relative_to(root)).replace("\\", "/")
+            if not dry_run:
+                output_file = params["output"]
+
+        try:
+            cmd = build_import_command(CONFIG, params)
+        except ValueError as error:
+            return jsonify({"error": str(error)}), 400
+
+        process_id = process_manager.start(cmd, root, label="import_postman")
+        return jsonify(
+            {
+                "process_id": process_id,
+                "command": " ".join(cmd),
+                "output_file": output_file,
+            }
+        )
 
     @app.route("/api/reports/generate", methods=["POST"])
     def api_reports_generate():

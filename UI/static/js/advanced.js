@@ -51,7 +51,30 @@
         });
     }
 
+    function loadDirOptions() {
+        fetch('/api/dirs').then(function(r) { return r.json(); }).then(function(data) {
+            dirSelect.innerHTML = '';
+            if (!data.dirs || !data.dirs.length) {
+                dirSelect.innerHTML = '<option value="">获取不到可用目录</option>';
+                fileTree.innerHTML = '<div class="text-muted p-2">获取不到</div>';
+                return;
+            }
+            data.dirs.forEach(function(d, i) {
+                var opt = document.createElement('option');
+                opt.value = d.key;
+                opt.textContent = d.name;
+                dirSelect.appendChild(opt);
+                if (i === 0) currentDir = d.key;
+            });
+            loadFileTree();
+        }).catch(function() {
+            dirSelect.innerHTML = '<option value="">获取不到</option>';
+            fileTree.innerHTML = '<div class="text-muted p-2">目录列表加载失败</div>';
+        });
+    }
+
     function loadFileTree() {
+        if (!currentDir) return;
         fileTree.innerHTML = '<div class="text-muted p-2">加载中...</div>';
         fetch('/api/files/tree', {
             method: 'POST',
@@ -112,5 +135,5 @@
     document.addEventListener('keydown', function(e) {
         if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveFile(); }
     });
-    loadFileTree();
+    loadDirOptions();
 })();

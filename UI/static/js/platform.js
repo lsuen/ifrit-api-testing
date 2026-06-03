@@ -33,10 +33,27 @@ const IfritUI = (function() {
     function showToast(message, type) {
         const el = document.createElement('div');
         el.className = 'alert alert-' + (type === 'success' ? 'success' : 'danger');
+        el.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;min-width:200px;';
         el.textContent = message;
         document.body.appendChild(el);
         setTimeout(() => el.remove(), 3000);
     }
 
-    return { appendLog, streamLogs, showToast };
+    function showLatestReport(linkEl, boxEl) {
+        return fetch('/api/overview')
+            .then(r => r.json())
+            .then(data => {
+                const runId = data.stats && data.stats.latest_run;
+                const runs = (data.stats && data.stats.latest_runs) || [];
+                const latest = runs.find(r => r.run_id === runId) || runs[0];
+                if (latest && latest.has_html && linkEl && boxEl) {
+                    linkEl.href = latest.html_url;
+                    boxEl.style.display = 'block';
+                }
+                return latest;
+            })
+            .catch(() => null);
+    }
+
+    return { appendLog, streamLogs, showToast, showLatestReport };
 })();

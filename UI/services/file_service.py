@@ -24,7 +24,7 @@ ACE_MODE_MAP = {
     ".ini": "ini",
     ".sh": "sh",
     ".bat": "batchfile",
-    ".csv": "csv",
+    ".csv": "text",
     ".log": "text",
     ".txt": "text",
 }

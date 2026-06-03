@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}导入中心{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title"><i class="bi bi-box-arrow-in-down"></i> 导入中心</h1>
+    <p class="page-desc">将 Postman Collection v2.1 转为 ifrit CSV，导入后即可在执行测试页运行</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card-panel">
+            <div class="card-header">导入向导</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">一级 · 导入目标</label>
+                    <select class="form-select" id="importGoal" disabled>
+                        <option selected>生成可执行用例（CSV）</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">二级 · 来源格式</label>
+                    <select class="form-select" id="importFormat">
+                        <option value="postman" selected>Postman Collection v2.1</option>
+                    </select>
+                    <p class="small text-muted mt-1 mb-0">Apifox 等格式后续支持</p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">三级 · 归属套件</label>
+                    <select class="form-select" id="importSuite">
+                        <option value="manual" selected>manual（人工/导入）</option>
+                        <option value="smoke">smoke（冒烟）</option>
+                        <option value="ai">ai（AI 套件）</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Postman 文件</label>
+                    <input type="file" class="form-control" id="importFile" accept=".json,application/json">
+                    {% if sample_path %}
+                    <p class="small text-muted mt-2 mb-0">
+                        或使用项目内样例：
+                        <a href="#" id="useSampleBtn">{{ sample_path }}</a>
+                    </p>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">输出路径（可选）</label>
+                    <input type="text" class="form-control" id="importOutput" placeholder="留空则自动生成到 fixtures/{suite}/csv/">
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="dryRunCheck">
+                    <label class="form-check-label" for="dryRunCheck">仅预览（dry-run，不写文件）</label>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="aiEnhanceCheck" disabled>
+                    <label class="form-check-label text-muted" for="aiEnhanceCheck">导入过程 AI 增强（即将推出）</label>
+                </div>
+                <button class="btn-ifrit btn-primary-ifrit w-100 justify-content-center" id="importBtn">
+                    <i class="bi bi-box-arrow-in-down"></i> 开始导入
+                </button>
+                <a href="/execute" class="btn-ifrit btn-secondary-ifrit w-100 justify-content-center mt-2">
+                    <i class="bi bi-play-fill"></i> 导入后去执行
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card-panel">
+            <div class="card-header">
+                <span><i class="bi bi-terminal"></i> 导入日志</span>
+                <button class="btn-ifrit btn-secondary-ifrit" style="padding:4px 12px;font-size:0.8rem;" id="clearLogBtn">清空</button>
+            </div>
+            <div class="card-body">
+                <div class="log-terminal" id="importLog">
+                    <div class="text-muted">选择 Postman Collection 并点击开始导入</div>
+                </div>
+                <div class="mt-3" id="importResultBox" style="display:none;">
+                    <p class="mb-2"><strong>输出文件：</strong><code id="importResultPath"></code></p>
+                    <a href="/execute?preset=custom" class="btn-ifrit btn-success-ifrit" id="goExecuteBtn">
+                        <i class="bi bi-play-fill"></i> 前往执行测试
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const SAMPLE_PATH = {{ sample_path|tojson }};
+
+document.getElementById('clearLogBtn').addEventListener('click', () => {
+    document.getElementById('importLog').innerHTML = '';
+    document.getElementById('importResultBox').style.display = 'none';
+});
+
+if (SAMPLE_PATH) {
+    document.getElementById('useSampleBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('importFile').dataset.sourcePath = SAMPLE_PATH;
+        document.getElementById('importFile').value = '';
+        IfritUI.showToast('已选用样例: ' + SAMPLE_PATH, 'success');
+    });
+}
+
+document.getElementById('importBtn').addEventListener('click', async () => {
+    const fileInput = document.getElementById('importFile');
+    const sourcePath = fileInput.dataset.sourcePath;
+    const file = fileInput.files[0];
+    if (!file && !sourcePath) {
+        alert('请选择 Postman JSON 文件，或点击样例路径');
+        return;
+    }
+
+    const form = new FormData();
+    if (file) form.append('file', file);
+    if (sourcePath) form.append('source_path', sourcePath);
+    form.append('format', document.getElementById('importFormat').value);
+    form.append('suite', document.getElementById('importSuite').value);
+    const output = document.getElementById('importOutput').value.trim();
+    if (output) form.append('output', output);
+    if (document.getElementById('dryRunCheck').checked) form.append('dry_run', '1');
+
+    document.getElementById('importBtn').disabled = true;
+    document.getElementById('importResultBox').style.display = 'none';
+    const logEl = document.getElementById('importLog');
+    logEl.innerHTML = '';
+
+    try {
+        const res = await axios.post('/api/import', form);
+        IfritUI.streamLogs(res.data.process_id, logEl, (status) => {
+            document.getElementById('importBtn').disabled = false;
+            delete fileInput.dataset.sourcePath;
+            if (status.status === 'completed') {
+                let out = res.data.output_file;
+                if (!out) {
+                    logEl.querySelectorAll('.log-line').forEach(line => {
+                        const m = line.textContent.match(/输出=([^\s]+)/);
+                        if (m) out = m[1];
+                    });
+                }
+                if (out && !document.getElementById('dryRunCheck').checked) {
+                    document.getElementById('importResultPath').textContent = out;
+                    document.getElementById('importResultBox').style.display = 'block';
+                }
+                IfritUI.showToast('导入完成', 'success');
+            }
+        });
+    } catch (e) {
+        alert(e.response?.data?.error || e.message);
+        document.getElementById('importBtn').disabled = false;
+    }
+});
+</script>
+{% endblock %}
