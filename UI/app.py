@@ -1,390 +1,285 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time    : 2026/06/02
-# @Author  : 孙文龙
-# @File    : app.py
-# @Software: PyCharm
-# @Desc    : ifrit-apitest Web UI 核心应用 - 文件管理器+编辑器模式
-
-import os
+"""
+作者：孙文龙
+用途：ifrit API 自动化测试平台 Web UI
+"""
 import sys
-import subprocess
-import threading
-import time
-import json
-import mimetypes
 from pathlib import Path
-from datetime import datetime
-
-import yaml
-from flask import Flask, render_template, request, jsonify, Response, stream_with_context
-
-# ============================================================
-# 全局配置
-# ============================================================
 
 UI_DIR = Path(__file__).parent.absolute()
+if str(UI_DIR) not in sys.path:
+    sys.path.insert(0, str(UI_DIR))
 
-def load_config():
-    """加载配置文件"""
-    config_path = UI_DIR / "config.yaml"
-    if not config_path.exists():
-        raise FileNotFoundError(f"配置文件不存在: {config_path}")
-    
-    with open(config_path, "r", encoding="utf-8") as f:
-        config = yaml.safe_load(f)
-    
-    root_path_str = config["ifrit"]["root_path"]
-    if os.path.isabs(root_path_str):
-        root_path = Path(root_path_str)
-    else:
-        root_path = (UI_DIR / root_path_str).resolve()
-    
-    if not root_path.exists():
-        raise FileNotFoundError(f"项目根目录不存在: {root_path}")
-    
-    config["ifrit"]["root_path_resolved"] = root_path
-    return config
+import json
+from typing import Any, Dict, List
 
-def load_commands_map():
-    """加载命令映射"""
-    commands_path = UI_DIR / "commands_map.yaml"
-    if not commands_path.exists():
-        raise FileNotFoundError(f"命令映射文件不存在: {commands_path}")
-    
-    with open(commands_path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+from flask import (
+    Flask,
+    Response,
+    jsonify,
+    render_template,
+    request,
+    send_file,
+    stream_with_context,
+)
 
-CONFIG = None
-COMMANDS_MAP = None
+from services.cli_runner import (
+    build_ai_chat_command,
+    build_ai_generate_command,
+    build_clean_command,
+    build_simple_command,
+    build_test_command,
+    process_manager,
+)
+from services.config_loader import get_base_url, load_auth_summary, load_config, load_environments, project_path
+from services.file_service import ACE_MODE_MAP, build_file_tree, read_file_content, save_file_content
+from services.ifrit_paths import (
+    dashboard_stats,
+    list_api_docs,
+    list_report_runs,
+    list_test_files,
+)
 
-def init_config():
-    """初始化配置"""
-    global CONFIG, COMMANDS_MAP
-    CONFIG = load_config()
-    COMMANDS_MAP = load_commands_map()
+CONFIG: Dict[str, Any] = {}
 
-# ============================================================
-# Flask 应用
-# ============================================================
 
-app = Flask(__name__)
-app.config["JSON_AS_ASCII"] = False
+def create_app() -> Flask:
+    application = Flask(__name__)
+    application.config["JSON_AS_ASCII"] = False
+    register_routes(application)
+    return application
 
-# ============================================================
-# 文件管理器核心功能
-# ============================================================
 
-# 支持编辑的文件类型
-SUPPORTED_EXTENSIONS = {
-    ".txt", ".csv", ".json", ".yaml", ".yml", ".ini", ".cfg",
-    ".py", ".js", ".html", ".css", ".md", ".xml", ".sh", ".bat",
-    ".log", ".conf", ".properties", ".env", ".toml"
-}
+def register_routes(app: Flask) -> None:
+    @app.route("/")
+    def dashboard():
+        stats = dashboard_stats(CONFIG)
+        auth = load_auth_summary(CONFIG)
+        envs = load_environments(CONFIG)
+        base_url = get_base_url(CONFIG, envs[0] if envs else "environment")
+        return render_template(
+            "dashboard.html",
+            stats=stats,
+            auth=auth,
+            base_url=base_url,
+            presets=CONFIG.get("presets", {}),
+        )
 
-# Ace Editor 模式映射
-ACE_MODE_MAP = {
-    ".py": "python",
-    ".js": "javascript",
-    ".json": "json",
-    ".html": "html",
-    ".css": "css",
-    ".md": "markdown",
-    ".xml": "xml",
-    ".yaml": "yaml",
-    ".yml": "yaml",
-    ".ini": "ini",
-    ".sh": "sh",
-    ".bat": "batchfile",
-    ".csv": "csv",
-    ".log": "text",
-    ".txt": "text",
-    ".conf": "text",
-    ".cfg": "text",
-    ".properties": "properties",
-    ".env": "sh",
-    ".toml": "toml",
-}
+    @app.route("/execute")
+    def execute_page():
+        envs = load_environments(CONFIG)
+        root = project_path(CONFIG, "fixtures")
+        project_root = CONFIG["ifrit"]["root_path_resolved"]
+        files = list_test_files(root, project_root=project_root)
+        presets = CONFIG.get("presets", {})
+        return render_template(
+            "execute.html",
+            environments=envs,
+            files=files,
+            presets=presets,
+            auth=load_auth_summary(CONFIG),
+        )
 
-def get_project_path(relative_path):
-    """获取项目绝对路径"""
-    return CONFIG["ifrit"]["root_path_resolved"] / relative_path
+    @app.route("/ai")
+    def ai_page():
+        docs = list_api_docs(CONFIG)
+        return render_template("ai.html", docs=docs, auth=load_auth_summary(CONFIG))
 
-def build_file_tree(directory_path, base_name=""):
-    """
-    构建文件树
-    
-    Returns:
-        list: 文件树节点列表
-    """
-    path = Path(directory_path)
-    if not path.exists() or not path.is_dir():
-        return []
-    
-    tree = []
-    
-    try:
-        items = sorted(path.iterdir(), key=lambda x: (not x.is_dir(), x.name.lower()))
-    except PermissionError:
-        return []
-    
-    for item in items:
-        # 跳过隐藏文件和缓存目录
-        if item.name.startswith(".") or item.name == "__pycache__":
-            continue
-        
-        node = {
-            "name": item.name,
-            "path": str(item),
-            "is_dir": item.is_dir(),
-        }
-        
-        if item.is_dir():
-            node["children"] = build_file_tree(item, base_name + item.name + "/")
-            node["size"] = None
-            node["modified"] = None
+    @app.route("/reports")
+    def reports_page():
+        runs = list_report_runs(CONFIG)
+        return render_template("reports.html", runs=runs)
+
+    @app.route("/advanced")
+    def advanced_page():
+        return render_template("advanced.html")
+
+    @app.route("/reports/view/<run_id>")
+    def view_report(run_id: str):
+        runs_dir = project_path(CONFIG, "reports_runs")
+        index_path = runs_dir / run_id / "html" / "index.html"
+        if not index_path.is_file():
+            return jsonify({"error": "报告不存在"}), 404
+        return send_file(index_path)
+
+    @app.route("/api/overview")
+    def api_overview():
+        return jsonify(
+            {
+                "stats": dashboard_stats(CONFIG),
+                "auth": load_auth_summary(CONFIG),
+                "environments": load_environments(CONFIG),
+            }
+        )
+
+    @app.route("/api/files/list", methods=["POST"])
+    def api_files_list():
+        data = request.json or {}
+        suite = data.get("suite", "all")
+        root = CONFIG["ifrit"]["root_path_resolved"] / "fixtures"
+        if suite == "manual":
+            scan = root / "manual"
+        elif suite == "ai":
+            scan = root / "ai"
+        elif suite == "smoke":
+            scan = root / "smoke"
         else:
-            try:
-                stat = item.stat()
-                node["size"] = stat.st_size
-                node["modified"] = datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
-                node["extension"] = item.suffix.lower()
-                node["supported"] = item.suffix.lower() in SUPPORTED_EXTENSIONS
-            except Exception:
-                node["size"] = 0
-                node["modified"] = None
-                node["extension"] = item.suffix.lower()
-                node["supported"] = False
-        
-        tree.append(node)
-    
-    return tree
+            scan = root
+        return jsonify({"files": list_test_files(scan, project_root=CONFIG["ifrit"]["root_path_resolved"])})
 
-def read_file_content(file_path):
-    """
-    读取文件内容
-    
-    Returns:
-        tuple: (success, content_or_error, mime_type)
-    """
-    path = Path(file_path)
-    
-    if not path.exists():
-        return False, "文件不存在", None
-    
-    if path.is_dir():
-        return False, "这是目录，不是文件", None
-    
-    # 检查文件大小（限制10MB）
-    try:
-        if path.stat().st_size > 10 * 1024 * 1024:
-            return False, "文件过大（>10MB），不支持在线编辑", None
-    except Exception:
-        pass
-    
-    # 检查是否支持
-    if path.suffix.lower() not in SUPPORTED_EXTENSIONS:
-        return False, f"文件格式 {path.suffix} 暂不支持编辑", None
-    
-    # 尝试读取
-    try:
-        # 尝试 UTF-8
-        with open(path, "r", encoding="utf-8") as f:
-            content = f.read()
-        return True, content, "utf-8"
-    except UnicodeDecodeError:
-        pass
-    
-    try:
-        # 尝试 GBK
-        with open(path, "r", encoding="gbk") as f:
-            content = f.read()
-        return True, content, "gbk"
-    except Exception as e:
-        return False, f"读取失败: {str(e)}", None
+    @app.route("/api/execute", methods=["POST"])
+    def api_execute():
+        data = request.json or {}
+        params = data.get("params", {})
+        cmd = build_test_command(CONFIG, params)
+        process_id = process_manager.start(cmd, CONFIG["ifrit"]["root_path_resolved"], label="test_run")
+        return jsonify({"process_id": process_id, "command": " ".join(cmd)})
 
-def save_file_content(file_path, content, encoding="utf-8"):
-    """
-    保存文件内容
-    
-    Returns:
-        tuple: (success, message)
-    """
-    path = Path(file_path)
-    
-    if not path.exists():
-        return False, "文件不存在"
-    
-    if path.is_dir():
-        return False, "无法保存目录"
-    
-    # 检查是否支持
-    if path.suffix.lower() not in SUPPORTED_EXTENSIONS:
-        return False, f"文件格式 {path.suffix} 暂不支持编辑"
-    
-    try:
-        with open(path, "w", encoding=encoding) as f:
-            f.write(content)
-        return True, "保存成功"
-    except Exception as e:
-        return False, f"保存失败: {str(e)}"
+    @app.route("/api/ai/generate", methods=["POST"])
+    def api_ai_generate():
+        data = request.json or {}
+        cmd = build_ai_generate_command(CONFIG, data)
+        if "--input-doc" not in cmd and "--input-url" not in cmd:
+            return jsonify({"error": "请提供文档路径或 URL"}), 400
+        process_id = process_manager.start(cmd, CONFIG["ifrit"]["root_path_resolved"], label="ai_generate")
+        return jsonify({"process_id": process_id, "command": " ".join(cmd)})
 
-# ============================================================
-# 路由定义
-# ============================================================
+    @app.route("/api/ai/chat", methods=["POST"])
+    def api_ai_chat():
+        data = request.json or {}
+        chat_args = data.get("commands") or []
+        if isinstance(chat_args, str):
+            chat_args = chat_args.split()
+        if not chat_args:
+            return jsonify({"error": "请提供交互命令，如 doc api_docs/apispec_1.json endpoint /api/address generate"}), 400
+        cmd = build_ai_chat_command(CONFIG, chat_args)
+        process_id = process_manager.start(cmd, CONFIG["ifrit"]["root_path_resolved"], label="ai_chat")
+        return jsonify({"process_id": process_id, "command": " ".join(cmd)})
 
-@app.route("/")
-def index():
-    """首页 - 文件管理器"""
-    return render_template("index.html")
+    @app.route("/api/reports/generate", methods=["POST"])
+    def api_reports_generate():
+        cmd = build_simple_command(CONFIG, "--generate-report")
+        process_id = process_manager.start(cmd, CONFIG["ifrit"]["root_path_resolved"], label="generate_report")
+        return jsonify({"process_id": process_id})
 
-@app.route("/api/files/tree", methods=["POST"])
-def get_file_tree():
-    """获取文件树"""
-    data = request.json or {}
-    dir_key = data.get("dir_key", "fixtures")
-    
-    dir_path = get_project_path(CONFIG["paths"].get(dir_key, dir_key))
-    
-    if not dir_path.exists():
-        return jsonify({"error": f"目录不存在: {dir_path}"}), 404
-    
-    tree = build_file_tree(dir_path)
-    
-    return jsonify({
-        "success": True,
-        "dir": str(dir_path),
-        "tree": tree
-    })
+    @app.route("/api/reports/serve", methods=["POST"])
+    def api_reports_serve():
+        cmd = build_simple_command(CONFIG, "--serve-report")
+        process_id = process_manager.start(cmd, CONFIG["ifrit"]["root_path_resolved"], label="serve_report")
+        return jsonify({"process_id": process_id})
 
-@app.route("/api/files/read", methods=["POST"])
-def read_file():
-    """读取文件内容"""
-    data = request.json or {}
-    file_path = data.get("path")
-    
-    if not file_path:
-        return jsonify({"error": "请提供文件路径"}), 400
-    
-    success, content_or_error, encoding = read_file_content(file_path)
-    
-    if success:
-        # 获取Ace模式
+    @app.route("/api/clean", methods=["POST"])
+    def api_clean():
+        data = request.json or {}
+        target = data.get("target", "all")
+        cmd = build_clean_command(
+            CONFIG,
+            target=target,
+            keep_days=data.get("keep_days"),
+            dry_run=data.get("dry_run", False),
+        )
+        process_id = process_manager.start(cmd, CONFIG["ifrit"]["root_path_resolved"], label="clean")
+        return jsonify({"process_id": process_id, "command": " ".join(cmd)})
+
+    @app.route("/api/process/<process_id>/status")
+    def api_process_status(process_id: str):
+        status = process_manager.get_status(process_id)
+        if not status:
+            return jsonify({"error": "进程不存在"}), 404
+        return jsonify(status)
+
+    @app.route("/api/process/<process_id>/stream")
+    def api_process_stream(process_id: str):
+        def generate():
+            for chunk in process_manager.stream_events(process_id):
+                yield chunk
+
+        return Response(
+            stream_with_context(generate()),
+            mimetype="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
+
+    @app.route("/api/process/<process_id>/cancel", methods=["POST"])
+    def api_process_cancel(process_id: str):
+        if process_manager.cancel(process_id):
+            return jsonify({"success": True})
+        return jsonify({"error": "无法取消"}), 404
+
+    @app.route("/api/files/tree", methods=["POST"])
+    def api_file_tree():
+        data = request.json or {}
+        dir_key = data.get("dir_key", "fixtures")
+        dir_path = project_path(CONFIG, dir_key)
+        if not dir_path.is_dir():
+            return jsonify({"error": f"目录不存在: {dir_path}"}), 404
+        return jsonify({"success": True, "dir": str(dir_path), "tree": build_file_tree(dir_path)})
+
+    @app.route("/api/files/read", methods=["POST"])
+    def api_file_read():
+        data = request.json or {}
+        file_path = data.get("path")
+        if not file_path:
+            return jsonify({"error": "缺少 path"}), 400
+        success, content, encoding = read_file_content(Path(file_path))
+        if not success:
+            return jsonify({"success": False, "error": content}), 400
         ext = Path(file_path).suffix.lower()
-        ace_mode = ACE_MODE_MAP.get(ext, "text")
-        
-        return jsonify({
-            "success": True,
-            "content": content_or_error,
-            "encoding": encoding,
-            "mode": ace_mode,
-            "size": len(content_or_error),
-            "path": file_path
-        })
-    else:
-        return jsonify({
-            "success": False,
-            "error": content_or_error,
-            "path": file_path
-        }), 400
+        return jsonify(
+            {
+                "success": True,
+                "content": content,
+                "encoding": encoding,
+                "mode": ACE_MODE_MAP.get(ext, "text"),
+                "path": file_path,
+            }
+        )
 
-@app.route("/api/files/save", methods=["POST"])
-def save_file():
-    """保存文件内容"""
-    data = request.json or {}
-    file_path = data.get("path")
-    content = data.get("content")
-    encoding = data.get("encoding", "utf-8")
-    
-    if not file_path:
-        return jsonify({"error": "请提供文件路径"}), 400
-    
-    if content is None:
-        return jsonify({"error": "请提供文件内容"}), 400
-    
-    success, message = save_file_content(file_path, content, encoding)
-    
-    if success:
-        return jsonify({
-            "success": True,
-            "message": message,
-            "path": file_path
-        })
-    else:
-        return jsonify({
-            "success": False,
-            "error": message,
-            "path": file_path
-        }), 400
+    @app.route("/api/files/save", methods=["POST"])
+    def api_file_save():
+        data = request.json or {}
+        file_path = data.get("path")
+        content = data.get("content")
+        encoding = data.get("encoding", "utf-8")
+        if not file_path or content is None:
+            return jsonify({"error": "缺少参数"}), 400
+        success, message = save_file_content(Path(file_path), content, encoding)
+        if success:
+            return jsonify({"success": True, "message": message})
+        return jsonify({"success": False, "error": message}), 400
 
-@app.route("/api/files/info", methods=["POST"])
-def get_file_info():
-    """获取文件信息"""
-    data = request.json or {}
-    file_path = data.get("path")
-    
-    if not file_path:
-        return jsonify({"error": "请提供文件路径"}), 400
-    
-    path = Path(file_path)
-    
-    if not path.exists():
-        return jsonify({"error": "文件不存在"}), 404
-    
-    try:
-        stat = path.stat()
-        return jsonify({
-            "success": True,
-            "name": path.name,
-            "path": str(path),
-            "size": stat.st_size,
-            "modified": datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S"),
-            "extension": path.suffix.lower(),
-            "supported": path.suffix.lower() in SUPPORTED_EXTENSIONS,
-            "mode": ACE_MODE_MAP.get(path.suffix.lower(), "text")
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    @app.route("/api/dirs")
+    def api_dirs():
+        dirs = []
+        for key, value in CONFIG["paths"].items():
+            path = project_path(CONFIG, key)
+            if path.exists():
+                dirs.append({"key": key, "name": value, "path": str(path)})
+        return jsonify({"dirs": dirs})
 
-@app.route("/api/dirs")
-def get_dirs():
-    """获取可浏览的目录列表"""
-    dirs = []
-    
-    for key, value in CONFIG["paths"].items():
-        dir_path = get_project_path(value)
-        if dir_path.exists():
-            dirs.append({
-                "key": key,
-                "name": value,
-                "path": str(dir_path),
-                "exists": True
-            })
-    
-    return jsonify({"dirs": dirs})
 
-# ============================================================
-# 应用入口
-# ============================================================
+app = create_app()
+
+
+def init_app_config() -> None:
+    global CONFIG
+    CONFIG = load_config()
+
+
+init_app_config()
+
 
 if __name__ == "__main__":
     try:
-        init_config()
-        
-        server_config = CONFIG["server"]
-        print(f"\n{'='*60}")
-        print(f"ifrit-apitest Web UI 启动中...")
-        print(f"项目路径: {CONFIG['ifrit']['root_path_resolved']}")
-        print(f"服务地址: http://{server_config['host']}:{server_config['port']}")
-        print(f"{'='*60}\n")
-        
-        app.run(
-            host=server_config["host"],
-            port=server_config["port"],
-            debug=server_config["debug"],
-            threaded=True
-        )
-    
-    except Exception as e:
-        print(f"\n❌ 启动失败: {str(e)}", file=sys.stderr)
+        init_app_config()
+        server = CONFIG["server"]
+        print("\n" + "=" * 60)
+        print("ifrit API 自动化测试平台")
+        print(f"项目: {CONFIG['ifrit']['root_path_resolved']}")
+        print(f"访问: http://127.0.0.1:{server['port']}")
+        print("=" * 60 + "\n")
+        app.run(host=server["host"], port=server["port"], debug=server["debug"], threaded=True)
+    except Exception as error:
+        print(f"启动失败: {error}", file=sys.stderr)
         sys.exit(1)

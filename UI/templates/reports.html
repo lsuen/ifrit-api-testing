@@ -1,157 +1,111 @@
 {% extends "base.html" %}
-
 {% block title %}报告中心{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-12">
-        <h2><i class="bi bi-bar-chart"></i> 报告中心</h2>
-        <p class="text-muted">查看历史测试报告和执行结果</p>
+<div class="page-header d-flex justify-content-between align-items-start flex-wrap gap-3">
+    <div>
+        <h1 class="page-title"><i class="bi bi-graph-up"></i> 报告中心</h1>
+        <p class="page-desc">按 Run 归档 · 路径 reports/runs/&lt;时间戳&gt;/html/</p>
     </div>
+    <button class="btn-ifrit btn-secondary-ifrit" onclick="location.reload()"><i class="bi bi-arrow-clockwise"></i> 刷新</button>
 </div>
 
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-file-earmark-richtext"></i> 报告列表</h5>
-                <button class="btn btn-sm btn-outline-primary" id="refreshBtn">
-                    <i class="bi bi-arrow-clockwise"></i> 刷新
-                </button>
-            </div>
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card-panel h-100">
             <div class="card-body">
-                {% if reports %}
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>报告名称</th>
-                                <th>类型</th>
-                                <th>大小</th>
-                                <th>修改时间</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for report in reports %}
-                            <tr>
-                                <td>
-                                    <i class="bi bi-file-earmark-richtext"></i>
-                                    {{ report.name }}
-                                </td>
-                                <td>
-                                    {% if report.type == 'allure' %}
-                                    <span class="badge bg-success">Allure</span>
-                                    {% else %}
-                                    <span class="badge bg-info">HTML</span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ (report.size / 1024)|round(1) }} KB</td>
-                                <td>{{ report.modified }}</td>
-                                <td>
-                                    {% if report.type == 'allure' %}
-                                    <a href="/reports/index.html" class="btn btn-sm btn-primary" target="_blank">
-                                        <i class="bi bi-eye"></i> 查看
-                                    </a>
-                                    {% else %}
-                                    <a href="/reports/{{ report.name }}" class="btn btn-sm btn-primary" target="_blank">
-                                        <i class="bi bi-eye"></i> 查看
-                                    </a>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <div class="text-center py-5">
-                    <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
-                    <p class="text-muted mt-3">暂无报告</p>
-                    <p class="text-muted">执行测试后将自动生成报告</p>
-                </div>
-                {% endif %}
+                <h6><i class="bi bi-file-earmark-plus"></i> 生成 HTML 报告</h6>
+                <p class="small text-muted">基于最新 allure-results 生成</p>
+                <button class="btn-ifrit btn-success-ifrit" id="genReportBtn">生成报告</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-panel h-100">
+            <div class="card-body">
+                <h6><i class="bi bi-server"></i> Allure 服务</h6>
+                <p class="small text-muted">启动 allure serve（本地进程）</p>
+                <button class="btn-ifrit btn-secondary-ifrit" id="serveReportBtn">启动服务</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-panel h-100">
+            <div class="card-body">
+                <h6><i class="bi bi-trash"></i> 清理旧报告</h6>
+                <p class="small text-muted">调用 main.py --clean reports</p>
+                <button class="btn-ifrit btn-danger-ifrit" id="cleanReportBtn">清理报告</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- 快捷操作 -->
-<div class="row mt-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title"><i class="bi bi-lightning"></i> 生成报告</h5>
-                <p class="card-text">为最近的测试结果生成 HTML 报告</p>
-                <button class="btn btn-success" id="generateReportBtn">
-                    <i class="bi bi-file-earmark-plus"></i> 生成报告
-                </button>
-            </div>
+<div class="card-panel">
+    <div class="card-header">历史 Run</div>
+    <div class="card-body p-0">
+        {% if runs %}
+        <table class="table-platform mb-0">
+            <thead>
+                <tr>
+                    <th>Run ID</th>
+                    <th>创建时间</th>
+                    <th>套件</th>
+                    <th>Allure 文件</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for run in runs %}
+                <tr>
+                    <td><code>{{ run.run_id }}</code></td>
+                    <td>{{ run.created_at }}</td>
+                    <td>{{ run.suite or '-' }}</td>
+                    <td>{{ run.allure_count }}</td>
+                    <td>
+                        {% if run.has_html %}
+                        <a href="{{ run.html_url }}" target="_blank" class="btn-ifrit btn-primary-ifrit" style="padding:4px 12px;font-size:0.8rem;">
+                            <i class="bi bi-eye"></i> 查看
+                        </a>
+                        {% else %}
+                        <span class="text-muted">无 HTML</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-inbox" style="font-size:3rem;"></i>
+            <p class="mt-3">暂无报告，请先执行测试</p>
+            <a href="/execute" class="btn-ifrit btn-primary-ifrit">去执行</a>
         </div>
+        {% endif %}
     </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title"><i class="bi bi-server"></i> 启动报告服务器</h5>
-                <p class="card-text">启动 Allure 报告服务器进行详细分析</p>
-                <button class="btn btn-info" id="serveReportBtn">
-                    <i class="bi bi-play-circle"></i> 启动服务器
-                </button>
-            </div>
-        </div>
+</div>
+
+<div class="card-panel mt-4">
+    <div class="card-header">操作日志</div>
+    <div class="card-body">
+        <div class="log-terminal" id="reportLog" style="height:200px;"></div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// 生成报告
-document.getElementById('generateReportBtn').addEventListener('click', function() {
-    this.disabled = true;
-    this.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成中...';
-    
-    axios.post('/execute', {
-        command: 'generate_report',
-        params: {}
-    })
-    .then(response => {
-        alert('报告生成已启动，进程ID: ' + response.data.process_id);
-        this.disabled = false;
-        this.innerHTML = '<i class="bi bi-file-earmark-plus"></i> 生成报告';
-    })
-    .catch(error => {
-        console.error('生成报告失败:', error);
-        alert('生成失败: ' + (error.response?.data?.error || error.message));
-        this.disabled = false;
-        this.innerHTML = '<i class="bi bi-file-earmark-plus"></i> 生成报告';
-    });
-});
+function runTask(url, body) {
+    const log = document.getElementById('reportLog');
+    log.innerHTML = '';
+    axios.post(url, body || {}).then(res => {
+        IfritUI.streamLogs(res.data.process_id, log, () => setTimeout(() => location.reload(), 2000));
+    }).catch(e => alert(e.response?.data?.error || e.message));
+}
 
-// 启动报告服务器
-document.getElementById('serveReportBtn').addEventListener('click', function() {
-    this.disabled = true;
-    this.innerHTML = '<i class="bi bi-hourglass-split"></i> 启动中...';
-    
-    axios.post('/execute', {
-        command: 'serve_report',
-        params: {}
-    })
-    .then(response => {
-        alert('报告服务器已启动，进程ID: ' + response.data.process_id);
-        this.disabled = false;
-        this.innerHTML = '<i class="bi bi-play-circle"></i> 启动服务器';
-    })
-    .catch(error => {
-        console.error('启动服务器失败:', error);
-        alert('启动失败: ' + (error.response?.data?.error || error.message));
-        this.disabled = false;
-        this.innerHTML = '<i class="bi bi-play-circle"></i> 启动服务器';
-    });
-});
-
-// 刷新按钮
-document.getElementById('refreshBtn').addEventListener('click', function() {
-    location.reload();
+document.getElementById('genReportBtn').addEventListener('click', () => runTask('/api/reports/generate'));
+document.getElementById('serveReportBtn').addEventListener('click', () => runTask('/api/reports/serve'));
+document.getElementById('cleanReportBtn').addEventListener('click', () => {
+    if (confirm('确认清理过期报告？')) runTask('/api/clean', { target: 'reports' });
 });
 </script>
 {% endblock %}

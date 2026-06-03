@@ -1,87 +1,110 @@
 {% extends "base.html" %}
-
-{% block title %}执行控制台{% endblock %}
+{% block title %}执行测试{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-12">
-        <h2><i class="bi bi-play-circle"></i> 测试执行控制台</h2>
-        <p class="text-muted">选择环境和数据文件，一键执行测试</p>
-    </div>
+<div class="page-header">
+    <h1 class="page-title"><i class="bi bi-play-circle"></i> 执行测试</h1>
+    <p class="page-desc">选择场景与鉴权方式，一键运行 · 实时查看 [IFRIT] 日志</p>
 </div>
 
-<div class="row">
-    <!-- 执行配置 -->
-    <div class="col-md-4">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-gear"></i> 执行配置</h5>
-            </div>
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card-panel mb-4">
+            <div class="card-header">场景预设</div>
             <div class="card-body">
-                <form id="executeForm">
-                    <div class="mb-3">
-                        <label class="form-label">运行环境</label>
-                        <select class="form-select" id="envSelect">
-                            {% for env in environments %}
-                            <option value="{{ env }}">{{ env }}</option>
-                            {% endfor %}
-                        </select>
+                <div class="row g-2" id="presetGrid">
+                    <div class="col-12">
+                        <div class="preset-card selected" data-preset="smoke">
+                            <h6><i class="bi bi-shield-check"></i> 冒烟测试</h6>
+                            <p>fixtures/smoke · 无需鉴权</p>
+                        </div>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">数据格式</label>
-                        <select class="form-select" id="formatSelect">
-                            <option value="csv">CSV</option>
-                            <option value="excel">Excel</option>
-                            <option value="json">JSON</option>
-                        </select>
+                    <div class="col-12">
+                        <div class="preset-card" data-preset="manual">
+                            <h6><i class="bi bi-person"></i> 人工用例</h6>
+                            <p>manual 套件 · CSV 内含登录</p>
+                        </div>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">测试文件</label>
-                        <select class="form-select" id="fileSelect">
-                            <option value="">-- 选择文件 --</option>
-                        </select>
+                    <div class="col-12">
+                        <div class="preset-card" data-preset="ai_business">
+                            <h6><i class="bi bi-geo-alt"></i> 地址业务流</h6>
+                            <p>AI 4 步链路 · 需全局鉴权</p>
+                        </div>
                     </div>
-                    
-                    <button type="button" class="btn btn-primary w-100" id="executeBtn">
-                        <i class="bi bi-play-fill"></i> 执行测试
-                    </button>
-                </form>
+                    <div class="col-12">
+                        <div class="preset-card" data-preset="custom">
+                            <h6><i class="bi bi-sliders"></i> 自定义</h6>
+                            <p>自选文件与参数</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        
-        <!-- 执行状态 -->
-        <div class="card" id="statusCard" style="display: none;">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-info-circle"></i> 执行状态</h5>
-            </div>
+
+        <div class="card-panel">
+            <div class="card-header">执行参数</div>
             <div class="card-body">
-                <div id="statusContent">
-                    <p>状态: <span id="execStatus" class="badge bg-secondary">等待中</span></p>
-                    <p>开始时间: <span id="startTime">-</span></p>
-                    <p>结束时间: <span id="endTime">-</span></p>
-                    <p>输出行数: <span id="outputLines">0</span></p>
+                <div class="mb-3">
+                    <label class="form-label">运行环境</label>
+                    <select class="form-select" id="envSelect">
+                        {% for env in environments %}
+                        <option value="{{ env }}">{{ env }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
-                <button type="button" class="btn btn-danger w-100 mt-3" id="cancelBtn" style="display: none;">
-                    <i class="bi bi-stop-circle"></i> 取消执行
+                <div class="mb-3" id="suiteGroup">
+                    <label class="form-label">套件</label>
+                    <select class="form-select" id="suiteSelect">
+                        <option value="smoke">smoke</option>
+                        <option value="manual">manual</option>
+                        <option value="ai">ai</option>
+                        <option value="all">all</option>
+                    </select>
+                </div>
+                <div class="mb-3" id="fileGroup" style="display:none;">
+                    <label class="form-label">测试文件</label>
+                    <select class="form-select" id="fileSelect">
+                        <option value="">-- 选择文件 --</option>
+                        {% for f in files %}
+                        <option value="{{ f.relative }}">{{ f.relative }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="globalAuthCheck">
+                    <label class="form-check-label" for="globalAuthCheck">全局鉴权 ({{ auth.username }})</label>
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="reportCheck" checked>
+                    <label class="form-check-label" for="reportCheck">执行后生成 HTML 报告</label>
+                </div>
+                <button class="btn-ifrit btn-primary-ifrit w-100 justify-content-center" id="runBtn">
+                    <i class="bi bi-play-fill"></i> 开始执行
                 </button>
+                <button class="btn-ifrit btn-danger-ifrit w-100 justify-content-center mt-2" id="cancelBtn" style="display:none;">
+                    <i class="bi bi-stop-circle"></i> 取消
+                </button>
+                <div class="mt-3 text-center">
+                    <span class="badge-status badge-running" id="statusBadge" style="display:none;">运行中</span>
+                </div>
             </div>
         </div>
     </div>
-    
-    <!-- 实时日志 -->
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-terminal"></i> 实时日志</h5>
-                <button class="btn btn-sm btn-outline-secondary" id="clearLogBtn">
-                    <i class="bi bi-trash"></i> 清空
-                </button>
+
+    <div class="col-lg-8">
+        <div class="card-panel">
+            <div class="card-header">
+                <span><i class="bi bi-terminal"></i> 实时日志</span>
+                <button class="btn-ifrit btn-secondary-ifrit" style="padding:4px 12px;font-size:0.8rem;" id="clearLogBtn">清空</button>
             </div>
             <div class="card-body">
-                <div id="logContainer" class="log-container">
-                    <p class="text-muted text-center">等待执行...</p>
+                <div class="log-terminal" id="logTerminal">
+                    <div class="text-muted">等待执行...</div>
+                </div>
+                <div class="mt-3" id="reportLinkBox" style="display:none;">
+                    <a href="#" target="_blank" id="reportLink" class="btn-ifrit btn-success-ifrit">
+                        <i class="bi bi-box-arrow-up-right"></i> 打开 HTML 报告
+                    </a>
                 </div>
             </div>
         </div>
@@ -91,184 +114,96 @@
 
 {% block extra_js %}
 <script>
-let currentProcessId = null;
-let eventSource = null;
+const PRESETS = {
+    smoke: { file: {{ presets.smoke_file|tojson }}, suite: 'smoke', global_auth: false },
+    manual: { type: 'csv', suite: 'manual', global_auth: false },
+    ai_business: { file: {{ presets.ai_business_file|tojson }}, suite: 'ai', global_auth: true },
+    custom: { custom: true }
+};
 
-// 加载文件列表
-function loadFiles() {
-    const format = document.getElementById('formatSelect').value;
-    const extensions = {
-        'csv': ['.csv'],
-        'excel': ['.xlsx', '.xls'],
-        'json': ['.json']
-    };
-    
-    axios.post('/api/files', {
-        dir: 'fixtures',
-        extensions: extensions[format],
-        recursive: true
-    })
-    .then(response => {
-        const fileSelect = document.getElementById('fileSelect');
-        fileSelect.innerHTML = '<option value="">-- 选择文件 --</option>';
-        
-        response.data.files.forEach(file => {
-            const option = document.createElement('option');
-            option.value = file.path;
-            option.textContent = `${file.name} (${file.size} bytes)`;
-            fileSelect.appendChild(option);
-        });
-    })
-    .catch(error => {
-        console.error('加载文件列表失败:', error);
+let currentPreset = 'smoke';
+let currentProcessId = null;
+
+document.querySelectorAll('.preset-card').forEach(card => {
+    card.addEventListener('click', () => {
+        document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        currentPreset = card.dataset.preset;
+        applyPreset(currentPreset);
     });
+});
+
+function applyPreset(name) {
+    const p = PRESETS[name];
+    document.getElementById('fileGroup').style.display = name === 'custom' ? 'block' : 'none';
+    document.getElementById('suiteGroup').style.display = name === 'custom' ? 'block' : 'none';
+    document.getElementById('globalAuthCheck').checked = !!p.global_auth;
+    if (p.suite) document.getElementById('suiteSelect').value = p.suite;
+    if (p.file) document.getElementById('fileSelect').value = p.file;
 }
 
-// 执行测试
-document.getElementById('executeBtn').addEventListener('click', function() {
-    const env = document.getElementById('envSelect').value;
-    const format = document.getElementById('formatSelect').value;
-    const file = document.getElementById('fileSelect').value;
-    
-    if (!file) {
-        alert('请选择测试文件');
+function buildParams() {
+    const p = PRESETS[currentPreset];
+    const params = {
+        env: document.getElementById('envSelect').value,
+        global_auth: document.getElementById('globalAuthCheck').checked,
+        generate_report: document.getElementById('reportCheck').checked,
+    };
+    if (p.file) params.file = p.file;
+    if (p.suite) params.suite = p.suite;
+    if (p.type) params.type = p.type;
+    if (currentPreset === 'custom') {
+        params.file = document.getElementById('fileSelect').value;
+        params.suite = document.getElementById('suiteSelect').value;
+        if (!params.file) params.type = 'csv';
+    }
+    return params;
+}
+
+document.getElementById('runBtn').addEventListener('click', async () => {
+    const params = buildParams();
+    if (currentPreset === 'custom' && !params.file && !params.suite) {
+        alert('请选择文件或套件');
         return;
     }
-    
-    this.disabled = true;
-    this.innerHTML = '<i class="bi bi-hourglass-split"></i> 执行中...';
-    
-    document.getElementById('statusCard').style.display = 'block';
-    document.getElementById('execStatus').className = 'badge bg-warning';
-    document.getElementById('execStatus').textContent = '执行中';
-    document.getElementById('cancelBtn').style.display = 'block';
-    
-    axios.post('/execute', {
-        command: 'test_run',
-        params: {
-            env: env,
-            format: format,
-            file: file
-        }
-    })
-    .then(response => {
-        currentProcessId = response.data.process_id;
-        document.getElementById('startTime').textContent = new Date().toLocaleString();
-        
-        // 连接 SSE 日志流
-        connectSSE(currentProcessId);
-        
-        // 轮询状态
-        pollStatus(currentProcessId);
-    })
-    .catch(error => {
-        console.error('执行失败:', error);
-        alert('执行失败: ' + (error.response?.data?.error || error.message));
-        resetExecuteBtn();
-    });
-});
+    document.getElementById('runBtn').disabled = true;
+    document.getElementById('cancelBtn').style.display = 'flex';
+    document.getElementById('statusBadge').style.display = 'inline-block';
+    document.getElementById('reportLinkBox').style.display = 'none';
 
-// 连接 SSE 日志流
-function connectSSE(processId) {
-    if (eventSource) {
-        eventSource.close();
-    }
-    
-    const logContainer = document.getElementById('logContainer');
-    logContainer.innerHTML = '';
-    
-    eventSource = new EventSource(`/execute/stream/${processId}`);
-    
-    eventSource.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        
-        if (data.type === 'log') {
-            const logLine = document.createElement('div');
-            logLine.className = 'log-line';
-            logLine.textContent = data.line;
-            logContainer.appendChild(logLine);
-            logContainer.scrollTop = logContainer.scrollHeight;
-        } else if (data.type === 'status') {
-            const statusEl = document.getElementById('execStatus');
-            if (data.status === 'completed') {
-                statusEl.className = 'badge bg-success';
-                statusEl.textContent = '执行完成';
-            } else if (data.status === 'failed') {
-                statusEl.className = 'badge bg-danger';
-                statusEl.textContent = '执行失败';
-            } else if (data.status === 'error') {
-                statusEl.className = 'badge bg-danger';
-                statusEl.textContent = '执行错误';
-            }
-            document.getElementById('endTime').textContent = new Date().toLocaleString();
+    try {
+        const res = await axios.post('/api/execute', { params });
+        currentProcessId = res.data.process_id;
+        IfritUI.streamLogs(currentProcessId, document.getElementById('logTerminal'), (status) => {
+            document.getElementById('runBtn').disabled = false;
             document.getElementById('cancelBtn').style.display = 'none';
-            resetExecuteBtn();
-        } else if (data.type === 'done') {
-            eventSource.close();
-        }
-    };
-    
-    eventSource.onerror = function() {
-        eventSource.close();
-        resetExecuteBtn();
-    };
-}
-
-// 轮询状态
-function pollStatus(processId) {
-    const interval = setInterval(() => {
-        axios.get(`/execute/status/${processId}`)
-            .then(response => {
-                document.getElementById('outputLines').textContent = response.data.output_lines;
-                
-                if (response.data.status !== 'running') {
-                    clearInterval(interval);
-                }
-            })
-            .catch(error => {
-                console.error('状态查询失败:', error);
-                clearInterval(interval);
-            });
-    }, 2000);
-}
-
-// 取消执行
-document.getElementById('cancelBtn').addEventListener('click', function() {
-    if (!currentProcessId) return;
-    
-    axios.post(`/execute/cancel/${currentProcessId}`)
-        .then(response => {
-            alert('执行已取消');
-            document.getElementById('execStatus').className = 'badge bg-secondary';
-            document.getElementById('execStatus').textContent = '已取消';
-            document.getElementById('cancelBtn').style.display = 'none';
-            resetExecuteBtn();
-            if (eventSource) {
-                eventSource.close();
+            document.getElementById('statusBadge').style.display = 'none';
+            if (status.status === 'completed') {
+                IfritUI.showToast('执行完成', 'success');
+                setTimeout(() => location.reload(), 1500);
             }
-        })
-        .catch(error => {
-            console.error('取消失败:', error);
-            alert('取消失败');
         });
+    } catch (e) {
+        alert('启动失败: ' + (e.response?.data?.error || e.message));
+        document.getElementById('runBtn').disabled = false;
+    }
 });
 
-// 清空日志
-document.getElementById('clearLogBtn').addEventListener('click', function() {
-    document.getElementById('logContainer').innerHTML = '<p class="text-muted text-center">日志已清空</p>';
+document.getElementById('cancelBtn').addEventListener('click', () => {
+    if (currentProcessId) axios.post('/api/process/' + currentProcessId + '/cancel');
 });
 
-// 重置执行按钮
-function resetExecuteBtn() {
-    const btn = document.getElementById('executeBtn');
-    btn.disabled = false;
-    btn.innerHTML = '<i class="bi bi-play-fill"></i> 执行测试';
+document.getElementById('clearLogBtn').addEventListener('click', () => {
+    document.getElementById('logTerminal').innerHTML = '';
+});
+
+const urlPreset = new URLSearchParams(location.search).get('preset');
+if (urlPreset && PRESETS[urlPreset]) {
+    currentPreset = urlPreset;
+    document.querySelectorAll('.preset-card').forEach(c => {
+        c.classList.toggle('selected', c.dataset.preset === urlPreset);
+    });
 }
-
-// 格式改变时重新加载文件列表
-document.getElementById('formatSelect').addEventListener('change', loadFiles);
-
-// 页面加载时初始化
-loadFiles();
+applyPreset(currentPreset);
 </script>
 {% endblock %}

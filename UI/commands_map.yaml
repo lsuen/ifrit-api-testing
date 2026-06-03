@@ -1,54 +1,25 @@
-# ifrit-apitest CLI 命令映射配置
-# 作者：孙文龙
-# 用途：声明式映射 CLI 参数，扩展无需修改代码
+# CLI 命令声明（与 main.py 参数对齐）
 
-# 测试执行命令
 test_run:
-  cmd: "{python} {script} --type {format} --env {env}"
-  description: "执行指定格式的测试用例"
-  params:
-    format:
-      type: "select"
-      options: ["csv", "excel", "json"]
-      default: "csv"
-      label: "数据格式"
-    env:
-      type: "select"
-      options: ["dev", "staging", "prod"]
-      default: "dev"
-      label: "运行环境"
-    file:
-      type: "file"
-      dir: "{data}"
-      label: "测试文件"
+  description: "执行测试用例"
+  template: "{python} {script} {args}"
 
-# AI 测试用例生成命令
 ai_generate:
-  cmd: "{python} {script} --ai-generate --input-doc {doc} --output-format {format}"
-  description: "从 API 文档生成测试用例"
-  params:
-    doc:
-      type: "file"
-      dir: "{api_docs}"
-      label: "API 文档"
-    format:
-      type: "select"
-      options: ["csv", "excel", "json"]
-      default: "csv"
-      label: "输出格式"
-    output_dir:
-      type: "text"
-      default: "data/ai_generated"
-      label: "输出目录"
+  description: "AI 生成测试用例"
+  template: "{python} {script} --ai-generate {args}"
 
-# 生成 HTML 报告命令
+ai_chat:
+  description: "AI 交互模式"
+  template: "{python} {script} --chat {args}"
+
 generate_report:
-  cmd: "{python} {script} --generate-report"
-  description: "生成测试报告"
-  params: {}
+  description: "生成 HTML 报告"
+  template: "{python} {script} --generate-report"
 
-# 启动 Allure 报告服务器命令
 serve_report:
-  cmd: "{python} {script} --serve-report"
-  description: "启动 Allure 报告服务器"
-  params: {}
+  description: "启动 Allure 报告服务"
+  template: "{python} {script} --serve-report"
+
+clean:
+  description: "清理日志或报告"
+  template: "{python} {script} --clean {target} {extra}"

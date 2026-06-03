@@ -1,102 +1,117 @@
 {% extends "base.html" %}
-
-{% block title %}AI 生成{% endblock %}
+{% block title %}AI 实验室{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-12">
-        <h2><i class="bi bi-robot"></i> AI 测试用例生成</h2>
-        <p class="text-muted">从 API 文档智能生成测试用例</p>
-    </div>
+<div class="page-header">
+    <h1 class="page-title"><i class="bi bi-stars"></i> AI 实验室</h1>
+    <p class="page-desc">从 Swagger / Apifox 文档生成用例 · 支持 URL 拉取与交互模式 (--chat)</p>
 </div>
 
-<div class="row">
-    <!-- 生成配置 -->
-    <div class="col-md-5">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-gear"></i> 生成配置</h5>
-            </div>
-            <div class="card-body">
-                <form id="aiGenerateForm">
-                    <div class="mb-3">
-                        <label class="form-label">API 文档</label>
-                        <select class="form-select" id="docSelect">
-                            <option value="">-- 选择文档 --</option>
-                            {% for doc in docs %}
-                            <option value="{{ doc.path }}">{{ doc.name }}</option>
-                            {% endfor %}
-                        </select>
+<ul class="nav nav-tabs mb-4" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabGenerate">一键生成</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabChat">交互模式</button></li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="tabGenerate">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card-panel">
+                    <div class="card-header">生成配置</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">文档来源</label>
+                            <select class="form-select" id="docSource">
+                                <option value="local">本地文档</option>
+                                <option value="url">远程 URL</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="localDocGroup">
+                            <label class="form-label">本地 API 文档</label>
+                            <select class="form-select" id="docSelect">
+                                <option value="">-- 选择 --</option>
+                                {% for doc in docs %}
+                                <option value="{{ doc.relative }}">{{ doc.relative }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3" id="urlDocGroup" style="display:none;">
+                            <label class="form-label">文档 URL</label>
+                            <input type="url" class="form-control" id="docUrl" placeholder="http://.../apispec_1.json 或 Apifox MD 链接">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">端点过滤（可选，每行一个）</label>
+                            <textarea class="form-control" id="endpoints" rows="2" placeholder="/api/address">/api/address</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Skill</label>
+                            <select class="form-select" id="skillSelect">
+                                <option value="">自动（URL 用 doc_url_generation）</option>
+                                <option value="case_generation">case_generation</option>
+                                <option value="doc_url_generation">doc_url_generation</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">输出格式</label>
+                            <select class="form-select" id="formatSelect">
+                                <option value="csv">CSV</option>
+                                <option value="json">JSON</option>
+                                <option value="excel">Excel</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">输出目录</label>
+                            <input type="text" class="form-control" id="outputDir" value="fixtures/ai/csv">
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="runAfterGenerate">
+                            <label class="form-check-label">生成后立即执行（全局鉴权）</label>
+                        </div>
+                        <button class="btn-ifrit btn-primary-ifrit w-100 justify-content-center" id="generateBtn">
+                            <i class="bi bi-stars"></i> 开始生成
+                        </button>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">输出格式</label>
-                        <select class="form-select" id="formatSelect">
-                            <option value="csv">CSV</option>
-                            <option value="excel">Excel</option>
-                            <option value="json">JSON</option>
-                        </select>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="card-panel">
+                    <div class="card-header">生成日志</div>
+                    <div class="card-body">
+                        <div class="log-terminal" id="genLog"></div>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">输出目录</label>
-                        <input type="text" class="form-control" id="outputDir" value="data/ai_generated">
-                    </div>
-                    
-                    <button type="button" class="btn btn-success w-100" id="generateBtn">
-                        <i class="bi bi-robot"></i> 开始生成
-                    </button>
-                </form>
-            </div>
-        </div>
-        
-        <!-- 生成状态 -->
-        <div class="card mt-4" id="statusCard" style="display: none;">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-info-circle"></i> 生成状态</h5>
-            </div>
-            <div class="card-body">
-                <p>状态: <span id="genStatus" class="badge bg-secondary">等待中</span></p>
-                <p>开始时间: <span id="startTime">-</span></p>
-                <button type="button" class="btn btn-danger w-100 mt-3" id="cancelBtn" style="display: none;">
-                    <i class="bi bi-stop-circle"></i> 取消生成
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 实时日志 -->
-    <div class="col-md-7">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-terminal"></i> 生成日志</h5>
-                <button class="btn btn-sm btn-outline-secondary" id="clearLogBtn">
-                    <i class="bi bi-trash"></i> 清空
-                </button>
-            </div>
-            <div class="card-body">
-                <div id="logContainer" class="log-container">
-                    <p class="text-muted text-center">等待生成...</p>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- 说明 -->
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-info-circle"></i> 使用说明</h5>
+    <div class="tab-pane fade" id="tabChat">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card-panel">
+                    <div class="card-header">交互命令</div>
+                    <div class="card-body">
+                        <p class="small text-muted">等效于 <code>python main.py --chat</code>，按顺序发送命令：</p>
+                        <div class="mb-2">
+                            <button type="button" class="btn-ifrit btn-secondary-ifrit w-100 mb-2 chat-cmd" data-cmd="doc api_docs/apispec_1.json">doc 本地 Swagger</button>
+                            <button type="button" class="btn-ifrit btn-secondary-ifrit w-100 mb-2 chat-cmd" data-cmd="url http://192.168.31.129:5000/apispec_1.json">url 内网 Swagger</button>
+                            <button type="button" class="btn-ifrit btn-secondary-ifrit w-100 mb-2 chat-cmd" data-cmd="endpoint /api/address">endpoint 过滤</button>
+                            <button type="button" class="btn-ifrit btn-secondary-ifrit w-100 mb-2 chat-cmd" data-cmd="out fixtures/ai/csv">out 输出目录</button>
+                        </div>
+                        <label class="form-label">命令队列（空格分隔）</label>
+                        <textarea class="form-control mb-3" id="chatCommands" rows="4">doc api_docs/apispec_1.json endpoint /api/address out fixtures/ai/csv generate</textarea>
+                        <button class="btn-ifrit btn-primary-ifrit w-100 justify-content-center" id="chatRunBtn">
+                            <i class="bi bi-chat-dots"></i> 执行交互命令
+                        </button>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <ul>
-                    <li>支持 <strong>Markdown</strong> 和 <strong>Swagger JSON/YAML</strong> 格式的 API 文档</li>
-                    <li>AI 会自动分析接口文档，生成正向、反向、边界等多种测试用例</li>
-                    <li>生成的用例默认保存到 <code>data/ai_generated/</code> 目录</li>
-                    <li>生成过程可能需要几分钟，请耐心等待</li>
-                </ul>
+            <div class="col-lg-8">
+                <div class="card-panel">
+                    <div class="card-header">交互日志</div>
+                    <div class="card-body">
+                        <div class="log-terminal" id="chatLog"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -105,123 +120,71 @@
 
 {% block extra_js %}
 <script>
-let currentProcessId = null;
-let eventSource = null;
+document.getElementById('docSource').addEventListener('change', function() {
+    const isUrl = this.value === 'url';
+    document.getElementById('localDocGroup').style.display = isUrl ? 'none' : 'block';
+    document.getElementById('urlDocGroup').style.display = isUrl ? 'block' : 'none';
+});
 
-// 开始生成
-document.getElementById('generateBtn').addEventListener('click', function() {
-    const doc = document.getElementById('docSelect').value;
-    const format = document.getElementById('formatSelect').value;
-    const outputDir = document.getElementById('outputDir').value;
-    
-    if (!doc) {
-        alert('请选择 API 文档');
-        return;
+document.getElementById('generateBtn').addEventListener('click', async () => {
+    const source = document.getElementById('docSource').value;
+    const payload = {
+        format: document.getElementById('formatSelect').value,
+        output_dir: document.getElementById('outputDir').value,
+        skill: document.getElementById('skillSelect').value || undefined,
+        endpoints: document.getElementById('endpoints').value.split('\n').filter(Boolean),
+    };
+    if (source === 'url') {
+        payload.input_url = document.getElementById('docUrl').value.trim();
+        if (!payload.input_url) return alert('请输入 URL');
+    } else {
+        payload.input_doc = document.getElementById('docSelect').value;
+        if (!payload.input_doc) return alert('请选择文档');
     }
-    
-    this.disabled = true;
-    this.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成中...';
-    
-    document.getElementById('statusCard').style.display = 'block';
-    document.getElementById('genStatus').className = 'badge bg-warning';
-    document.getElementById('genStatus').textContent = '生成中';
-    document.getElementById('cancelBtn').style.display = 'block';
-    document.getElementById('startTime').textContent = new Date().toLocaleString();
-    
-    axios.post('/ai/generate', {
-        doc: doc,
-        format: format,
-        output_dir: outputDir
-    })
-    .then(response => {
-        currentProcessId = response.data.process_id;
-        
-        // 连接 SSE 日志流
-        connectSSE(currentProcessId);
-    })
-    .catch(error => {
-        console.error('生成失败:', error);
-        alert('生成失败: ' + (error.response?.data?.error || error.message));
-        resetGenerateBtn();
+
+    document.getElementById('generateBtn').disabled = true;
+    const logEl = document.getElementById('genLog');
+    logEl.innerHTML = '';
+
+    try {
+        const res = await axios.post('/api/ai/generate', payload);
+        IfritUI.streamLogs(res.data.process_id, logEl, async (status) => {
+            document.getElementById('generateBtn').disabled = false;
+            if (status.status === 'completed' && document.getElementById('runAfterGenerate').checked) {
+                const runRes = await axios.post('/api/execute', {
+                    params: { suite: 'ai', global_auth: true, generate_report: true, type: 'csv' }
+                });
+                IfritUI.streamLogs(runRes.data.process_id, logEl);
+            }
+        });
+    } catch (e) {
+        alert(e.response?.data?.error || e.message);
+        document.getElementById('generateBtn').disabled = false;
+    }
+});
+
+document.querySelectorAll('.chat-cmd').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const ta = document.getElementById('chatCommands');
+        ta.value = (ta.value.trim() + ' ' + btn.dataset.cmd).trim();
     });
 });
 
-// 连接 SSE 日志流
-function connectSSE(processId) {
-    if (eventSource) {
-        eventSource.close();
-    }
-    
-    const logContainer = document.getElementById('logContainer');
-    logContainer.innerHTML = '';
-    
-    eventSource = new EventSource(`/execute/stream/${processId}`);
-    
-    eventSource.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        
-        if (data.type === 'log') {
-            const logLine = document.createElement('div');
-            logLine.className = 'log-line';
-            logLine.textContent = data.line;
-            logContainer.appendChild(logLine);
-            logContainer.scrollTop = logContainer.scrollHeight;
-        } else if (data.type === 'status') {
-            const statusEl = document.getElementById('genStatus');
-            if (data.status === 'completed') {
-                statusEl.className = 'badge bg-success';
-                statusEl.textContent = '生成完成';
-            } else if (data.status === 'failed') {
-                statusEl.className = 'badge bg-danger';
-                statusEl.textContent = '生成失败';
-            } else if (data.status === 'error') {
-                statusEl.className = 'badge bg-danger';
-                statusEl.textContent = '生成错误';
-            }
-            document.getElementById('cancelBtn').style.display = 'none';
-            resetGenerateBtn();
-        } else if (data.type === 'done') {
-            eventSource.close();
-        }
-    };
-    
-    eventSource.onerror = function() {
-        eventSource.close();
-        resetGenerateBtn();
-    };
-}
-
-// 取消生成
-document.getElementById('cancelBtn').addEventListener('click', function() {
-    if (!currentProcessId) return;
-    
-    axios.post(`/execute/cancel/${currentProcessId}`)
-        .then(response => {
-            alert('生成已取消');
-            document.getElementById('genStatus').className = 'badge bg-secondary';
-            document.getElementById('genStatus').textContent = '已取消';
-            document.getElementById('cancelBtn').style.display = 'none';
-            resetGenerateBtn();
-            if (eventSource) {
-                eventSource.close();
-            }
-        })
-        .catch(error => {
-            console.error('取消失败:', error);
-            alert('取消失败');
+document.getElementById('chatRunBtn').addEventListener('click', async () => {
+    const commands = document.getElementById('chatCommands').value.trim().split(/\s+/);
+    if (!commands.length) return alert('请输入命令');
+    document.getElementById('chatRunBtn').disabled = true;
+    const logEl = document.getElementById('chatLog');
+    logEl.innerHTML = '';
+    try {
+        const res = await axios.post('/api/ai/chat', { commands });
+        IfritUI.streamLogs(res.data.process_id, logEl, () => {
+            document.getElementById('chatRunBtn').disabled = false;
         });
+    } catch (e) {
+        alert(e.response?.data?.error || e.message);
+        document.getElementById('chatRunBtn').disabled = false;
+    }
 });
-
-// 清空日志
-document.getElementById('clearLogBtn').addEventListener('click', function() {
-    document.getElementById('logContainer').innerHTML = '<p class="text-muted text-center">日志已清空</p>';
-});
-
-// 重置生成按钮
-function resetGenerateBtn() {
-    const btn = document.getElementById('generateBtn');
-    btn.disabled = false;
-    btn.innerHTML = '<i class="bi bi-robot"></i> 开始生成';
-}
 </script>
 {% endblock %}

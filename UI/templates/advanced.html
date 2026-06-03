@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}文件编辑{% endblock %}
+{% block body_class %}advanced-page{% endblock %}
+
+{% block layout %}
+<div class="advanced-layout">
+    <aside class="advanced-sidebar">
+        <div class="p-3 border-bottom border-secondary">
+            <strong><i class="bi bi-code-square"></i> 高级 · 文件编辑</strong>
+            <a href="/" class="d-block small mt-2 text-info">← 返回平台</a>
+        </div>
+        <div class="p-2">
+            <select class="form-select form-select-sm bg-dark text-light border-secondary" id="dirSelect">
+                <option value="fixtures">fixtures</option>
+                <option value="api_docs">api_docs</option>
+                <option value="config">config/settings</option>
+                <option value="logs">logs</option>
+            </select>
+            <button class="btn btn-sm btn-outline-light w-100 mt-2" id="refreshBtn">刷新</button>
+        </div>
+        <div class="file-tree flex-grow-1 overflow-auto p-2" id="fileTree" style="font-size:0.85rem;"></div>
+    </aside>
+    <section class="advanced-editor">
+        <div class="advanced-toolbar text-light">
+            <span id="fileName">未选择文件</span>
+            <span class="ms-auto" id="saveStatus"></span>
+            <button class="btn btn-sm btn-primary" id="saveBtn" disabled>保存 Ctrl+S</button>
+        </div>
+        <div id="editorPlaceholder" class="text-center text-secondary p-5">
+            从左侧选择 CSV / JSON / INI 等文件进行编辑
+        </div>
+        <div id="aceEditor" style="display:none;"></div>
+    </section>
+</div>
+<div id="toastContainer" class="position-fixed top-0 end-0 p-3"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='lib/ace/ace.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/ace/mode-json.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/ace/mode-text.js') }}"></script>
+<script src="{{ url_for('static', filename='js/advanced.js') }}"></script>
+{% endblock %}

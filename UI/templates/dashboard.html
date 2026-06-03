@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}仪表盘{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title"><i class="bi bi-grid-1x2 text-primary"></i> 仪表盘</h1>
+    <p class="page-desc">一站式接口自动化：冒烟验证 · AI 生成 · 带鉴权执行 · 报告归档</p>
+</div>
+
+<div class="stat-grid">
+    <div class="stat-card accent">
+        <div class="label">人工用例 (manual)</div>
+        <div class="value">{{ stats.manual_cases }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">AI 用例 (ai)</div>
+        <div class="value">{{ stats.ai_cases }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">冒烟用例 (smoke)</div>
+        <div class="value">{{ stats.smoke_cases }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">报告 Run 数</div>
+        <div class="value">{{ stats.report_runs }}</div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card-panel">
+            <div class="card-header"><span><i class="bi bi-lightning"></i> 快捷操作</span></div>
+            <div class="card-body">
+                <div class="quick-actions">
+                    <a href="/execute?preset=smoke" class="btn-ifrit btn-primary-ifrit">
+                        <i class="bi bi-shield-check"></i> 冒烟测试
+                    </a>
+                    <a href="/execute?preset=ai_business" class="btn-ifrit btn-success-ifrit">
+                        <i class="bi bi-geo-alt"></i> 地址业务流
+                    </a>
+                    <a href="/ai" class="btn-ifrit btn-secondary-ifrit">
+                        <i class="bi bi-stars"></i> AI 生成用例
+                    </a>
+                    <a href="/reports" class="btn-ifrit btn-secondary-ifrit">
+                        <i class="bi bi-file-earmark-bar-graph"></i> 查看报告
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {% if stats.latest_runs %}
+        <div class="card-panel mt-4">
+            <div class="card-header">最近测试 Run</div>
+            <div class="card-body p-0">
+                <table class="table-platform mb-0">
+                    <thead>
+                        <tr><th>Run ID</th><th>时间</th><th>报告</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for run in stats.latest_runs %}
+                        <tr>
+                            <td><code>{{ run.run_id }}</code></td>
+                            <td>{{ run.created_at }}</td>
+                            <td>
+                                {% if run.has_html %}
+                                <a href="{{ run.html_url }}" target="_blank" class="btn-ifrit btn-secondary-ifrit" style="padding:4px 10px;font-size:0.8rem;">打开 HTML</a>
+                                {% else %}
+                                <span class="text-muted">未生成</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card-panel">
+            <div class="card-header"><i class="bi bi-shield-lock"></i> 鉴权与环境</div>
+            <div class="card-body">
+                <p class="mb-2"><strong>被测 API：</strong><code>{{ base_url }}</code></p>
+                <p class="mb-2"><strong>全局登录：</strong>{{ auth.login_path }}</p>
+                <p class="mb-2"><strong>账号：</strong>{{ auth.username }} / {{ auth.password }}</p>
+                <hr>
+                <p class="small text-muted mb-2">
+                    <strong>manual 用例</strong>：可在 CSV 内写登录步骤，或使用全局鉴权。<br>
+                    <strong>AI 用例</strong>：执行时请开启「全局鉴权」。
+                </p>
+                <a href="/execute" class="btn-ifrit btn-primary-ifrit w-100 justify-content-center">
+                    <i class="bi bi-play-fill"></i> 前往执行
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
