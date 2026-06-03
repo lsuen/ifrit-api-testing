@@ -107,6 +107,40 @@ class CLIManager:
             help="进入 AI 交互模式；可选跟随单行命令，如 --chat doc api.json generate"
         )
 
+        # 导入中心
+        parser.add_argument(
+            "--import",
+            dest="import_file",
+            metavar="FILE",
+            help="导入外部测试文件（Postman Collection 等）",
+        )
+        parser.add_argument(
+            "--import-format",
+            choices=["postman"],
+            default="postman",
+            help="导入格式（默认 postman）",
+        )
+        parser.add_argument(
+            "--import-suite",
+            choices=["smoke", "manual", "ai"],
+            default="manual",
+            help="导入后归属套件目录（默认 manual）",
+        )
+        parser.add_argument(
+            "--import-output",
+            help="输出 CSV 路径（默认 fixtures/<suite>/csv/postman_<name>_<时间>.csv）",
+        )
+        parser.add_argument(
+            "--import-ai-enhance",
+            action="store_true",
+            help="导入后 AI 增强（Postman 纯转换模式下预留）",
+        )
+        parser.add_argument(
+            "--import-dry-run",
+            action="store_true",
+            help="仅预览导入结果，不写 CSV",
+        )
+
         return parser
     
     def parse_args(self):
@@ -124,8 +158,12 @@ class CLIManager:
             format_clean_summary,
         )
         from agent.pipeline.generator import AIGenerator
+        from core.importers.runner import run_import
 
         args = self.parse_args()
+
+        if args.import_file:
+            sys.exit(run_import(args))
 
         if args.chat is not None:
             from agent.pipeline.chat import AIChatSession
