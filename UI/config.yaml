@@ -1,0 +1,26 @@
+# ifrit-apitest Web UI 配置文件
+# 作者：孙文龙
+# 用途：UI服务运行配置，支持相对路径和绝对路径
+
+# ifrit 项目配置
+ifrit:
+  # 项目根路径（相对路径 ../ 或绝对路径）
+  root_path: "D:\\CodeFiles\\EduFiles\\ifrit-apitest"
+  # Python 可执行文件
+  python_bin: "python"
+  # CLI 主脚本
+  cli_script: "main.py"
+
+# 服务配置
+server:
+  host: "0.0.0.0"
+  port: 5001
+  debug: false
+
+# 路径配置（相对于 ifrit.root_path）
+paths:
+  fixtures: "fixtures"
+  reports_html: "reports/html"
+  reports_allure: "reports/allure_reports"
+  logs: "logs"
+  api_docs: "api_docs"

@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}用例管理{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="bi bi-file-earmark-text"></i> 用例管理</h2>
+        <p class="text-muted">浏览、查看和管理测试用例文件</p>
+    </div>
+</div>
+
+<!-- 文件类型标签页 -->
+<ul class="nav nav-tabs mb-4" id="caseTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="csv-tab" data-bs-toggle="tab" data-bs-target="#csv" type="button">
+            <i class="bi bi-filetype-csv"></i> CSV 文件 ({{ csv_files|length }})
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="excel-tab" data-bs-toggle="tab" data-bs-target="#excel" type="button">
+            <i class="bi bi-filetype-xlsx"></i> Excel 文件 ({{ excel_files|length }})
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="json-tab" data-bs-toggle="tab" data-bs-target="#json" type="button">
+            <i class="bi bi-filetype-json"></i> JSON 文件 ({{ json_files|length }})
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="caseTabContent">
+    <!-- CSV 文件 -->
+    <div class="tab-pane fade show active" id="csv">
+        <div class="card">
+            <div class="card-body">
+                {% if csv_files %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>文件名</th>
+                                <th>路径</th>
+                                <th>大小</th>
+                                <th>修改时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for file in csv_files %}
+                            <tr>
+                                <td><i class="bi bi-filetype-csv"></i> {{ file.name }}</td>
+                                <td class="text-muted"><small>{{ file.relative_path }}</small></td>
+                                <td>{{ (file.size / 1024)|round(1) }} KB</td>
+                                <td>{{ file.modified }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary view-case-btn" data-file-path="{{ file.path }}">
+                                        <i class="bi bi-eye"></i> 查看
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center text-muted py-4">暂无 CSV 文件</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Excel 文件 -->
+    <div class="tab-pane fade" id="excel">
+        <div class="card">
+            <div class="card-body">
+                {% if excel_files %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>文件名</th>
+                                <th>路径</th>
+                                <th>大小</th>
+                                <th>修改时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for file in excel_files %}
+                            <tr>
+                                <td><i class="bi bi-filetype-xlsx"></i> {{ file.name }}</td>
+                                <td class="text-muted"><small>{{ file.relative_path }}</small></td>
+                                <td>{{ (file.size / 1024)|round(1) }} KB</td>
+                                <td>{{ file.modified }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary view-case-btn" data-file-path="{{ file.path }}">
+                                        <i class="bi bi-eye"></i> 查看
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center text-muted py-4">暂无 Excel 文件</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- JSON 文件 -->
+    <div class="tab-pane fade" id="json">
+        <div class="card">
+            <div class="card-body">
+                {% if json_files %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>文件名</th>
+                                <th>路径</th>
+                                <th>大小</th>
+                                <th>修改时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for file in json_files %}
+                            <tr>
+                                <td><i class="bi bi-filetype-json"></i> {{ file.name }}</td>
+                                <td class="text-muted"><small>{{ file.relative_path }}</small></td>
+                                <td>{{ (file.size / 1024)|round(1) }} KB</td>
+                                <td>{{ file.modified }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary view-case-btn" data-file-path="{{ file.path }}">
+                                        <i class="bi bi-eye"></i> 查看
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center text-muted py-4">暂无 JSON 文件</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 用例查看模态框 -->
+<div class="modal fade" id="caseViewModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-file-earmark-text"></i> 用例详情</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="caseViewContent">
+                    <p class="text-center text-muted">加载中...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 查看用例
+document.querySelectorAll('.view-case-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const filePath = this.dataset.filePath;
+        const modal = new bootstrap.Modal(document.getElementById('caseViewModal'));
+        modal.show();
+        
+        document.getElementById('caseViewContent').innerHTML = '<p class="text-center text-muted">加载中...</p>';
+        
+        axios.post('/cases/read', { file_path: filePath })
+            .then(response => {
+                const data = response.data.data;
+                const total = response.data.total;
+                
+                if (data.length === 0) {
+                    document.getElementById('caseViewContent').innerHTML = '<p class="text-center text-muted">文件为空</p>';
+                    return;
+                }
+                
+                // 生成表格
+                const headers = Object.keys(data[0]);
+                let html = `<p class="mb-3">共 <strong>${total}</strong> 条用例</p>`;
+                html += '<div class="table-responsive"><table class="table table-striped table-sm">';
+                html += '<thead><tr>';
+                headers.forEach(header => {
+                    html += `<th>${header}</th>`;
+                });
+                html += '</tr></thead><tbody>';
+                
+                data.forEach(row => {
+                    html += '<tr>';
+                    headers.forEach(header => {
+                        html += `<td>${row[header] || ''}</td>`;
+                    });
+                    html += '</tr>';
+                });
+                
+                html += '</tbody></table></div>';
+                document.getElementById('caseViewContent').innerHTML = html;
+            })
+            .catch(error => {
+                console.error('读取用例失败:', error);
+                document.getElementById('caseViewContent').innerHTML = 
+                    '<div class="alert alert-danger">读取失败: ' + (error.response?.data?.error || error.message) + '</div>';
+            });
+    });
+});
+</script>
+{% endblock %}
