@@ -73,12 +73,24 @@ class TestUIPlatform(unittest.TestCase):
                 "import_file": "tests/fixtures/postman/ifrit_address_smoke.postman_collection.json",
                 "suite": "manual",
                 "format": "postman",
+                "output_format": "json",
             },
         )
         joined = " ".join(cmd)
         self.assertIn("--import", joined)
         self.assertIn("--import-format postman", joined)
         self.assertIn("--import-suite manual", joined)
+        self.assertIn("--import-output-format json", joined)
+
+    def test_import_preview_api(self):
+        response = self.client.post(
+            "/api/import/preview",
+            data={"source_path": "tests/fixtures/postman/ifrit_address_smoke.postman_collection.json"},
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.get_json()
+        self.assertTrue(data.get("success"))
+        self.assertEqual(data.get("case_count"), 3)
 
     def test_api_overview(self):
         response = self.client.get("/api/overview")

@@ -234,34 +234,67 @@ def build_clean_command(config: Dict[str, Any], target: str, keep_days: Optional
     return cmd
 
 
-def build_import_command(config: Dict[str, Any], params: Dict[str, Any]) -> List[str]:
+def _normalize_import_path(config: Dict[str, Any], import_file: str) -> str:
     root = config["ifrit"]["root_path_resolved"]
+    rel = Path(import_file)
+    if rel.is_absolute():
+        try:
+            return str(rel.relative_to(root)).replace("\\", "/")
+        except ValueError:
+            return str(rel).replace("\\", "/")
+    return str(import_file).replace("\\", "/")
+
+
+def build_import_command(config: Dict[str, Any], params: Dict[str, Any]) -> List[str]:
     import_file = params.get("import_file")
     if not import_file:
         raise ValueError("缺少 import_file")
 
-    rel = Path(import_file)
-    if rel.is_absolute():
-        try:
-            import_file = str(rel.relative_to(root)).replace("\\", "/")
-        except ValueError:
-            import_file = str(rel).replace("\\", "/")
-    else:
-        import_file = str(import_file).replace("\\", "/")
-
     cmd = build_python_cmd(config) + [
         str(build_main_script(config)),
         "--import",
-        import_file,
+        _normalize_import_path(config, import_file),
         "--import-format",
         params.get("format", "postman"),
         "--import-suite",
         params.get("suite", "manual"),
+        "--import-output-format",
+        params.get("output_format", "csv"),
     ]
     if params.get("output"):
         cmd.extend(["--import-output", str(params["output"]).replace("\\", "/")])
     if params.get("dry_run"):
         cmd.append("--import-dry-run")
-    if params.get("ai_enhance"):
-        cmd.append("--import-ai-enhance")
     return cmd
+
+
+def build_import_diagnose_command(config: Dict[str, Any], params: Dict[str, Any]) -> List[str]:
+    import_file = params.get("import_file")
+    if not import_file:
+        raise ValueError("缺少 import_file")
+    cmd = build_python_cmd(config) + [
+        str(build_main_script(config)),
+        "--import",
+        _normalize_import_path(config, import_file),
+        "--import-format",
+        params.get("format", "postman"),
+        "--import-diagnose",
+        "--project-root",
+        str(config["ifrit"]["root_path_resolved"]),
+    ]
+    if params.get("inject_project_context"):
+        cmd.append("--inject-project-context")
+    return cmd
+
+
+def build_import_save_command(config: Dict[str, Any], payload_path: str) -> List[str]:
+    root = config["ifrit"]["root_path_resolved"]
+    rel = _normalize_import_path(config, payload_path) if Path(payload_path).is_absolute() else payload_path
+    return build_python_cmd(config) + [
+        str(build_main_script(config)),
+        "--import-payload",
+        rel,
+        "--project-root",
+        str(root),
+    ]
+

@@ -31,10 +31,12 @@ from services.cli_runner import (
     build_ai_generate_command,
     build_clean_command,
     build_import_command,
+    build_import_diagnose_command,
     build_simple_command,
     build_test_command,
     process_manager,
 )
+from services.import_bridge import get_project_context, preview_postman, save_merged_cases
 from services.config_loader import (
     UNAVAILABLE,
     get_preset_status,
@@ -54,6 +56,32 @@ from services.ifrit_paths import (
 )
 
 CONFIG: Dict[str, Any] = {}
+
+
+def _resolve_import_file(root: Path) -> str:
+    if request.files.get("file"):
+        upload = request.files["file"]
+        filename = secure_filename(upload.filename or "collection.json")
+        if not filename.lower().endswith(".json"):
+            raise ValueError("仅支持 Postman JSON 文件")
+        save_dir = root / "fixtures" / "import" / "postman"
+        save_dir.mkdir(parents=True, exist_ok=True)
+        save_path = save_dir / filename
+        upload.save(save_path)
+        return str(save_path.relative_to(root)).replace("\\", "/")
+
+    source_path = (request.form.get("source_path") or "").strip() if request.form else ""
+    if not source_path:
+        body = request.get_json(silent=True) or {}
+        source_path = str(body.get("source_path") or body.get("import_file") or "").strip()
+    if not source_path:
+        raise ValueError("请上传 Postman 文件或指定 source_path")
+    candidate = Path(source_path)
+    if not candidate.is_absolute():
+        candidate = root / source_path.replace("/", os.sep)
+    if not candidate.is_file():
+        raise ValueError(f"文件不存在: {source_path}")
+    return str(candidate.relative_to(root)).replace("\\", "/")
 
 
 def create_app() -> Flask:
@@ -206,45 +234,98 @@ def register_routes(app: Flask) -> None:
         process_id = process_manager.start(cmd, CONFIG["ifrit"]["root_path_resolved"], label="ai_chat")
         return jsonify({"process_id": process_id, "command": " ".join(cmd)})
 
+    @app.route("/api/import/preview", methods=["POST"])
+    def api_import_preview():
+        root = CONFIG["ifrit"]["root_path_resolved"]
+        try:
+            import_rel = _resolve_import_file(root)
+            data = preview_postman(root, import_rel)
+            data["import_file"] = import_rel
+            return jsonify({"success": True, **data})
+        except ValueError as error:
+            return jsonify({"error": str(error)}), 400
+        except Exception as error:
+            return jsonify({"error": f"预览失败: {error}"}), 400
+
+    @app.route("/api/import/project-context", methods=["GET"])
+    def api_import_project_context():
+        root = CONFIG["ifrit"]["root_path_resolved"]
+        try:
+            return jsonify({"success": True, "context": get_project_context(root)})
+        except Exception as error:
+            return jsonify({"error": str(error)}), 500
+
+    @app.route("/api/import/diagnose", methods=["POST"])
+    def api_import_diagnose():
+        root = CONFIG["ifrit"]["root_path_resolved"]
+        try:
+            import_rel = _resolve_import_file(root)
+        except ValueError as error:
+            return jsonify({"error": str(error)}), 400
+
+        inject = request.form.get("inject_project_context") in ("1", "true", "True", "on")
+        if request.is_json and request.json:
+            inject = bool(request.json.get("inject_project_context", inject))
+
+        params = {
+            "import_file": import_rel,
+            "format": request.form.get("format", "postman"),
+            "inject_project_context": inject,
+        }
+        try:
+            cmd = build_import_diagnose_command(CONFIG, params)
+        except ValueError as error:
+            return jsonify({"error": str(error)}), 400
+        process_id = process_manager.start(cmd, root, label="import_diagnose")
+        return jsonify({"process_id": process_id, "command": " ".join(cmd), "import_file": import_rel})
+
+    @app.route("/api/import/save", methods=["POST"])
+    def api_import_save():
+        root = CONFIG["ifrit"]["root_path_resolved"]
+        data = request.json or {}
+        original = data.get("original_rows") or []
+        append = data.get("append_rows") or []
+        if not original:
+            return jsonify({"error": "缺少 original_rows"}), 400
+        suite = data.get("suite", "manual")
+        output_format = data.get("output_format", "csv")
+        output_rel = (data.get("output") or "").strip()
+        collection_name = data.get("collection_name") or "import"
+        try:
+            saved = save_merged_cases(
+                root,
+                original,
+                append,
+                suite=suite,
+                output_format=output_format,
+                output_rel=output_rel,
+                collection_name=collection_name,
+            )
+            return jsonify({"success": True, "output_file": saved, "total": len(original) + len(append)})
+        except Exception as error:
+            return jsonify({"error": str(error)}), 400
+
     @app.route("/api/import", methods=["POST"])
     def api_import():
         root = CONFIG["ifrit"]["root_path_resolved"]
-        import_rel = ""
-        output_file = ""
-
-        if request.files.get("file"):
-            upload = request.files["file"]
-            filename = secure_filename(upload.filename or "collection.json")
-            if not filename.lower().endswith(".json"):
-                return jsonify({"error": "仅支持 Postman JSON 文件"}), 400
-            save_dir = root / "fixtures" / "import" / "postman"
-            save_dir.mkdir(parents=True, exist_ok=True)
-            save_path = save_dir / filename
-            upload.save(save_path)
-            import_rel = str(save_path.relative_to(root)).replace("\\", "/")
-        else:
-            source_path = (request.form.get("source_path") or "").strip()
-            if not source_path:
-                return jsonify({"error": "请上传 Postman 文件或指定 source_path"}), 400
-            candidate = Path(source_path)
-            if not candidate.is_absolute():
-                candidate = root / source_path.replace("/", os.sep)
-            if not candidate.is_file():
-                return jsonify({"error": f"文件不存在: {source_path}"}), 400
-            import_rel = str(candidate.relative_to(root)).replace("\\", "/")
+        try:
+            import_rel = _resolve_import_file(root)
+        except ValueError as error:
+            return jsonify({"error": str(error)}), 400
 
         suite = request.form.get("suite", "manual")
         output = (request.form.get("output") or "").strip()
         dry_run = request.form.get("dry_run") in ("1", "true", "True", "on")
-        ai_enhance = request.form.get("ai_enhance") in ("1", "true", "True", "on")
+        output_format = request.form.get("output_format", "csv")
 
         params: Dict[str, Any] = {
             "import_file": import_rel,
             "format": request.form.get("format", "postman"),
             "suite": suite,
             "dry_run": dry_run,
-            "ai_enhance": ai_enhance,
+            "output_format": output_format,
         }
+        output_file = ""
         if output:
             out_path = Path(output)
             if not out_path.is_absolute():
@@ -264,6 +345,7 @@ def register_routes(app: Flask) -> None:
                 "process_id": process_id,
                 "command": " ".join(cmd),
                 "output_file": output_file,
+                "import_file": import_rel,
             }
         )
 
