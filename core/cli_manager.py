@@ -140,6 +140,37 @@ class CLIManager:
             action="store_true",
             help="仅预览导入结果，不写 CSV",
         )
+        parser.add_argument(
+            "--import-preview-only",
+            action="store_true",
+            help="解析并输出预览 JSON（stdout IMPORT_PREVIEW_JSON）",
+        )
+        parser.add_argument(
+            "--import-diagnose",
+            action="store_true",
+            help="解析后用 LLM 诊断并建议追加用例",
+        )
+        parser.add_argument(
+            "--inject-project-context",
+            action="store_true",
+            help="诊断时注入项目配置摘要",
+        )
+        parser.add_argument(
+            "--import-output-format",
+            choices=["csv", "json"],
+            default="csv",
+            help="输出用例文件格式（默认 csv）",
+        )
+        parser.add_argument(
+            "--import-payload",
+            metavar="FILE",
+            help="保存合并用例的 JSON payload 文件",
+        )
+        parser.add_argument(
+            "--project-root",
+            default=".",
+            help="项目根目录（诊断注入上下文时使用）",
+        )
 
         return parser
     
@@ -163,6 +194,8 @@ class CLIManager:
         args = self.parse_args()
 
         if args.import_file:
+            sys.exit(run_import(args))
+        if args.import_payload:
             sys.exit(run_import(args))
 
         if args.chat is not None:

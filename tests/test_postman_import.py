@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """Postman 导入单元与 CLI 业务测试。"""
 import csv
+import json
 import os
 import subprocess
 import sys
@@ -140,6 +141,38 @@ class TestPostmanImportCLI(unittest.TestCase):
             )
             self.assertEqual(run_result.returncode, 0, run_result.stdout + run_result.stderr)
             self.assertIn("[IFRIT] PASS", run_result.stdout)
+
+    def test_cli_import_writes_json(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out_json = Path(tmp) / "imported.json"
+            cmd = [
+                sys.executable,
+                str(BASE_DIR / "main.py"),
+                "--import",
+                str(POSTMAN_FIXTURE),
+                "--import-output",
+                str(out_json),
+                "--import-output-format",
+                "json",
+            ]
+            result = subprocess.run(cmd, cwd=str(BASE_DIR), capture_output=True, text=True, encoding="utf-8", errors="replace")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertTrue(out_json.is_file())
+            with open(out_json, "r", encoding="utf-8") as handle:
+                data = json.load(handle)
+            self.assertEqual(len(data), 3)
+
+    def test_cli_preview_json(self):
+        cmd = [
+            sys.executable,
+            str(BASE_DIR / "main.py"),
+            "--import",
+            str(POSTMAN_FIXTURE),
+            "--import-preview-only",
+        ]
+        result = subprocess.run(cmd, cwd=str(BASE_DIR), capture_output=True, text=True, encoding="utf-8", errors="replace")
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("IMPORT_PREVIEW_JSON=", result.stdout)
 
     def test_cli_manager_has_import_args(self):
         parser = CLIManager().parser

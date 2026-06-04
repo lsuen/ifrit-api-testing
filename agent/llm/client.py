@@ -39,6 +39,7 @@ class AIClient:
         self.call_count = 0
         self.total_response_time = 0
         self.total_tokens = 0
+        self.last_error: Optional[str] = None
         
         # 确保base_url格式正确
         if not self.base_url.endswith('/chat/completions'):
@@ -198,6 +199,25 @@ HTTP方法: {api_info['method']}
                 description += f"  - {status_code}: {response_info.get('description', '')}\n"
         
         return description
+
+    def _format_api_error(self, response: requests.Response) -> str:
+        """将 HTTP 错误响应转为用户可读说明。"""
+        try:
+            body = response.json()
+            err = body.get("error") or {}
+            if isinstance(err, dict):
+                message = str(err.get("message") or err.get("code") or err)
+                code = str(err.get("code") or "")
+                if code == "model_not_found" or "no available channel for model" in message.lower():
+                    return (
+                        f"模型「{self.model}」在当前网关不可用: {message}。"
+                        f"请检查 .env 中 OPENAI_MODEL 或 config/settings/ai.ini 的 model"
+                    )
+                return f"LLM 请求失败(HTTP {response.status_code}): {message}"
+        except Exception:
+            pass
+        text = (response.text or "")[:300]
+        return f"LLM 请求失败(HTTP {response.status_code}): {text}"
     
     def _call_openai_api(self, prompt: str, max_retries: int = 3) -> Optional[str]:
         """
@@ -210,6 +230,7 @@ HTTP方法: {api_info['method']}
         Returns:
             AI响应文本
         """
+        self.last_error = None
         for attempt in range(max_retries):
             try:
                 start_time = time.time()
@@ -259,6 +280,9 @@ HTTP方法: {api_info['method']}
                     
                     # 标准OpenAI格式（兼容 choices 为 null/空列表/message 缺失）
                     choices = result.get('choices')
+                    if choices is None or (isinstance(choices, list) and len(choices) == 0):
+                        logger.error("AI接口响应 choices 为空 (尝试 %d/%d)", attempt + 1, max_retries)
+                        continue
                     if choices and len(choices) > 0:
                         first = choices[0] if isinstance(choices[0], dict) else {}
                         message = first.get('message') if isinstance(first, dict) else None
@@ -292,6 +316,7 @@ HTTP方法: {api_info['method']}
                         logger.error("AI接口响应内容为空")
                         
                 else:
+                    self.last_error = self._format_api_error(response)
                     logger.error(f"AI接口调用失败，状态码: {response.status_code}, 响应: {response.text}")
                     
                     # 如果是429错误（请求过于频繁），等待后重试
@@ -302,10 +327,13 @@ HTTP方法: {api_info['method']}
                         continue
                 
             except requests.exceptions.Timeout:
+                self.last_error = f"LLM 请求超时（>{self.timeout}s），请检查网络或增大 ai.ini 的 timeout"
                 logger.error(f"AI接口调用超时 (尝试 {attempt + 1}/{max_retries})")
             except requests.exceptions.ConnectionError:
+                self.last_error = f"无法连接 LLM 网关: {self.base_url}"
                 logger.error(f"AI接口连接失败 (尝试 {attempt + 1}/{max_retries})")
             except Exception as e:
+                self.last_error = f"LLM 调用异常: {e}"
                 logger.error(f"AI接口调用异常: {str(e)} (尝试 {attempt + 1}/{max_retries})")
             
             # 如果不是最后一次尝试，等待后重试
@@ -314,8 +342,15 @@ HTTP方法: {api_info['method']}
                 logger.info(f"等待 {wait_time} 秒后重试")
                 time.sleep(wait_time)
         
+        if not self.last_error:
+            self.last_error = f"LLM 调用失败，已重试 {max_retries} 次（模型: {self.model}）"
         logger.error(f"AI接口调用失败，已重试 {max_retries} 次")
+        print(f"[IFRIT] {self.last_error}")
         return None
+
+    def complete(self, prompt: str, max_retries: int = 3) -> Optional[str]:
+        """通用单轮 LLM 补全（供导入诊断等场景）。"""
+        return self._call_openai_api(prompt, max_retries=max_retries)
     
     def _parse_ai_response(self, response_text: str, api_info: Dict[str, Any], case_type: str) -> List[Dict[str, Any]]:
         """

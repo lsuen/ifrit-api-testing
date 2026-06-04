@@ -1,28 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Postman Collection v2.1 → ifrit CSV 转换器。"""
-import csv
 import json
 import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
-CSV_COLUMNS = [
-    "id",
-    "name",
-    "method",
-    "url",
-    "headers",
-    "params",
-    "body",
-    "expected_status",
-    "expected_result",
-    "extract",
-    "validate",
-    "priority",
-    "enabled",
-]
+from core.importers.case_writer import write_cases
 
 POSTMAN_SCHEMA_V21 = "v2.1"
 
@@ -244,8 +229,4 @@ class PostmanImporter:
 
     @staticmethod
     def write_csv(rows: List[Dict[str, str]], output_path: Path) -> None:
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(output_path, "w", encoding="utf-8", newline="") as handle:
-            writer = csv.DictWriter(handle, fieldnames=CSV_COLUMNS, extrasaction="ignore")
-            writer.writeheader()
-            writer.writerows(rows)
+        write_cases(rows, output_path, "csv")
