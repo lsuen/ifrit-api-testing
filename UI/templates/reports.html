@@ -5,75 +5,118 @@
 <div class="page-header d-flex justify-content-between align-items-start flex-wrap gap-3">
     <div>
         <h1 class="page-title"><i class="bi bi-graph-up"></i> 报告中心</h1>
-        <p class="page-desc">按 Run 归档 · 路径 reports/runs/&lt;时间戳&gt;/html/</p>
+        <p class="page-desc">按 Run 归档 · <code>reports/runs/&lt;时间戳&gt;/html/</code></p>
     </div>
-    <button class="btn-ifrit btn-secondary-ifrit" onclick="location.reload()"><i class="bi bi-arrow-clockwise"></i> 刷新</button>
+    <div class="page-toolbar">
+        {% if runs and runs[0].has_html %}
+        <a href="{{ runs[0].html_url }}" target="_blank" class="btn-ifrit btn-primary-ifrit btn-sm-ifrit">
+            <i class="bi bi-eye"></i> 打开最新报告
+        </a>
+        {% endif %}
+        <button type="button" class="btn-ifrit btn-secondary-ifrit btn-sm-ifrit" onclick="location.reload()">
+            <i class="bi bi-arrow-clockwise"></i> 刷新
+        </button>
+    </div>
 </div>
 
-<div class="row g-4 mb-4">
-    <div class="col-md-4">
+<div class="row g-3 g-lg-4 mb-4">
+    <div class="col-sm-6 col-lg-3">
         <div class="card-panel h-100">
             <div class="card-body">
-                <h6><i class="bi bi-file-earmark-plus"></i> 生成 HTML 报告</h6>
-                <p class="small text-muted">基于最新 allure-results 生成</p>
-                <button class="btn-ifrit btn-success-ifrit" id="genReportBtn">生成报告</button>
+                <h6><i class="bi bi-file-earmark-plus"></i> 生成 HTML</h6>
+                <p class="small text-muted mb-2">基于最新 Run 的 allure-results</p>
+                <button class="btn-ifrit btn-success-ifrit btn-sm-ifrit w-100" id="genReportBtn" type="button">生成报告</button>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-sm-6 col-lg-3">
         <div class="card-panel h-100">
             <div class="card-body">
                 <h6><i class="bi bi-server"></i> Allure 服务</h6>
-                <p class="small text-muted">启动 allure serve（本地进程）</p>
-                <button class="btn-ifrit btn-secondary-ifrit" id="serveReportBtn">启动服务</button>
+                <p class="small text-muted mb-2">本地 <code>allure serve</code></p>
+                <button class="btn-ifrit btn-secondary-ifrit btn-sm-ifrit w-100" id="serveReportBtn" type="button">启动服务</button>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-sm-6 col-lg-3">
         <div class="card-panel h-100">
             <div class="card-body">
-                <h6><i class="bi bi-trash"></i> 清理旧报告</h6>
-                <p class="small text-muted">调用 main.py --clean reports</p>
-                <button class="btn-ifrit btn-danger-ifrit" id="cleanReportBtn">清理报告</button>
+                <h6><i class="bi bi-play-circle"></i> 执行测试</h6>
+                <p class="small text-muted mb-2">产生新的 Run 与 Allure 数据</p>
+                <a href="/execute" class="btn-ifrit btn-primary-ifrit btn-sm-ifrit w-100 justify-content-center">去执行</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card-panel h-100">
+            <div class="card-body">
+                <h6><i class="bi bi-trash"></i> 批量清理</h6>
+                <p class="small text-muted mb-2">按保留策略清理过期 Run</p>
+                <button class="btn-ifrit btn-danger-ifrit btn-sm-ifrit w-100" id="cleanReportBtn" type="button">清理旧报告</button>
             </div>
         </div>
     </div>
 </div>
 
 <div class="card-panel">
-    <div class="card-header">历史 Run</div>
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <span>历史 Run（{{ runs|length }}）</span>
+        <span class="small text-muted">单条可生成 / 查看 / 删除</span>
+    </div>
     <div class="card-body p-0">
         {% if runs %}
-        <table class="table-platform mb-0">
-            <thead>
-                <tr>
-                    <th>Run ID</th>
-                    <th>创建时间</th>
-                    <th>套件</th>
-                    <th>Allure 文件</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for run in runs %}
-                <tr>
-                    <td><code>{{ run.run_id }}</code></td>
-                    <td>{{ run.created_at }}</td>
-                    <td>{{ run.suite or '-' }}</td>
-                    <td>{{ run.allure_count }}</td>
-                    <td>
-                        {% if run.has_html %}
-                        <a href="{{ run.html_url }}" target="_blank" class="btn-ifrit btn-primary-ifrit" style="padding:4px 12px;font-size:0.8rem;">
-                            <i class="bi bi-eye"></i> 查看
-                        </a>
-                        {% else %}
-                        <span class="text-muted">无 HTML</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive-platform">
+            <table class="table-platform mb-0" id="runsTable">
+                <thead>
+                    <tr>
+                        <th>Run ID</th>
+                        <th class="d-none d-md-table-cell">创建时间</th>
+                        <th class="d-none d-lg-table-cell">套件</th>
+                        <th>Allure</th>
+                        <th>HTML</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for run in runs %}
+                    <tr data-run-id="{{ run.run_id }}">
+                        <td><code class="small">{{ run.run_id }}</code></td>
+                        <td class="d-none d-md-table-cell">{{ run.created_at }}</td>
+                        <td class="d-none d-lg-table-cell">{{ run.suite or '-' }}</td>
+                        <td>{{ run.allure_count }}</td>
+                        <td>
+                            {% if run.has_html %}
+                            <span class="badge-status badge-success">已生成</span>
+                            {% elif run.has_allure %}
+                            <span class="badge-status badge-running">可生成</span>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group-actions">
+                                {% if run.has_html %}
+                                <a href="{{ run.html_url }}" target="_blank" class="btn-ifrit btn-primary-ifrit btn-sm-ifrit" title="新标签页打开 Allure HTML">
+                                    <i class="bi bi-eye"></i><span class="d-none d-xl-inline"> 查看</span>
+                                </a>
+                                {% elif run.has_allure %}
+                                <button type="button" class="btn-ifrit btn-success-ifrit btn-sm-ifrit btn-gen-run" data-run-id="{{ run.run_id }}">
+                                    <i class="bi bi-file-earmark-plus"></i><span class="d-none d-xl-inline"> 生成</span>
+                                </button>
+                                {% endif %}
+                                <button type="button" class="btn-ifrit btn-secondary-ifrit btn-sm-ifrit btn-copy-run" data-run-id="{{ run.run_id }}" title="复制 Run ID">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                                <button type="button" class="btn-ifrit btn-danger-ifrit btn-sm-ifrit btn-del-run" data-run-id="{{ run.run_id }}" title="删除整个 Run 目录">
+                                    <i class="bi bi-trash"></i><span class="d-none d-xl-inline"> 删除</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% else %}
         <div class="text-center py-5 text-muted">
             <i class="bi bi-inbox" style="font-size:3rem;"></i>
@@ -86,26 +129,12 @@
 
 <div class="card-panel mt-4">
     <div class="card-header">操作日志</div>
-    <div class="card-body">
-        <div class="log-terminal" id="reportLog" style="height:200px;"></div>
+    <div class="card-body p-0">
+        <div class="log-terminal log-terminal--compact" id="reportLog"></div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-function runTask(url, body) {
-    const log = document.getElementById('reportLog');
-    log.innerHTML = '';
-    axios.post(url, body || {}).then(res => {
-        IfritUI.streamLogs(res.data.process_id, log, () => setTimeout(() => location.reload(), 2000));
-    }).catch(e => alert(e.response?.data?.error || e.message));
-}
-
-document.getElementById('genReportBtn').addEventListener('click', () => runTask('/api/reports/generate'));
-document.getElementById('serveReportBtn').addEventListener('click', () => runTask('/api/reports/serve'));
-document.getElementById('cleanReportBtn').addEventListener('click', () => {
-    if (confirm('确认清理过期报告？')) runTask('/api/clean', { target: 'reports' });
-});
-</script>
+<script src="{{ url_for('static', filename='js/reports.js') }}"></script>
 {% endblock %}

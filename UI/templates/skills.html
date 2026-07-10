@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Skill 管理{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-start flex-wrap gap-2">
+    <div>
+        <h1 class="page-title"><i class="bi bi-puzzle"></i> Skill 管理</h1>
+        <p class="page-desc">内置 Action 链 · 远程 SKILL.md 发现 · Web 编辑器 · Loop 执行日志</p>
+    </div>
+    <button class="btn-ifrit btn-secondary-ifrit" id="refreshAllBtn" type="button">
+        <i class="bi bi-arrow-clockwise"></i> 刷新全部仓库
+    </button>
+</div>
+
+<ul class="nav nav-tabs mb-3" id="skillsTabs">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabBuiltin" type="button">内置技能</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabDiscover" type="button" id="discoverTabBtn">发现技能</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabEditor" type="button">编辑器</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabLog" type="button">日志</button></li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="tabBuiltin">
+        <div class="row g-3" id="builtinWrap"><p class="text-muted">加载中…</p></div>
+    </div>
+
+    <div class="tab-pane fade" id="tabDiscover">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card-panel">
+                    <div class="card-header">仓库源</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">GitHub / Gitee URL</label>
+                            <input type="text" class="form-control form-control-sm" id="repoUrlInput" placeholder="https://github.com/owner/repo">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">分支</label>
+                            <input type="text" class="form-control form-control-sm" id="repoBranchInput" value="main">
+                        </div>
+                        <button class="btn btn-sm btn-primary w-100 mb-3" id="addRepoBtn" type="button">添加仓库</button>
+                        <div id="reposList"><p class="text-muted small mb-0">加载中…</p></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="card-panel">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>技能目录</span>
+                        <input type="search" class="form-control form-control-sm w-auto" id="catalogSearch" placeholder="搜索技能…" list="skillSuggestList">
+                        <datalist id="skillSuggestList"></datalist>
+                    </div>
+                    <div class="card-body p-0" id="catalogWrap"><p class="text-muted p-4 mb-0">请先刷新仓库</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tabEditor">
+        <div class="card-panel">
+            <div class="card-header d-flex flex-wrap gap-2 align-items-center">
+                <select class="form-select form-select-sm" id="editorSkillSelect" style="max-width:420px">
+                    <option value="">选择已安装技能…</option>
+                </select>
+                <span class="small text-muted" id="editorPathLabel"></span>
+                <button class="btn btn-sm btn-primary ms-auto" id="saveSkillBtn" type="button" disabled>保存 SKILL.md</button>
+            </div>
+            <div class="card-body p-0">
+                <div id="skillAceEditor" style="height:480px;width:100%"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tabLog">
+        <div class="card-panel">
+            <div class="card-body log-panel log-panel--fill" id="skillsLog"><p class="text-muted mb-0">发现/刷新操作日志</p></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='lib/ace/ace.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/ace/mode-text.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/ace/theme-monokai.js') }}"></script>
+<script src="{{ url_for('static', filename='js/skills.js') }}"></script>
+{% endblock %}

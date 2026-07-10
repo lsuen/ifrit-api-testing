@@ -4,10 +4,10 @@
 {% block content %}
 <div class="page-header">
     <h1 class="page-title"><i class="bi bi-box-arrow-in-down"></i> 导入中心</h1>
-    <p class="page-desc">Postman → 预览 → AI 诊断 → 确认追加 → 保存（CSV / JSON）</p>
+    <p class="page-desc">Postman / CSV / JSON → 预览 → AI 诊断（可选 RAG）→ 保存到 fixtures</p>
 </div>
 
-<div class="row g-4">
+<div class="row g-4 layout-with-sidebar">
     <div class="col-lg-4">
         <div class="card-panel">
             <div class="card-header">导入向导</div>
@@ -18,7 +18,11 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">二级 · 来源格式</label>
-                    <select class="form-select" id="importFormat"><option value="postman">Postman v2.1</option></select>
+                    <select class="form-select" id="importFormat">
+                        <option value="postman">Postman v2.1</option>
+                        <option value="csv">ifrit CSV</option>
+                        <option value="json">ifrit JSON</option>
+                    </select>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">三级 · 归属套件</label>
@@ -36,8 +40,8 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Postman 文件</label>
-                    <input type="file" class="form-control" id="importFile" accept=".json,application/json">
+                    <label class="form-label">Postman / CSV / JSON 文件</label>
+                    <input type="file" class="form-control" id="importFile" accept=".json,.csv,application/json,text/csv">
                     {% if sample_path %}
                     <p class="small text-muted mt-2 mb-0">样例：<a href="#" id="useSampleBtn">{{ sample_path }}</a></p>
                     {% endif %}
@@ -49,6 +53,10 @@
                 <div class="form-check mb-2">
                     <input class="form-check-input" type="checkbox" id="injectContextCheck" checked>
                     <label class="form-check-label" for="injectContextCheck">注入项目信息（env / 鉴权 / 用例统计）</label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="ragCheck">
+                    <label class="form-check-label" for="ragCheck">AI 诊断时启用知识库 RAG</label>
                 </div>
                 <button class="btn-ifrit btn-secondary-ifrit w-100 justify-content-center mb-2" id="previewBtn">
                     <i class="bi bi-eye"></i> 1. 解析预览
@@ -68,6 +76,7 @@
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabDiagnosis">诊断报告</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabMerged">合并预览</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabLog">日志</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabLibrary">用例库</button></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane fade show active" id="tabPreview">
@@ -81,7 +90,16 @@
                 <div class="card-panel"><div class="card-body p-0" id="mergedTableWrap"><p class="text-muted p-4 mb-0">勾选建议用例后自动更新</p></div></div>
             </div>
             <div class="tab-pane fade" id="tabLog">
-                <div class="card-panel"><div class="card-body"><div class="log-terminal" id="importLog" style="height:320px;"></div></div></div>
+                <div class="card-panel"><div class="card-body p-0"><div class="log-terminal log-terminal--fill" id="importLog"></div></div></div>
+            </div>
+            <div class="tab-pane fade" id="tabLibrary">
+                <div class="card-panel">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>fixtures 已有用例</span>
+                        <button class="btn btn-sm btn-secondary" type="button" id="refreshLibraryBtn">刷新</button>
+                    </div>
+                    <div class="card-body p-0" id="libraryTableWrap"><p class="text-muted p-4 mb-0">加载中…</p></div>
+                </div>
             </div>
         </div>
         <div class="mt-3" id="saveResultBox" style="display:none;">

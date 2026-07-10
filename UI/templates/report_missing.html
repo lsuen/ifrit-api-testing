@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}报告不可用{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title"><i class="bi bi-exclamation-triangle text-warning"></i> 报告尚未生成</h1>
+    <p class="page-desc">Run <code>{{ run_id }}</code> 的 HTML 报告不存在</p>
+</div>
+<div class="card-panel">
+    <div class="card-body">
+        {% if has_allure %}
+        <p>检测到 Allure 原始结果，可点击下方按钮生成 HTML 后再查看。</p>
+        <button type="button" class="btn btn-primary me-2" id="genBtn" data-run-id="{{ run_id }}">
+            <i class="bi bi-file-earmark-plus"></i> 生成 HTML 报告
+        </button>
+        {% else %}
+        <p class="text-muted mb-0">该 Run 没有 Allure 结果，请先<a href="/execute">执行测试</a>。</p>
+        {% endif %}
+        <a href="/reports" class="btn btn-outline-secondary ms-2">返回报告中心</a>
+        <p class="small text-muted mt-3 mb-0" id="genMsg"></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('genBtn')?.addEventListener('click', async function() {
+    const runId = this.dataset.runId;
+    const msg = document.getElementById('genMsg');
+    this.disabled = true;
+    try {
+        const res = await axios.post('/api/reports/run/' + runId + '/generate');
+        msg.textContent = '生成成功，正在打开…';
+        window.location.href = res.data.html_url;
+    } catch (e) {
+        msg.textContent = e.response?.data?.error || e.message;
+        this.disabled = false;
+    }
+});
+</script>
+{% endblock %}

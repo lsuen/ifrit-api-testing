@@ -37,6 +37,8 @@ DIAGNOSE_PROMPT = """你是 API 自动化测试专家。请分析以下从 Postm
 
 {project_context}
 
+{rag_context}
+
 ## Collection 信息
 {meta_json}
 
@@ -63,6 +65,7 @@ class ImportDiagnosisService:
         rows: List[Dict[str, Any]],
         meta: Optional[Dict[str, Any]] = None,
         project_context: Optional[str] = None,
+        rag_context: Optional[str] = None,
     ) -> Dict[str, Any]:
         if not rows:
             raise ImportDiagnosisError("没有用例可诊断")
@@ -70,6 +73,7 @@ class ImportDiagnosisService:
         clean_rows = [{key: row.get(key, "") for key in CASE_COLUMNS} for row in rows]
         prompt = DIAGNOSE_PROMPT.format(
             project_context=project_context or "（未注入项目上下文）",
+            rag_context=rag_context or "（未启用知识库 RAG）",
             meta_json=json.dumps(meta or {}, ensure_ascii=False),
             case_count=len(clean_rows),
             cases_json=json.dumps(clean_rows, ensure_ascii=False, indent=2),

@@ -46,8 +46,12 @@ const IfritUI = (function() {
                 const runId = data.stats && data.stats.latest_run;
                 const runs = (data.stats && data.stats.latest_runs) || [];
                 const latest = runs.find(r => r.run_id === runId) || runs[0];
-                if (latest && latest.has_html && linkEl && boxEl) {
-                    linkEl.href = latest.html_url;
+                if (latest && linkEl && boxEl) {
+                    const url = latest.has_html
+                        ? (latest.html_url || ('/reports/view/' + latest.run_id + '/'))
+                        : '/reports/view/' + latest.run_id + '/';
+                    linkEl.href = url;
+                    linkEl.textContent = latest.has_html ? '打开 HTML 报告' : '查看 Run（可生成报告）';
                     boxEl.style.display = 'block';
                 }
                 return latest;
@@ -55,5 +59,64 @@ const IfritUI = (function() {
             .catch(() => null);
     }
 
-    return { appendLog, streamLogs, showToast, showLatestReport };
+    function initMobileSidebar() {
+        const sidebar = document.getElementById('appSidebar');
+        const backdrop = document.getElementById('sidebarBackdrop');
+        const toggle = document.getElementById('sidebarToggle');
+        if (!sidebar || !toggle) return;
+
+        function close() {
+            sidebar.classList.remove('open');
+            backdrop?.classList.remove('show');
+        }
+        function open() {
+            sidebar.classList.add('open');
+            backdrop?.classList.add('show');
+        }
+
+        toggle.addEventListener('click', () => {
+            sidebar.classList.contains('open') ? close() : open();
+        });
+        backdrop?.addEventListener('click', close);
+        sidebar.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 992) close();
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', initMobileSidebar);
+
+    async function shouldEnableRagDefault() {
+        const [statsRes, settingsRes] = await Promise.all([
+            fetch('/api/knowledge/stats').then(r => r.json()),
+            fetch('/api/settings').then(r => r.json()),
+        ]);
+        const chunks = statsRes.stats?.chunks || 0;
+        const prefs = settingsRes.ui_prefs || {};
+        return chunks > 0 && prefs.rag_default_on !== false;
+    }
+
+    async function applyRagDefaultCheckbox(checkboxId) {
+        const el = document.getElementById(checkboxId);
+        if (!el) return;
+        try {
+            el.checked = await shouldEnableRagDefault();
+        } catch (e) { /* ignore */ }
+    }
+
+    async function ingestCaseToRag(relativePath) {
+        if (!relativePath) return null;
+        const res = await fetch('/api/settings/rag/ingest-case', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: relativePath }),
+        });
+        return res.json();
+    }
+
+    return {
+        appendLog, streamLogs, showToast, showLatestReport,
+        shouldEnableRagDefault, applyRagDefaultCheckbox, ingestCaseToRag,
+    };
 })();

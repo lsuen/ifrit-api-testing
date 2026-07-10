@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}知识库{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title"><i class="bi bi-database"></i> 知识库 RAG</h1>
+    <p class="page-desc">需求文档 / 用例 / API 文档 · SQLite FTS 检索 · 供 AI 生成与导入诊断参考</p>
+</div>
+
+<ul class="nav nav-tabs mb-4" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabOverview">概览</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabIngest">导入文档</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabSearch">检索测试</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabDocs">已索引</button></li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="tabOverview">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card-panel"><div class="card-body">
+                    <div class="text-muted small">文档数</div>
+                    <div class="fs-3 fw-bold" id="statDocs">-</div>
+                </div></div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-panel"><div class="card-body">
+                    <div class="text-muted small">片段数</div>
+                    <div class="fs-3 fw-bold" id="statChunks">-</div>
+                </div></div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-panel"><div class="card-body">
+                    <div class="text-muted small">数据库</div>
+                    <div class="small font-monospace" id="statDb">-</div>
+                </div></div>
+            </div>
+        </div>
+        <div class="card-panel mt-4">
+            <div class="card-header">索引管理</div>
+            <div class="card-body">
+                <p class="small text-muted">重建会扫描 <code>fixtures/</code>、<code>api_docs/</code> 与已上传需求文档，写入 <code>.ifrit/rag/knowledge.db</code>。</p>
+                <button class="btn btn-primary" id="rebuildBtn" type="button"><i class="bi bi-arrow-repeat"></i> 重建索引</button>
+                <div class="log-terminal log-terminal--compact mt-3" id="rebuildLog"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tabIngest">
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <div class="card-panel">
+                    <div class="card-header">上传文件</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">文档类型</label>
+                            <select class="form-select" id="ingestSourceType">
+                                <option value="requirement">需求 / 说明文档</option>
+                                <option value="api_doc">API 文档</option>
+                                <option value="fixture">用例参考</option>
+                            </select>
+                        </div>
+                        <input type="file" class="form-control mb-3" id="ingestFile" accept=".md,.txt,.json,.yaml,.yml,.csv">
+                        <button class="btn btn-primary w-100" id="uploadIngestBtn" type="button">上传并入库</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="card-panel">
+                    <div class="card-header">粘贴文本</div>
+                    <div class="card-body">
+                        <input type="text" class="form-control mb-2" id="pasteTitle" placeholder="标题，如：地址模块需求说明">
+                        <textarea class="form-control mb-3" id="pasteText" rows="10" placeholder="粘贴 PRD、接口说明、测试规范等…"></textarea>
+                        <button class="btn btn-secondary w-100" id="pasteIngestBtn" type="button">粘贴入库</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tabSearch">
+        <div class="card-panel">
+            <div class="card-body">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="searchQuery" placeholder="如：/api/address 鉴权 边界值">
+                    <button class="btn btn-primary" id="searchBtn" type="button">检索</button>
+                </div>
+                <pre class="bg-light p-3 rounded small mb-0" id="searchResult" style="white-space:pre-wrap;">输入查询后点击检索</pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tabDocs">
+        <div class="card-panel">
+            <div class="card-body p-0" id="docsTableWrap"><p class="text-muted p-4 mb-0">加载中…</p></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/knowledge.js') }}"></script>
+{% endblock %}

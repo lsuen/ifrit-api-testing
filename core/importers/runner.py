@@ -10,32 +10,61 @@ from typing import Any, Dict, List, Tuple
 
 from core.importers.case_writer import merge_case_rows, read_cases, write_cases
 from core.importers.diagnose import ImportDiagnosisError, ImportDiagnosisService
+from core.importers.native import NativeImportError, import_native_file
 from core.importers.postman import PostmanImporter, PostmanImportError
 from core.project_context import format_project_context_for_prompt
 
-SUPPORTED_FORMATS = {"postman"}
+SUPPORTED_FORMATS = {"postman", "csv", "json", "ifrit"}
 PREVIEW_MARKER = "[IFRIT] IMPORT_PREVIEW_JSON="
 DIAGNOSE_MARKER = "[IFRIT] IMPORT_DIAGNOSE_JSON="
 
 
-def _default_output_path(import_file: Path, suite: str, collection_name: str, output_format: str) -> Path:
+def _default_output_path(
+    import_file: Path,
+    suite: str,
+    collection_name: str,
+    output_format: str,
+    import_format: str = "postman",
+) -> Path:
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     safe_name = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in collection_name)
     ext = "json" if output_format == "json" else "csv"
     sub = "json" if output_format == "json" else "csv"
-    return Path("fixtures") / suite / sub / f"postman_{safe_name}_{stamp}.{ext}"
+    prefix = import_format if import_format in {"postman", "csv", "json", "ifrit"} else "import"
+    return Path("fixtures") / suite / sub / f"{prefix}_{safe_name}_{stamp}.{ext}"
 
 
-def _parse_postman(import_file: Path) -> Tuple[List[Dict[str, str]], Dict[str, Any]]:
-    importer = PostmanImporter(str(import_file))
-    return importer.convert()
+def _parse_import(import_file: Path, import_format: str) -> Tuple[List[Dict[str, str]], Dict[str, Any]]:
+    fmt = (import_format or "postman").lower()
+    if fmt in {"csv", "json", "ifrit"}:
+        return import_native_file(import_file)
+    if fmt == "postman":
+        importer = PostmanImporter(str(import_file))
+        return importer.convert()
+    raise PostmanImportError(f"不支持的导入格式: {import_format}")
+
+
+def _maybe_rag_context(args: Namespace, rows: List[Dict[str, Any]], meta: Dict[str, Any]) -> str:
+    if not getattr(args, "rag", False):
+        return ""
+    project_root = str(Path(getattr(args, "project_root", ".") or ".").resolve())
+    from core.rag.service import KnowledgeService
+    from core.rag.retrieve import RagService
+
+    query = RagService.build_query(
+        case_names=[str(r.get("name", "")) for r in rows[:5]],
+        user_hint=meta.get("collection_name"),
+    )
+    top_k = getattr(args, "rag_top_k", 5) or 5
+    return KnowledgeService(project_root).retrieve_for_prompt(query, top_k=top_k)
 
 
 def run_preview(args: Namespace) -> int:
     import_file = Path(args.import_file)
+    import_format = (args.import_format or "postman").lower()
     try:
-        rows, meta = _parse_postman(import_file)
-    except PostmanImportError as error:
+        rows, meta = _parse_import(import_file, import_format)
+    except (PostmanImportError, NativeImportError) as error:
         print(f"[IFRIT] 导入失败: {error}")
         return 1
     payload = {"rows": rows, "meta": meta, "case_count": len(rows)}
@@ -46,10 +75,11 @@ def run_preview(args: Namespace) -> int:
 
 def run_diagnose(args: Namespace) -> int:
     import_file = Path(args.import_file)
+    import_format = (args.import_format or "postman").lower()
     inject = bool(getattr(args, "inject_project_context", False))
     try:
-        rows, meta = _parse_postman(import_file)
-    except PostmanImportError as error:
+        rows, meta = _parse_import(import_file, import_format)
+    except (PostmanImportError, NativeImportError) as error:
         print(f"[IFRIT] 导入失败: {error}")
         return 1
 
@@ -58,9 +88,16 @@ def run_diagnose(args: Namespace) -> int:
         project_root = Path(getattr(args, "project_root", ".") or ".").resolve()
         project_context = format_project_context_for_prompt(project_root)
 
+    rag_context = _maybe_rag_context(args, rows, meta)
+
     try:
         service = ImportDiagnosisService()
-        result = service.diagnose(rows, meta=meta, project_context=project_context)
+        result = service.diagnose(
+            rows,
+            meta=meta,
+            project_context=project_context,
+            rag_context=rag_context,
+        )
     except ImportDiagnosisError as error:
         print(f"[IFRIT] 诊断失败: {error}")
         return 1
@@ -89,13 +126,14 @@ def run_save_payload(args: Namespace) -> int:
     output_format = payload.get("output_format", "csv")
     suite = payload.get("suite", "manual")
     output = payload.get("output")
+    import_format = payload.get("import_format", "postman")
 
     merged = merge_case_rows(original, append)
     if output:
         out_path = Path(output)
     else:
         name = payload.get("collection_name", "import")
-        out_path = _default_output_path(payload_path, suite, name, output_format)
+        out_path = _default_output_path(payload_path, suite, name, output_format, import_format)
 
     write_cases(merged, out_path, output_format)
     print(
@@ -124,14 +162,13 @@ def run_import(args: Namespace) -> int:
         return 1
 
     try:
-        if import_format == "postman":
-            rows, meta = _parse_postman(import_file)
-    except PostmanImportError as error:
+        rows, meta = _parse_import(import_file, import_format)
+    except (PostmanImportError, NativeImportError) as error:
         print(f"[IFRIT] 导入失败: {error}")
         return 1
 
     output_path = Path(args.import_output) if args.import_output else _default_output_path(
-        import_file, suite, meta["collection_name"], output_format
+        import_file, suite, meta["collection_name"], output_format, import_format
     )
     output = Path(output_path)
 

@@ -7,7 +7,7 @@
     <p class="page-desc">选择场景与鉴权方式，一键运行 · 实时查看 [IFRIT] 日志</p>
 </div>
 
-<div class="row g-4">
+<div class="row g-4 layout-with-sidebar">
     <div class="col-lg-4">
         <div class="card-panel mb-4">
             <div class="card-header">场景预设</div>
@@ -90,9 +90,13 @@
                         全局鉴权 {% if auth.available %}({{ auth.username }}){% else %}<span class="text-muted">({{ unavailable }})</span>{% endif %}
                     </label>
                 </div>
-                <div class="form-check form-switch mb-3">
+                <div class="form-check form-switch mb-2">
                     <input class="form-check-input" type="checkbox" id="reportCheck" checked>
                     <label class="form-check-label" for="reportCheck">执行后生成 HTML 报告</label>
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="testAssistCheck">
+                    <label class="form-check-label" for="testAssistCheck">失败后 AI 辅助分析（是否留存由你决定）</label>
                 </div>
                 <button class="btn-ifrit btn-primary-ifrit w-100 justify-content-center" id="runBtn">
                     <i class="bi bi-play-fill"></i> 开始执行
@@ -114,13 +118,25 @@
                 <button class="btn-ifrit btn-secondary-ifrit" style="padding:4px 12px;font-size:0.8rem;" id="clearLogBtn">清空</button>
             </div>
             <div class="card-body">
-                <div class="log-terminal" id="logTerminal">
+                <div class="log-terminal log-terminal--fill" id="logTerminal">
                     <div class="text-muted">等待执行...</div>
                 </div>
                 <div class="mt-3" id="reportLinkBox" style="display:none;">
                     <a href="#" target="_blank" id="reportLink" class="btn-ifrit btn-success-ifrit">
                         <i class="bi bi-box-arrow-up-right"></i> 打开 HTML 报告
                     </a>
+                </div>
+                <div class="mt-3 card border-warning" id="assistPanel" style="display:none;">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="bi bi-robot"></i> AI 测试辅助</h6>
+                        <p class="small mb-2" id="assistSummary"></p>
+                        <ul class="small mb-2" id="assistSuggestions"></ul>
+                        <p class="small text-muted mb-2" id="assistSaveHint"></p>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-primary" id="assistSaveBtn">采纳并保存建议</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="assistDismissBtn">忽略</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -149,6 +165,37 @@ const PRESETS = {
 
 let currentPreset = 'smoke';
 let currentProcessId = null;
+let lastAssistPayload = null;
+
+function parseAssistFromLog(container) {
+    const text = container.innerText || container.textContent || '';
+    const marker = '[IFRIT] TEST_ASSIST_JSON=';
+    const idx = text.lastIndexOf(marker);
+    if (idx < 0) return null;
+    try {
+        return JSON.parse(text.slice(idx + marker.length).split('\n')[0]);
+    } catch (e) {
+        return null;
+    }
+}
+
+function showAssistPanel(assist) {
+    if (!assist || !assist.summary) return;
+    lastAssistPayload = assist;
+    document.getElementById('assistSummary').textContent = assist.summary;
+    const ul = document.getElementById('assistSuggestions');
+    ul.innerHTML = (assist.suggestions || []).map(s =>
+        `<li><strong>${s.title || '建议'}</strong>：${s.action || ''}</li>`
+    ).join('') || '<li class="text-muted">无具体修复建议</li>';
+    document.getElementById('assistSaveHint').textContent =
+        assist.save_hint || '留存由你决定：采纳后写入 reports/runs/.../ai_assist.json';
+    document.getElementById('assistPanel').style.display = 'block';
+}
+
+function hideAssistPanel() {
+    lastAssistPayload = null;
+    document.getElementById('assistPanel').style.display = 'none';
+}
 
 document.querySelectorAll('.preset-card').forEach(card => {
     card.addEventListener('click', () => {
@@ -173,6 +220,7 @@ function buildParams() {
     const params = {
         global_auth: document.getElementById('globalAuthCheck').checked,
         generate_report: document.getElementById('reportCheck').checked,
+        test_assist: document.getElementById('testAssistCheck').checked,
     };
     const envVal = document.getElementById('envSelect').value;
     if (envVal) params.env = envVal;
@@ -202,11 +250,13 @@ document.getElementById('runBtn').addEventListener('click', async () => {
     document.getElementById('cancelBtn').style.display = 'flex';
     document.getElementById('statusBadge').style.display = 'inline-block';
     document.getElementById('reportLinkBox').style.display = 'none';
+    hideAssistPanel();
 
     try {
         const res = await axios.post('/api/execute', { params });
         currentProcessId = res.data.process_id;
-        IfritUI.streamLogs(currentProcessId, document.getElementById('logTerminal'), (status) => {
+        const logEl = document.getElementById('logTerminal');
+        IfritUI.streamLogs(currentProcessId, logEl, (status) => {
             document.getElementById('runBtn').disabled = false;
             document.getElementById('cancelBtn').style.display = 'none';
             document.getElementById('statusBadge').style.display = 'none';
@@ -218,8 +268,16 @@ document.getElementById('runBtn').addEventListener('click', async () => {
                         document.getElementById('reportLinkBox')
                     );
                 }
+                if (params.test_assist) {
+                    const assist = parseAssistFromLog(logEl);
+                    if (assist) showAssistPanel(assist);
+                }
             } else if (status.status === 'failed') {
                 IfritUI.showToast('执行失败，请查看日志', 'error');
+                if (params.test_assist) {
+                    const assist = parseAssistFromLog(logEl);
+                    if (assist) showAssistPanel(assist);
+                }
             }
         });
     } catch (e) {
@@ -234,6 +292,23 @@ document.getElementById('cancelBtn').addEventListener('click', () => {
 
 document.getElementById('clearLogBtn').addEventListener('click', () => {
     document.getElementById('logTerminal').innerHTML = '';
+    hideAssistPanel();
+});
+
+document.getElementById('assistDismissBtn').addEventListener('click', () => hideAssistPanel());
+
+document.getElementById('assistSaveBtn').addEventListener('click', async () => {
+    if (!lastAssistPayload) return;
+    try {
+        const res = await axios.post('/api/test/assist/save', {
+            assist: lastAssistPayload,
+            run_id: lastAssistPayload.run_id || '',
+        });
+        IfritUI.showToast('已保存: ' + (res.data.path || 'ai_assist.json'), 'success');
+        hideAssistPanel();
+    } catch (e) {
+        alert(e.response?.data?.error || e.message);
+    }
 });
 
 const urlPreset = new URLSearchParams(location.search).get('preset');

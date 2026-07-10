@@ -176,6 +176,10 @@ def build_test_command(config: Dict[str, Any], params: Dict[str, Any]) -> List[s
     if params.get("generate_report"):
         cmd.append("--generate-report")
 
+    if params.get("test_assist"):
+        cmd.append("--test-assist")
+
+    cmd.extend(["--project-root", str(root).replace("\\", "/")])
     return cmd
 
 
@@ -210,7 +214,18 @@ def build_ai_generate_command(config: Dict[str, Any], params: Dict[str, Any]) ->
     skill = params.get("skill")
     if skill:
         cmd.extend(["--skill", skill])
+    if params.get("no_auto_skill"):
+        cmd.append("--no-auto-skill")
+    if params.get("skill_hint"):
+        cmd.extend(["--skill-hint", params["skill_hint"]])
+    if params.get("rag"):
+        cmd.append("--rag")
+        if params.get("rag_top_k"):
+            cmd.extend(["--rag-top-k", str(params["rag_top_k"])])
+    if params.get("no_rag"):
+        cmd.append("--no-rag")
 
+    cmd.extend(["--project-root", str(config["ifrit"]["root_path_resolved"]).replace("\\", "/")])
     return cmd
 
 
@@ -284,6 +299,23 @@ def build_import_diagnose_command(config: Dict[str, Any], params: Dict[str, Any]
     ]
     if params.get("inject_project_context"):
         cmd.append("--inject-project-context")
+    if params.get("rag"):
+        cmd.append("--rag")
+        top_k = params.get("rag_top_k")
+        if top_k:
+            cmd.extend(["--rag-top-k", str(top_k)])
+    return cmd
+
+
+def build_skills_refresh_command(config: Dict[str, Any], repo_id: str = None) -> List[str]:
+    cmd = build_python_cmd(config) + [
+        str(build_main_script(config)),
+        "--skills-refresh",
+        "--project-root",
+        str(config["ifrit"]["root_path_resolved"]),
+    ]
+    if repo_id:
+        cmd.extend(["--skills-repo-id", repo_id])
     return cmd
 
 
@@ -297,4 +329,20 @@ def build_import_save_command(config: Dict[str, Any], payload_path: str) -> List
         "--project-root",
         str(root),
     ]
+
+
+def build_console_help_command(config: Dict[str, Any], mode: str = "cli") -> List[str]:
+    from services.console_service import build_help_command
+
+    py = build_python_cmd(config)[0]
+    main = str(build_main_script(config))
+    return build_help_command(py, main, mode)
+
+
+def build_console_exec_command(config: Dict[str, Any], mode: str, line: str) -> List[str]:
+    from services.console_service import build_main_command
+
+    py = build_python_cmd(config)[0]
+    main = str(build_main_script(config))
+    return build_main_command(py, main, mode, line)
 

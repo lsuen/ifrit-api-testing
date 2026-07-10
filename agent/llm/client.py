@@ -106,12 +106,15 @@ class AIClient:
         
         # 构建API信息描述
         api_description = self._format_api_info(api_info)
-        
+
+        rag_block = prompt_templates.get("rag_context", "").strip()
+        rag_section = f"\n\n{rag_block}\n" if rag_block else ""
+
         # 构建完整提示词
         prompt = f"""{system_prompt}
 
 {case_template}
-
+{rag_section}
 API信息:
 {api_description}
 
@@ -347,6 +350,81 @@ HTTP方法: {api_info['method']}
         logger.error(f"AI接口调用失败，已重试 {max_retries} 次")
         print(f"[IFRIT] {self.last_error}")
         return None
+
+    def _post_chat(self, data: Dict[str, Any], max_retries: int = 3) -> Optional[Dict[str, Any]]:
+        """发送 chat/completions 请求并解析 message（含 tool_calls）。"""
+        self.last_error = None
+        headers = {"Content-Type": "application/json"}
+        if self.api_key and self.api_key != "your_openai_api_key_here":
+            headers["Authorization"] = f"Bearer {self.api_key}"
+
+        for attempt in range(max_retries):
+            try:
+                response = requests.post(
+                    self.base_url,
+                    headers=headers,
+                    json=data,
+                    timeout=self.timeout,
+                )
+                if response.status_code != 200:
+                    self.last_error = self._format_api_error(response)
+                    if response.status_code == 429 and attempt < max_retries - 1:
+                        time.sleep(2 ** attempt)
+                        continue
+                    raise RuntimeError(self.last_error)
+
+                result = response.json()
+                choices = result.get("choices") or []
+                if not choices:
+                    raise RuntimeError("LLM choices 为空")
+                message = choices[0].get("message") or {}
+                tool_calls_raw = message.get("tool_calls") or []
+                tool_calls = []
+                for item in tool_calls_raw:
+                    fn = item.get("function") or {}
+                    tool_calls.append(
+                        {
+                            "id": item.get("id"),
+                            "name": fn.get("name"),
+                            "arguments": fn.get("arguments") or "{}",
+                        }
+                    )
+                self.call_count += 1
+                if "usage" in result:
+                    self.total_tokens += result["usage"].get("total_tokens", 0)
+                return {
+                    "content": message.get("content"),
+                    "tool_calls": tool_calls,
+                    "raw": result,
+                }
+            except Exception as error:
+                self.last_error = str(error)
+                if attempt >= max_retries - 1:
+                    raise
+                time.sleep(1 + attempt)
+        return None
+
+    def chat_with_tools(
+        self,
+        messages: List[Dict[str, Any]],
+        tools: Optional[List[Dict[str, Any]]] = None,
+        tool_choice: Optional[str] = "auto",
+        max_retries: int = 3,
+    ) -> Dict[str, Any]:
+        """OpenAI 兼容 Function Calling。"""
+        data: Dict[str, Any] = {
+            "model": self.model,
+            "messages": messages,
+            "temperature": self.temperature,
+            "max_tokens": self.max_tokens,
+        }
+        if tools:
+            data["tools"] = tools
+            data["tool_choice"] = tool_choice or "auto"
+        parsed = self._post_chat(data, max_retries=max_retries)
+        if not parsed:
+            raise RuntimeError(self.last_error or "LLM 无响应")
+        return parsed
 
     def complete(self, prompt: str, max_retries: int = 3) -> Optional[str]:
         """通用单轮 LLM 补全（供导入诊断等场景）。"""

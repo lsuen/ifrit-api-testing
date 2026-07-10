@@ -15,15 +15,26 @@ def _ensure_core_path(project_root: Path) -> None:
         sys.path.insert(0, root_str)
 
 
-def preview_postman(project_root: Path, import_rel: str) -> Dict[str, Any]:
+def preview_import(project_root: Path, import_rel: str, import_format: str = "postman") -> Dict[str, Any]:
     _ensure_core_path(project_root)
-    from core.importers.postman import PostmanImporter, PostmanImportError
-
     full_path = (project_root / import_rel.replace("\\", "/")).resolve()
     if not full_path.is_file():
-        raise PostmanImportError(f"文件不存在: {import_rel}")
-    rows, meta = PostmanImporter(str(full_path)).convert()
+        raise FileNotFoundError(f"文件不存在: {import_rel}")
+
+    fmt = (import_format or "postman").lower()
+    if fmt in {"csv", "json", "ifrit"}:
+        from core.importers.native import import_native_file
+
+        rows, meta = import_native_file(full_path)
+    else:
+        from core.importers.postman import PostmanImporter, PostmanImportError
+
+        rows, meta = PostmanImporter(str(full_path)).convert()
     return {"rows": rows, "meta": meta, "case_count": len(rows)}
+
+
+def preview_postman(project_root: Path, import_rel: str) -> Dict[str, Any]:
+    return preview_import(project_root, import_rel, "postman")
 
 
 def get_project_context(project_root: Path) -> Dict[str, Any]:

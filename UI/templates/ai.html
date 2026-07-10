@@ -14,7 +14,7 @@
 
 <div class="tab-content">
     <div class="tab-pane fade show active" id="tabGenerate">
-        <div class="row g-4">
+        <div class="row g-4 layout-with-sidebar">
             <div class="col-lg-4">
                 <div class="card-panel">
                     <div class="card-header">生成配置</div>
@@ -63,10 +63,22 @@
                         <div class="mb-3">
                             <label class="form-label">Skill</label>
                             <select class="form-select" id="skillSelect">
-                                <option value="">自动（URL 用 doc_url_generation）</option>
+                                <option value="">自动匹配（Function Calling）</option>
                                 <option value="case_generation">case_generation</option>
                                 <option value="doc_url_generation">doc_url_generation</option>
                             </select>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="autoSkillCheck" checked>
+                            <label class="form-check-label" for="autoSkillCheck">自动匹配 Skill（未指定时 Function Calling 路由）</label>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="ragCheck">
+                            <label class="form-check-label" for="ragCheck">启用知识库 RAG（检索历史用例/文档）</label>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Skill 提示（可选）</label>
+                            <input type="text" class="form-control" id="skillHint" placeholder="如：只做鉴权发现 / 远程 URL 拉取">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">输出格式</label>
@@ -94,7 +106,7 @@
                 <div class="card-panel">
                     <div class="card-header">生成日志</div>
                     <div class="card-body">
-                        <div class="log-terminal" id="genLog"></div>
+                        <div class="log-terminal log-terminal--fill" id="genLog"></div>
                     </div>
                 </div>
             </div>
@@ -102,7 +114,7 @@
     </div>
 
     <div class="tab-pane fade" id="tabChat">
-        <div class="row g-4">
+        <div class="row g-4 layout-with-sidebar">
             <div class="col-lg-4">
                 <div class="card-panel">
                     <div class="card-header">交互命令</div>
@@ -133,7 +145,7 @@
                 <div class="card-panel">
                     <div class="card-header">交互日志</div>
                     <div class="card-body">
-                        <div class="log-terminal" id="chatLog"></div>
+                        <div class="log-terminal log-terminal--fill" id="chatLog"></div>
                     </div>
                 </div>
             </div>
@@ -144,6 +156,23 @@
 
 {% block extra_js %}
 <script>
+axios.get('/api/skills/builtin').then(res => {
+    const sel = document.getElementById('skillSelect');
+    if (!sel || !res.data.skills) return;
+    const auto = sel.querySelector('option[value=""]');
+    sel.innerHTML = '';
+    if (auto) sel.appendChild(auto);
+    else sel.innerHTML = '<option value="">自动匹配（Function Calling）</option>';
+    res.data.skills.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.name;
+        opt.textContent = s.name + (s.description ? ' — ' + s.description.slice(0, 40) : '');
+        sel.appendChild(opt);
+    });
+}).catch(() => {});
+
+IfritUI.applyRagDefaultCheckbox('ragCheck');
+
 (function() {
     const hasLocal = {{ 'true' if docs else 'false' }};
     const hasUrl = {{ 'true' if swagger_url else 'false' }};
@@ -170,8 +199,12 @@ document.getElementById('generateBtn').addEventListener('click', async () => {
         format: document.getElementById('formatSelect').value,
         output_dir: document.getElementById('outputDir').value,
         skill: document.getElementById('skillSelect').value || undefined,
+        no_auto_skill: !document.getElementById('autoSkillCheck').checked,
+        rag: document.getElementById('ragCheck').checked,
         endpoints: document.getElementById('endpoints').value.split('\n').map(s => s.trim()).filter(Boolean),
     };
+    const hint = document.getElementById('skillHint').value.trim();
+    if (hint) payload.skill_hint = hint;
     if (source === 'url') {
         const urlInput = document.getElementById('docUrl');
         payload.input_url = urlInput ? urlInput.value.trim() : '';
@@ -190,6 +223,17 @@ document.getElementById('generateBtn').addEventListener('click', async () => {
         const res = await axios.post('/api/ai/generate', payload);
         IfritUI.streamLogs(res.data.process_id, logEl, async (status) => {
             document.getElementById('generateBtn').disabled = false;
+            if (status.status === 'completed') {
+                const lines = [...logEl.querySelectorAll('.log-line')].map(el => el.textContent);
+                const savedLine = [...lines].reverse().find(t => t.includes('[IFRIT] AI用例已保存='));
+                const m = savedLine && savedLine.match(/AI用例已保存=([^\s]+)/);
+                if (m && m[1]) {
+                    try {
+                        const ing = await IfritUI.ingestCaseToRag(m[1]);
+                        if (ing && ing.ingested) IfritUI.appendLog(logEl, '[IFRIT] 已自动写入知识库');
+                    } catch (e) { /* optional */ }
+                }
+            }
             if (status.status === 'completed' && document.getElementById('runAfterGenerate').checked) {
                 const runRes = await axios.post('/api/execute', {
                     params: { suite: 'ai', global_auth: true, generate_report: true, type: 'csv' }

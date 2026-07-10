@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}设置{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title"><i class="bi bi-gear"></i> 设置</h1>
+    <p class="page-desc">填好配置即可上手 · 所有项写入现有 ini / .env，与 CLI 一致</p>
+</div>
+
+<ul class="nav nav-tabs mb-4" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabHealth">连接自检</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabAi">AI / LLM</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabEnv">运行环境</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabAuth">鉴权</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabPrefs">偏好</button></li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="tabHealth">
+        <div class="card-panel">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>就绪检查</span>
+                <button type="button" class="btn btn-sm btn-primary" id="runHealthBtn">重新检测</button>
+            </div>
+            <div class="card-body">
+                <p class="mb-3" id="healthSummary">检测中…</p>
+                <ul class="list-group list-group-flush" id="healthList"></ul>
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="pingLlmCheck">
+                    <label class="form-check-label" for="pingLlmCheck">同时测试 LLM 连通（会消耗一次调用）</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tabAi">
+        <div class="card-panel">
+            <div class="card-body">
+                <form id="aiForm" class="row g-3">
+                    <div class="col-md-8">
+                        <label class="form-label">Base URL</label>
+                        <input type="url" class="form-control" name="base_url" placeholder="http://127.0.0.1:8787/v1">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Model</label>
+                        <input type="text" class="form-control" name="model">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Timeout (秒)</label>
+                        <input type="number" class="form-control" name="timeout" min="5">
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label">API Key（.env OPENAI_API_KEY，留空不修改）</label>
+                        <input type="password" class="form-control" name="openai_api_key" placeholder="sk-...">
+                        <p class="small text-muted mb-0 mt-1" id="keyHint"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">.env 覆盖 Base URL（可选）</label>
+                        <input type="text" class="form-control" name="openai_base_url_override">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">.env 覆盖 Model（可选）</label>
+                        <input type="text" class="form-control" name="openai_model_override">
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">保存 AI 配置</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tabEnv">
+        <div class="card-panel mb-3">
+            <div class="card-header">新增 / 更新环境</div>
+            <div class="card-body">
+                <form id="envForm" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">环境名</label>
+                        <input type="text" class="form-control" name="name" placeholder="api_dev" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Base URL</label>
+                        <input type="url" class="form-control" name="base_url" placeholder="http://host:port" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Timeout</label>
+                        <input type="number" class="form-control" name="timeout" value="30">
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="card-panel">
+            <div class="card-header">已有环境</div>
+            <div class="card-body p-0" id="envListWrap"><p class="text-muted p-4 mb-0">加载中…</p></div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tabAuth">
+        <div class="card-panel">
+            <div class="card-body">
+                <form id="authForm">
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" name="enabled" id="authEnabled">
+                        <label class="form-check-label" for="authEnabled">启用全局鉴权</label>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">登录 Path</label>
+                            <input type="text" class="form-control" name="login_path" placeholder="/api/login">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Method</label>
+                            <input type="text" class="form-control" name="login_method" value="POST">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">登录 Body（JSON 字符串）</label>
+                            <textarea class="form-control font-monospace" name="login_body" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">保存鉴权</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tabPrefs">
+        <div class="card-panel">
+            <div class="card-body">
+                <form id="prefsForm">
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" name="rag_default_on" id="ragDefaultOn">
+                        <label class="form-check-label" for="ragDefaultOn">知识库非空时，AI/导入默认开启 RAG</label>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" name="auto_ingest_rag" id="autoIngestRag">
+                        <label class="form-check-label" for="autoIngestRag">保存/生成用例后自动写入知识库</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">保存偏好</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+{% endblock %}

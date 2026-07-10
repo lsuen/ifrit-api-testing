@@ -1,0 +1,54 @@
+# Console 命令安全策略
+blocked_substrings:
+  - ";"
+  - "&&"
+  - "||"
+  - "|"
+  - ">"
+  - "<"
+  - "`"
+  - "$( "
+warn_substrings:
+  - "--clean"
+  - "rm "
+  - "del "
+  - "format "
+  - "shutdown"
+
+cli_mode:
+  require_double_dash_prefix: true
+
+chat_mode:
+  allowed_commands:
+    - help
+    - skills
+    - doc
+    - url
+    - endpoint
+    - swagger-endpoint
+    - clear-endpoints
+    - format
+    - out
+    - skill
+    - show
+    - generate
+    - exit
+    - quit
+
+help_commands:
+  cli: ["--help"]
+  chat: ["help"]
+
+quick_recipes:
+  - label: 查看帮助
+    mode: cli
+    line: "--help"
+  - label: 冒烟测试
+    mode: cli
+    line: "--file fixtures/smoke/csv/api_test_smoke.csv --generate-report"
+  - label: AI 生成地址接口
+    mode: cli
+    line: "--ai-generate --input-doc api_docs/apispec_1.json --swagger-endpoint /api/address"
+  - label: Chat 交互生成
+    mode: chat
+    line: "doc api_docs/apispec_1.json endpoint /api/address generate"

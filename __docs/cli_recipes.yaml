@@ -1,0 +1,52 @@
+# CLI 组合案例（About / Console 共用，命令不含 python 前缀，Console 会自动补全）
+groups:
+  - title: 环境与冒烟
+    items:
+      - name: 冒烟验证
+        command: "--file fixtures/smoke/csv/api_test_smoke.csv"
+        note: 最快验证环境与 API 可达
+      - name: 冒烟 + 报告
+        command: "--file fixtures/smoke/csv/api_test_smoke.csv --generate-report"
+        note: 执行后生成 HTML 报告
+
+  - title: 手工用例
+    items:
+      - name: manual 套件 CSV
+        command: "--type csv --suite manual"
+        note: 用例内自带登录行
+      - name: manual + 全局鉴权
+        command: "--type csv --suite manual --global-auth"
+        note: 使用 auth.ini 统一登录
+
+  - title: AI 生成
+    items:
+      - name: 本地 Swagger 生成地址接口
+        command: "--ai-generate --input-doc api_docs/apispec_1.json --swagger-endpoint /api/address --output-format csv"
+        note: 输出到 fixtures/ai/csv
+      - name: 远程 Swagger URL
+        command: "--ai-generate --input-url http://192.168.31.129:5000/apispec_1.json --swagger-endpoint /api/address"
+        note: 自动缓存到 api_docs/cache/
+      - name: AI 交互单行
+        command: "--chat doc api_docs/apispec_1.json endpoint /api/address generate"
+        note: 等效 REPL 内连续命令
+
+  - title: 执行 AI 用例
+    items:
+      - name: AI 用例 + 鉴权
+        command: "--file fixtures/ai/csv/ai_address_business.csv --global-auth --suite ai"
+        note: AI 用例须加 --global-auth
+      - name: 地址业务流 + 报告
+        command: "--file fixtures/ai/csv/ai_address_business.csv --global-auth --generate-report"
+        note: 增删改查顺序用例
+
+  - title: 导入与维护
+    items:
+      - name: Postman 导入预览
+        command: "--import tests/fixtures/postman/ifrit_address_smoke.postman_collection.json --import-preview-only"
+        note: 输出 IMPORT_PREVIEW_JSON
+      - name: Postman 导入诊断
+        command: "--import tests/fixtures/postman/ifrit_address_smoke.postman_collection.json --import-diagnose --inject-project-context"
+        note: LLM 诊断与补用例建议
+      - name: 清理旧报告
+        command: "--clean reports"
+        note: 释放磁盘空间

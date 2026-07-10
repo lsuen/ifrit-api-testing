@@ -37,7 +37,10 @@ HELP_TEXT = """
 class AIChatSession:
     """AI 用例生成交互会话。"""
 
-    def __init__(self):
+    def __init__(self, project_root: str = ".", skill_hint: Optional[str] = None, use_rag: bool = False):
+        self.project_root = project_root
+        self.skill_hint = skill_hint
+        self.use_rag = use_rag
         self.state: Dict[str, Any] = {
             "input_doc": None,
             "input_url": None,
@@ -146,6 +149,10 @@ class AIChatSession:
             output_format=self.state.get("output_format") or "csv",
             output_dir=self.state.get("output_dir"),
             skill=self.state.get("skill"),
+            auto_skill=True,
+            skill_hint=self.skill_hint,
+            project_root=self.project_root,
+            rag=self.use_rag,
         )
 
     def _generate(self) -> int:

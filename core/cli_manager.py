@@ -62,6 +62,20 @@ class CLIManager:
             help="AI Skill 名称（如 case_generation、doc_url_generation）"
         )
         parser.add_argument(
+            "--no-auto-skill",
+            action="store_true",
+            help="禁用 Function Calling 自动匹配 Skill（未指定 --skill 时生效）",
+        )
+        parser.add_argument(
+            "--skill-hint",
+            help="Skill 路由提示（供 LLM function calling 参考）",
+        )
+        parser.add_argument(
+            "--test-assist",
+            action="store_true",
+            help="测试失败后调用 AI 辅助分析（不自动保存建议）",
+        )
+        parser.add_argument(
             "--swagger-endpoint",
             action="append",
             help="指定要解析的Swagger端点，可以多次使用"
@@ -116,9 +130,9 @@ class CLIManager:
         )
         parser.add_argument(
             "--import-format",
-            choices=["postman"],
+            choices=["postman", "csv", "json", "ifrit"],
             default="postman",
-            help="导入格式（默认 postman）",
+            help="导入格式（postman / 原生 csv / json / ifrit）",
         )
         parser.add_argument(
             "--import-suite",
@@ -172,6 +186,75 @@ class CLIManager:
             help="项目根目录（诊断注入上下文时使用）",
         )
 
+        # Skill 商店
+        parser.add_argument(
+            "--skills-list",
+            action="store_true",
+            help="列出内置 skill 与已发现技能目录",
+        )
+        parser.add_argument(
+            "--skills-refresh",
+            action="store_true",
+            help="浅克隆刷新已配置的技能仓库（流式日志）",
+        )
+        parser.add_argument(
+            "--skills-repo-id",
+            help="仅刷新指定仓库 id（配合 --skills-refresh）",
+        )
+        parser.add_argument(
+            "--skills-install",
+            metavar="SKILL_ID",
+            help="安装技能到本地 library",
+        )
+        parser.add_argument(
+            "--skills-query",
+            default="",
+            help="过滤技能目录（配合 --skills-list）",
+        )
+
+        # 知识库 RAG
+        parser.add_argument(
+            "--rag",
+            action="store_true",
+            help="AI 生成/导入诊断时启用知识库 RAG 检索",
+        )
+        parser.add_argument(
+            "--no-rag",
+            action="store_true",
+            help="显式禁用 RAG",
+        )
+        parser.add_argument(
+            "--rag-top-k",
+            type=int,
+            default=5,
+            help="RAG 检索条数（默认 5）",
+        )
+        parser.add_argument(
+            "--rag-rebuild",
+            action="store_true",
+            help="重建知识库索引（fixtures + api_docs + uploads）",
+        )
+        parser.add_argument(
+            "--rag-ingest",
+            metavar="FILE",
+            help="将文件入库到知识库",
+        )
+        parser.add_argument(
+            "--rag-source-type",
+            choices=["requirement", "fixture", "api_doc"],
+            default="requirement",
+            help="--rag-ingest 来源类型",
+        )
+        parser.add_argument(
+            "--rag-query",
+            help="检索知识库并输出片段",
+        )
+        parser.add_argument(
+            "--rag-stats",
+            action="store_true",
+            help="输出知识库统计",
+        )
+
         return parser
     
     def parse_args(self):
@@ -192,6 +275,21 @@ class CLIManager:
         from core.importers.runner import run_import
 
         args = self.parse_args()
+
+        if args.skills_list or args.skills_refresh or args.skills_install:
+            from core.skills_runner import run_skills_command
+
+            sys.exit(run_skills_command(args))
+
+        if (
+            getattr(args, "rag_stats", False)
+            or getattr(args, "rag_rebuild", False)
+            or getattr(args, "rag_ingest", None)
+            or getattr(args, "rag_query", None)
+        ):
+            from core.rag.runner import run_rag_command
+
+            sys.exit(run_rag_command(args))
 
         if args.import_file:
             sys.exit(run_import(args))
@@ -219,6 +317,8 @@ class CLIManager:
 
         # 如果启用AI生成功能
         if args.ai_generate:
+            args.auto_skill = not getattr(args, "no_auto_skill", False)
+            args.rag = getattr(args, "rag", False) and not getattr(args, "no_rag", False)
             generator = AIGenerator(skill_name=args.skill)
             exit_code = generator.run(args)
             sys.exit(exit_code)
@@ -231,6 +331,7 @@ class CLIManager:
             env_names=args.env,
             suite=args.suite,
             global_auth=args.global_auth,
+            test_assist=getattr(args, "test_assist", False),
         )
 
         # 如果指定了--serve-report参数，则启动报告服务器

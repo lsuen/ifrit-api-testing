@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}控制台{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title"><i class="bi bi-terminal"></i> 控制台</h1>
+    <p class="page-desc">CLI / Chat 单行执行 · 流式日志 · 命令策略校验</p>
+</div>
+
+<div class="row g-4 layout-with-sidebar">
+    <div class="col-lg-4">
+        <div class="card-panel mb-3">
+            <div class="card-header">模式</div>
+            <div class="card-body">
+                <div class="btn-group w-100 mb-3" role="group">
+                    <input type="radio" class="btn-check" name="consoleMode" id="modeCli" value="cli" checked>
+                    <label class="btn btn-outline-primary" for="modeCli">CLI 参数</label>
+                    <input type="radio" class="btn-check" name="consoleMode" id="modeChat" value="chat">
+                    <label class="btn btn-outline-primary" for="modeChat">Chat 命令</label>
+                </div>
+                <button class="btn btn-sm btn-secondary w-100 mb-2" id="helpBtn" type="button">
+                    <i class="bi bi-question-circle"></i> 刷新 Help
+                </button>
+                <div id="quickRecipes" class="small"></div>
+            </div>
+        </div>
+        <div class="card-panel">
+            <div class="card-header">输入提示</div>
+            <div class="card-body small text-muted" id="hintBox">
+                CLI 模式：参数以 <code>--</code> 开头，如 <code>--file fixtures/smoke/csv/api_test_smoke.csv</code>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card-panel mb-3">
+            <div class="card-body log-panel log-panel--fill" id="consoleLog"><p class="text-muted mb-0">点击「刷新 Help」或输入命令执行</p></div>
+        </div>
+        <div class="input-group">
+            <span class="input-group-text">&gt;</span>
+            <input type="text" class="form-control font-monospace" id="consoleInput"
+                   placeholder="--help 或 doc api_docs/apispec_1.json generate" list="consoleSuggest" autocomplete="off">
+            <datalist id="consoleSuggest"></datalist>
+            <button class="btn btn-primary" id="execBtn" type="button">执行</button>
+        </div>
+        <p class="small text-muted mt-2 mb-0" id="policyNote"></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/console.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}关于{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title"><i class="bi bi-info-circle"></i> 关于</h1>
+    <p class="page-desc">项目信息 · 用户手册 · CLI 命令与组合案例（内容来自仓库内文档，只读渲染）</p>
+</div>
+
+<ul class="nav nav-tabs mb-3" id="aboutTabs" role="tablist">
+    <li class="nav-item">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabInfo" type="button">项目信息</button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabManual" type="button" id="manualTabBtn">用户手册</button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabCli" type="button" id="cliTabBtn">CLI 大全</button>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="tabInfo">
+        <div class="card-panel">
+            <div class="card-body" id="projectInfoWrap">
+                <p class="text-muted mb-0">加载中…</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tabManual">
+        <div class="card-panel">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span id="manualSourceLabel">用户详细使用手册</span>
+                <a href="#" class="small" id="manualTopLink" style="display:none">回到顶部</a>
+            </div>
+            <div class="card-body doc-markdown" id="manualContent">
+                <p class="text-muted mb-0">切换到本 Tab 后加载…</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tabCli">
+        <div class="card-panel mb-3">
+            <div class="card-header">组合案例</div>
+            <div class="card-body" id="cliRecipesWrap">
+                <p class="text-muted mb-0">切换到本 Tab 后加载…</p>
+            </div>
+        </div>
+        <div class="card-panel">
+            <div class="card-header" id="cliManualLabel">命令手册</div>
+            <div class="card-body doc-markdown" id="cliManualContent"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5.6.1/github-markdown-light.min.css">
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="{{ url_for('static', filename='js/about.js') }}"></script>
+{% endblock %}

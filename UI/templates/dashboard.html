@@ -8,7 +8,14 @@
 {% block content %}
 <div class="page-header">
     <h1 class="page-title"><i class="bi bi-grid-1x2 text-primary"></i> 仪表盘</h1>
-    <p class="page-desc">一站式接口自动化：冒烟验证 · AI 生成 · 带鉴权执行 · 报告归档</p>
+    <p class="page-desc">3 步上手：设置 → 导入/生成 → 执行报告 · 下方可一键跑通冒烟流程</p>
+</div>
+
+<div id="readinessBanner" class="alert alert-secondary d-none mb-4" role="alert">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <span id="readinessText">正在检查配置…</span>
+        <a href="/settings" class="btn btn-sm btn-outline-primary">去设置</a>
+    </div>
 </div>
 
 <div class="stat-grid">
@@ -33,23 +40,35 @@
 <div class="row g-4">
     <div class="col-lg-7">
         <div class="card-panel">
-            <div class="card-header"><span><i class="bi bi-lightning"></i> 快捷操作</span></div>
+            <div class="card-header"><span><i class="bi bi-lightning"></i> 一键流水线</span></div>
             <div class="card-body">
-                <div class="quick-actions">
-                    <a href="/execute?preset=smoke" class="btn-ifrit btn-primary-ifrit">
-                        <i class="bi bi-shield-check"></i> 冒烟测试
-                    </a>
-                    <a href="/execute?preset=ai_business" class="btn-ifrit btn-success-ifrit">
-                        <i class="bi bi-geo-alt"></i> 地址业务流
-                    </a>
-                    <a href="/ai" class="btn-ifrit btn-secondary-ifrit">
-                        <i class="bi bi-stars"></i> AI 生成用例
-                    </a>
+                <p class="small text-muted mb-3">CLI 驱动，后台执行 main.py；日志实时输出，完成后可跳转报告。</p>
+                <div class="quick-actions mb-3">
+                    <button type="button" class="btn-ifrit btn-primary-ifrit" id="pipelineSmokeBtn"
+                        {% if not preset_status.get('smoke_file', {}).get('exists') %}disabled title="冒烟 CSV 不存在"{% endif %}>
+                        <i class="bi bi-shield-check"></i> 冒烟全流程
+                    </button>
+                    <button type="button" class="btn-ifrit btn-success-ifrit" id="pipelineAiBtn"
+                        {% if not default_doc %}disabled title="api_docs 无文档"{% endif %}>
+                        <i class="bi bi-stars"></i> AI 生成并执行
+                    </button>
+                    <button type="button" class="btn-ifrit btn-primary-ifrit" id="pipelineImportBtn"
+                        {% if not sample_import %}disabled title="Postman 样例不存在"{% endif %}>
+                        <i class="bi bi-box-arrow-in-down"></i> 导入→执行
+                    </button>
                     <a href="/import" class="btn-ifrit btn-secondary-ifrit">
                         <i class="bi bi-box-arrow-in-down"></i> 导入 Postman
                     </a>
-                    <a href="/reports" class="btn-ifrit btn-secondary-ifrit">
-                        <i class="bi bi-file-earmark-bar-graph"></i> 查看报告
+                    <a href="/settings" class="btn-ifrit btn-secondary-ifrit">
+                        <i class="bi bi-gear"></i> 检查配置
+                    </a>
+                </div>
+                <div class="log-terminal log-terminal--compact" id="pipelineLog" style="min-height:8rem;">
+                    <div class="text-muted">点击上方按钮开始流水线…</div>
+                </div>
+                <div id="pipelineReportBox" class="mt-3" style="display:none;">
+                    <a href="#" id="pipelineReportLink" class="btn-ifrit btn-secondary-ifrit btn-sm-ifrit" target="_blank">
+                        <i class="bi bi-file-earmark-bar-graph"></i> 打开最新报告
                     </a>
                 </div>
             </div>
@@ -59,6 +78,7 @@
             <div class="card-header">最近测试 Run</div>
             <div class="card-body p-0">
                 {% if stats.latest_runs %}
+                <div class="table-responsive-platform">
                 <table class="table-platform mb-0">
                     <thead>
                         <tr><th>Run ID</th><th>时间</th><th>报告</th></tr>
@@ -70,7 +90,9 @@
                             <td>{{ run.created_at }}</td>
                             <td>
                                 {% if run.has_html %}
-                                <a href="{{ run.html_url }}" target="_blank" class="btn-ifrit btn-secondary-ifrit" style="padding:4px 10px;font-size:0.8rem;">打开 HTML</a>
+                                <a href="{{ run.html_url }}" target="_blank" class="btn-ifrit btn-secondary-ifrit btn-sm-ifrit">打开 HTML</a>
+                                {% elif run.has_allure %}
+                                <a href="/reports" class="btn-ifrit btn-secondary-ifrit btn-sm-ifrit">去生成</a>
                                 {% else %}
                                 <span class="text-muted">未生成</span>
                                 {% endif %}
@@ -79,6 +101,7 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                </div>
                 {% else %}
                 <div class="text-center py-4 text-muted">
                     <p class="mb-0">暂无测试 Run{% if stats.report_runs is none %}（reports/runs 目录获取不到）{% endif %}</p>
@@ -114,8 +137,24 @@
                 <a href="/execute" class="btn-ifrit btn-primary-ifrit w-100 justify-content-center">
                     <i class="bi bi-play-fill"></i> 前往执行
                 </a>
+                <a href="/settings" class="btn-ifrit btn-secondary-ifrit w-100 justify-content-center mt-2">
+                    <i class="bi bi-gear"></i> 修改配置
+                </a>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+window.IFRIT_DASHBOARD = {
+    smokeFile: {{ preset_status.get('smoke_file', {}).get('path', '')|tojson }},
+    defaultDoc: {{ default_doc|tojson }},
+    aiOutputDir: {{ default_output_dir|tojson }},
+    sampleImport: {{ sample_import|tojson }},
+    importOutput: 'fixtures/manual/csv/dashboard_import_run.csv',
+};
+</script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 {% endblock %}

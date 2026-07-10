@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Agent 对话{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title"><i class="bi bi-robot"></i> Agent 对话</h1>
+    <p class="page-desc">用自然语言描述任务 · 自动匹配 Skill · 底层仍走 CLI（main.py）</p>
+</div>
+
+<div class="row g-4 layout-with-sidebar">
+    <div class="col-lg-4">
+        <div class="card-panel mb-3">
+            <div class="card-header">快捷意图</div>
+            <div class="card-body d-flex flex-wrap gap-2">
+                <button type="button" class="btn btn-sm btn-outline-primary agent-quick" data-msg="跑冒烟测试并出报告">冒烟测试</button>
+                <button type="button" class="btn btn-sm btn-outline-primary agent-quick" data-msg="从默认文档生成 /api/address 用例">生成地址用例</button>
+                <button type="button" class="btn btn-sm btn-outline-primary agent-quick" data-msg="导入 Postman 样例并执行测试">导入并执行</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary agent-quick" data-msg="帮我做鉴权发现">鉴权发现</button>
+            </div>
+        </div>
+
+        <div class="card-panel">
+            <div class="card-header">参数（可选）</div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <label class="form-label small">文档</label>
+                    <select class="form-select form-select-sm" id="agentDoc">
+                        <option value="">自动（默认 api_docs）</option>
+                        {% for doc in docs %}
+                        <option value="{{ doc.relative }}" {% if doc.relative == default_doc %}selected{% endif %}>{{ doc.relative }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small">端点（每行一个）</label>
+                    <textarea class="form-control form-control-sm" id="agentEndpoints" rows="2" placeholder="/api/address"></textarea>
+                </div>
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="agentRag">
+                    <label class="form-check-label small" for="agentRag">启用 RAG</label>
+                </div>
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="agentRunAfter">
+                    <label class="form-check-label small" for="agentRunAfter">生成后执行</label>
+                </div>
+                <div class="mb-0">
+                    <label class="form-label small">Skill（留空自动匹配）</label>
+                    <select class="form-select form-select-sm" id="agentSkill">
+                        <option value="">自动匹配</option>
+                        {% for s in builtin_skills %}
+                        <option value="{{ s.name }}">{{ s.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-panel mt-3">
+            <div class="card-header">Skill 预览</div>
+            <div class="card-body small" id="skillPreviewBox">
+                <span class="text-muted">发送消息后显示规则路由预览</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card-panel d-flex flex-column" style="min-height:28rem;">
+            <div class="card-header">对话</div>
+            <div class="card-body flex-grow-1 d-flex flex-column">
+                <div id="chatHistory" class="agent-chat-history mb-3 flex-grow-1"></div>
+                <div id="planBox" class="alert alert-info d-none small mb-3"></div>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="agentInput" placeholder="例如：生成地址接口用例并执行 / 跑冒烟 / doc api_docs/xxx.json generate">
+                    <button class="btn btn-primary" type="button" id="agentSendBtn"><i class="bi bi-send"></i> 发送</button>
+                </div>
+                <p class="small text-muted mt-2 mb-0">高级：以 <code>--</code> 开头走 CLI；以 <code>doc url generate</code> 开头走 Chat 模式</p>
+            </div>
+        </div>
+
+        <div class="card-panel mt-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>执行日志</span>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="agentClearLog">清空</button>
+            </div>
+            <div class="card-body">
+                <div class="log-terminal log-terminal--fill" id="agentLog"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.agent-chat-history { max-height: 14rem; overflow-y: auto; }
+.agent-msg { margin-bottom: .75rem; padding: .5rem .75rem; border-radius: .5rem; max-width: 92%; }
+.agent-msg.user { background: rgba(13,110,253,.12); margin-left: auto; }
+.agent-msg.bot { background: rgba(108,117,125,.12); }
+.agent-msg .role { font-size: .7rem; text-transform: uppercase; opacity: .7; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/agent.js') }}"></script>
+{% endblock %}

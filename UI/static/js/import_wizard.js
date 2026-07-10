@@ -138,6 +138,7 @@ const ImportWizard = (function() {
     async function doDiagnose() {
         const fd = buildFormData();
         if (document.getElementById('injectContextCheck').checked) fd.append('inject_project_context', '1');
+        if (document.getElementById('ragCheck').checked) fd.append('rag', '1');
         appendLog('[IFRIT] 开始 AI 诊断...');
         document.getElementById('diagnoseBtn').disabled = true;
         const res = await axios.post('/api/import/diagnose', fd);
@@ -184,10 +185,34 @@ const ImportWizard = (function() {
         document.getElementById('saveResultPath').textContent = res.data.output_file;
         document.getElementById('saveResultBox').style.display = 'block';
         appendLog(`[IFRIT] 保存完成 输出=${res.data.output_file} 合计=${res.data.total}`);
+        if (res.data.rag_ingested) {
+            appendLog('[IFRIT] 已自动写入知识库');
+        }
         IfritUI.showToast('保存成功', 'success');
     }
 
     function init(opts) {
+        async function loadLibrary() {
+            const wrap = document.getElementById('libraryTableWrap');
+            if (!wrap) return;
+            try {
+                const res = await axios.get('/api/cases/catalog');
+                const files = res.data.files || [];
+                if (!files.length) {
+                    wrap.innerHTML = '<p class="text-muted p-4 mb-0">fixtures 下暂无用例文件</p>';
+                    return;
+                }
+                let html = '<table class="table-platform mb-0"><thead><tr><th>套件</th><th>文件</th><th>条数</th><th>路径</th></tr></thead><tbody>';
+                files.forEach(f => {
+                    html += `<tr><td>${f.suite}</td><td>${escapeHtml(f.name)}</td><td>${f.case_count ?? '-'}</td><td><code class="small">${escapeHtml(f.relative)}</code></td></tr>`;
+                });
+                html += '</tbody></table>';
+                wrap.innerHTML = html;
+            } catch (e) {
+                wrap.innerHTML = '<p class="text-muted p-4 mb-0">加载失败</p>';
+            }
+        }
+
         if (opts.samplePath) {
             document.getElementById('useSampleBtn').addEventListener('click', e => {
                 e.preventDefault();
@@ -199,6 +224,10 @@ const ImportWizard = (function() {
         document.getElementById('previewBtn').addEventListener('click', () => doPreview().catch(e => alert(e.response?.data?.error || e.message)));
         document.getElementById('diagnoseBtn').addEventListener('click', () => doDiagnose().catch(e => alert(e.response?.data?.error || e.message)));
         document.getElementById('saveBtn').addEventListener('click', () => doSave().catch(e => alert(e.response?.data?.error || e.message)));
+        const refreshBtn = document.getElementById('refreshLibraryBtn');
+        if (refreshBtn) refreshBtn.addEventListener('click', () => loadLibrary());
+        loadLibrary();
+        IfritUI.applyRagDefaultCheckbox('ragCheck');
     }
 
     return { init };

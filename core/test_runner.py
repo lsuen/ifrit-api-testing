@@ -29,6 +29,7 @@ class TestRunner:
         env_names=None,
         suite=None,
         global_auth=False,
+        test_assist=False,
     ):
         """运行测试：控制台仅输出计划/逐条结果/汇总，详细 IO 写入 logs/。"""
         try:
@@ -109,6 +110,24 @@ class TestRunner:
 
             if summary.get("failed", 0) > 0 or summary.get("error", 0) > 0:
                 print("[IFRIT] 失败详情见 logs/errors/ 与 Allure 报告")
+                if test_assist:
+                    from core.test_assist import ASSIST_MARKER, analyze_test_output
+                    import json as _json
+
+                    try:
+                        assist = analyze_test_output(
+                            result.stdout,
+                            result.stderr,
+                            run_id=run_paths["run_id"],
+                            suite=resolved_suite,
+                        )
+                        print(ASSIST_MARKER + _json.dumps(assist, ensure_ascii=False))
+                        print(
+                            f"[IFRIT] TEST_ASSIST done diagnosis={len(assist.get('diagnosis', []))} "
+                            f"retain=user_decision"
+                        )
+                    except Exception as assist_error:
+                        print(f"[IFRIT] TEST_ASSIST failed: {assist_error}")
 
             os.environ.pop("IFRIT_CLI_MODE", None)
             os.environ.pop("IFRIT_RUN_ID", None)

@@ -143,9 +143,8 @@ class AIGenerator:
                 return 1
 
             skill_name = self._resolve_skill_name(args)
-            if skill_name not in list_skills():
-                self.logger.error("未知 skill: %s", skill_name)
-                return 1
+            auto_skill = getattr(args, "auto_skill", True)
+            project_root = getattr(args, "project_root", ".") or "."
 
             openai_config = ai_config.get_openai_config()
             generation_config = ai_config.get_generation_config()
@@ -153,6 +152,45 @@ class AIGenerator:
             output_config = ai_config.get_output_config()
 
             ai_client = AIClient(openai_config)
+
+            use_rag = getattr(args, "rag", False) and not getattr(args, "no_rag", False)
+            if use_rag:
+                from core.rag.service import KnowledgeService
+                from core.rag.retrieve import RagService
+
+                rag_query = RagService.build_query(
+                    endpoints=getattr(args, "swagger_endpoint", None) or [],
+                    input_doc=getattr(args, "input_doc", None),
+                    input_url=getattr(args, "input_url", None),
+                    user_hint=getattr(args, "skill_hint", None) or "",
+                )
+                top_k = getattr(args, "rag_top_k", 5) or 5
+                prompt_templates = dict(prompt_templates)
+                prompt_templates["rag_context"] = KnowledgeService(project_root).retrieve_for_prompt(
+                    rag_query, top_k=top_k
+                )
+
+            explicit_skill = bool(getattr(args, "skill", None) or self.skill_name)
+            if auto_skill and not explicit_skill:
+                from agent.skills.router import route_skill
+
+                route_ctx = {
+                    "input_doc": getattr(args, "input_doc", None),
+                    "input_url": getattr(args, "input_url", None),
+                    "endpoints": getattr(args, "swagger_endpoint", None) or [],
+                    "user_hint": getattr(args, "skill_hint", None) or "",
+                }
+                routed = route_skill(ai_client, route_ctx, project_root=project_root)
+                skill_name = routed["skill_name"]
+                print(
+                    f"[IFRIT] SKILL_REGISTERED skill={skill_name} source={routed.get('source')}",
+                    flush=True,
+                )
+
+            if skill_name not in list_skills():
+                self.logger.error("未知 skill: %s", skill_name)
+                return 1
+
             case_generator = CaseGenerator(
                 ai_client, generation_config, prompt_templates
             )
@@ -171,7 +209,12 @@ class AIGenerator:
             }
 
             self.logger.info("启动 Skill: %s", skill_name)
-            react_loop = ReActLoop(get_actions(skill_name))
+            action_names = [a.name for a in get_actions(skill_name)]
+            print(
+                f"[IFRIT] SKILL_MATCH skill={skill_name} actions={','.join(action_names)}",
+                flush=True,
+            )
+            react_loop = ReActLoop(get_actions(skill_name), skill_name=skill_name)
             final_context = react_loop.run(context)
 
             test_cases = final_context.get("test_cases", [])

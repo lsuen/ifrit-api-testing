@@ -35,6 +35,7 @@ reports/
 build/*
 !build/README.md
 
-# 系统文件
-.DS_Store
-Thumbs.db
+.ifrit/rag/knowledge.db
+.ifrit/rag/uploads/*
+!.ifrit/rag/uploads/.gitkeep
+

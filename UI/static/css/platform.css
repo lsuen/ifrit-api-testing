@@ -235,13 +235,37 @@ body.platform-body {
     background: var(--terminal-bg);
     color: var(--terminal-text);
     font-family: "Cascadia Code", "Consolas", monospace;
-    font-size: 0.82rem;
+    font-size: clamp(0.75rem, 1.8vw, 0.82rem);
     line-height: 1.55;
     padding: 16px;
     border-radius: 10px;
-    height: 420px;
+    height: clamp(280px, 42vh, 520px);
+    min-height: 220px;
+    max-height: 72vh;
     overflow-y: auto;
     border: 1px solid #1e293b;
+}
+
+.log-terminal--compact {
+    height: clamp(200px, 28vh, 360px);
+    min-height: 160px;
+}
+
+.log-terminal--fill {
+    height: clamp(320px, calc(100vh - 280px), 680px);
+    min-height: 280px;
+}
+
+.log-panel--fill {
+    height: clamp(320px, calc(100vh - 260px), 640px);
+    min-height: 280px;
+}
+
+@media (min-width: 992px) {
+    .layout-with-sidebar .log-terminal--fill,
+    .layout-with-sidebar .log-panel--fill {
+        height: clamp(400px, calc(100vh - 200px), 720px);
+    }
 }
 
 .log-line { padding: 2px 0; white-space: pre-wrap; word-break: break-all; }
@@ -287,8 +311,104 @@ body.platform-body {
 }
 .table-platform th { background: #f8fafc; color: var(--text-muted); font-weight: 600; }
 
+.table-responsive-platform {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-platform .btn-group-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.btn-ifrit.btn-sm-ifrit {
+    padding: 4px 10px;
+    font-size: 0.78rem;
+}
+
+.page-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.mobile-topbar {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--sidebar-bg);
+    color: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 1040;
+}
+
+.sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    z-index: 1035;
+}
+
+.sidebar-backdrop.show { display: block; }
+
 .nav-tabs .nav-link { border-radius: 8px 8px 0 0; color: var(--text-muted); font-weight: 600; }
 .nav-tabs .nav-link.active { color: var(--accent); }
+
+/* About / markdown docs */
+.doc-markdown {
+    max-width: 960px;
+    font-size: 0.95rem;
+}
+.doc-markdown.markdown-body {
+    background: transparent;
+}
+.doc-markdown pre {
+    background: var(--terminal-bg);
+    color: var(--terminal-text);
+    border-radius: 8px;
+    padding: 12px 16px;
+}
+.recipe-card {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+.log-panel {
+    overflow-y: auto;
+    background: var(--terminal-bg);
+    color: var(--terminal-text);
+    font-family: Consolas, "Cascadia Code", monospace;
+    font-size: clamp(0.75rem, 1.8vw, 0.82rem);
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    min-height: 200px;
+    height: clamp(280px, 40vh, 520px);
+    max-height: 72vh;
+}
+.log-panel .log-line.ifrit { color: #7dd3fc; }
+.log-panel .log-line.error { color: #fca5a5; }
+.log-panel .log-line.success { color: #86efac; }
+
+.recipe-cmd {
+    margin: 0;
+    padding: 10px 12px;
+    background: var(--terminal-bg);
+    color: var(--terminal-text);
+    border-radius: 8px;
+    font-size: 0.8rem;
+    overflow-x: auto;
+}
+.sidebar-footer .sidebar-version-link {
+    color: #94a3b8;
+    text-decoration: none;
+}
+.sidebar-footer .sidebar-version-link:hover { color: #e2e8f0; }
 
 /* Advanced editor */
 .advanced-layout { display: flex; height: calc(100vh - 56px); }
@@ -311,7 +431,37 @@ body.platform-body {
 #aceEditor { flex: 1; min-height: 400px; }
 
 @media (max-width: 992px) {
+    .mobile-topbar { display: flex; }
+
     .app-shell { flex-direction: column; }
-    .sidebar { width: 100%; height: auto; position: relative; }
-    .main-content { padding: 16px; }
+
+    .sidebar {
+        width: min(280px, 85vw);
+        height: 100vh;
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 1045;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        box-shadow: var(--shadow);
+    }
+
+    .sidebar.open { transform: translateX(0); }
+
+    .main-content {
+        padding: 16px;
+        width: 100%;
+    }
+
+    .page-title { font-size: 1.35rem; }
+
+    .advanced-layout { flex-direction: column; height: auto; }
+    .advanced-sidebar { width: 100%; max-height: 40vh; }
+}
+
+@media (max-width: 576px) {
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .quick-actions { flex-direction: column; }
+    .quick-actions .btn-ifrit { width: 100%; justify-content: center; }
 }

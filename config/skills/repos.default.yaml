@@ -1,0 +1,32 @@
+# Skill 发现源仓库（GitHub / Gitee 浅克隆）
+repos:
+  - id: hongmaple-agent-academy
+    host: gitee
+    owner: hongmaple
+    repo: agent-academy
+    branch: master
+    enabled: true
+  - id: jeffallan-claude-skills
+    host: github
+    owner: jeffallan
+    repo: claude-skills
+    branch: main
+    enabled: true
+  - id: gitgoodordietrying-api-dev
+    host: github
+    owner: gitgoodordietrying
+    repo: api-dev
+    branch: main
+    enabled: true
+  - id: qwenlm-qwen-agent
+    host: github
+    owner: QwenLM
+    repo: Qwen-Agent
+    branch: main
+    enabled: true
+  - id: ai-dev-zh-agent-test-skills
+    host: gitee
+    owner: ai-dev
+    repo: zh-agent-test-skills
+    branch: master
+    enabled: true
