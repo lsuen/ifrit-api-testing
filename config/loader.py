@@ -62,6 +62,14 @@ def ensure_dotenv_loaded() -> None:
         load_dotenv()
 
 
+def reload_dotenv(env_path: Optional[str] = None) -> None:
+    """强制从 .env 文件重新加载（覆盖已有环境变量，供 UI 设置页使用）。"""
+    global _DOTENV_LOADED
+    _DOTENV_LOADED = False
+    load_dotenv(env_path, override=True)
+    _DOTENV_LOADED = True
+
+
 def load_ini(filename: str) -> configparser.ConfigParser:
     """加载 config/settings/ 下的 ini 文件。"""
     ensure_dotenv_loaded()

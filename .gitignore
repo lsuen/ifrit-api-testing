@@ -1,6 +1,9 @@
 # AI 项目记忆目录（本地追溯，不纳入版本库）
 .MemoryForAI/
 
+# 本地敏感信息（GitHub Token / API Key 等，绝不提交）
+.secrets/
+
 # Cursor：保留 rules/skills 进仓库，其余本地忽略
 .cursor/*
 !.cursor/rules/
@@ -18,6 +21,7 @@ __pycache__/
 .eggs/
 dist/
 *.egg
+.pytest_cache/
 
 # 虚拟环境
 .venv/
@@ -35,7 +39,7 @@ reports/
 build/*
 !build/README.md
 
-.ifrit/rag/knowledge.db
-.ifrit/rag/uploads/*
-!.ifrit/rag/uploads/.gitkeep
+# 本地运行态（RAG 库 / Skill 缓存 / 文档缓存）
+.ifrit/
+api_docs/cache/
 

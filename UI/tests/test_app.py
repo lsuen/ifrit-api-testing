@@ -109,6 +109,14 @@ class TestUIPlatform(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Agent 对话".encode(), response.data)
 
+    def test_api_agent_plan_greeting(self):
+        response = self.client.post("/api/agent/plan", json={"message": "你好", "form": {}})
+        self.assertEqual(response.status_code, 200)
+        data = response.get_json()
+        self.assertEqual(data.get("intent"), "converse")
+        self.assertTrue(data.get("reply"))
+        self.assertEqual(data.get("steps"), [])
+
     def test_api_agent_plan_smoke(self):
         response = self.client.post("/api/agent/plan", json={"message": "跑冒烟测试", "form": {}})
         self.assertEqual(response.status_code, 200)

@@ -981,6 +981,14 @@ app = create_app()
 def init_app_config() -> None:
     global CONFIG
     CONFIG = load_config()
+    root = CONFIG["ifrit"]["root_path_resolved"]
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+    try:
+        from config.loader import reload_dotenv
+        reload_dotenv(str(root / ".env"))
+    except Exception:
+        pass
 
 
 init_app_config()

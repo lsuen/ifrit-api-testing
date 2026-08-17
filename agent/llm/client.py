@@ -426,6 +426,25 @@ HTTP方法: {api_info['method']}
             raise RuntimeError(self.last_error or "LLM 无响应")
         return parsed
 
+    def chat_simple(
+        self,
+        messages: List[Dict[str, str]],
+        max_retries: int = 2,
+        max_tokens: Optional[int] = None,
+    ) -> Optional[str]:
+        """多轮对话（system/user），用于 Agent 闲聊与用法引导。"""
+        data: Dict[str, Any] = {
+            "model": self.model,
+            "messages": messages,
+            "temperature": min(float(self.temperature), 0.85),
+            "max_tokens": max_tokens or min(int(self.max_tokens), 1200),
+        }
+        parsed = self._post_chat(data, max_retries=max_retries)
+        if not parsed:
+            return None
+        content = (parsed.get("content") or "").strip()
+        return content or None
+
     def complete(self, prompt: str, max_retries: int = 3) -> Optional[str]:
         """通用单轮 LLM 补全（供导入诊断等场景）。"""
         return self._call_openai_api(prompt, max_retries=max_retries)

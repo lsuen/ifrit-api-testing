@@ -97,6 +97,9 @@
 .agent-msg.user { background: rgba(13,110,253,.12); margin-left: auto; }
 .agent-msg.bot { background: rgba(108,117,125,.12); }
 .agent-msg .role { font-size: .7rem; text-transform: uppercase; opacity: .7; }
+.agent-msg-body { white-space: pre-wrap; line-height: 1.5; }
+.agent-msg.agent-thinking { opacity: .7; font-style: italic; }
+.agent-msg.agent-llm-reply .role::after { content: ' · 大模型'; font-size: .65rem; color: var(--bs-primary); margin-left: .25rem; }
 </style>
 {% endblock %}
 

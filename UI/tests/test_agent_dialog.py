@@ -5,8 +5,7 @@ import sys
 import unittest
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-UI_DIR = ROOT / "UI"
+UI_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(UI_DIR))
 
 from services.agent_dialog_service import _match_intent, build_agent_plan, get_agent_context
@@ -16,6 +15,19 @@ from services.config_loader import load_config
 class TestAgentDialog(unittest.TestCase):
     def setUp(self):
         self.config = load_config()
+
+    def test_match_intent_greeting(self):
+        self.assertEqual(_match_intent("你好"), "converse")
+
+    def test_match_intent_help(self):
+        self.assertEqual(_match_intent("如何配置鉴权？"), "converse")
+
+    def test_build_plan_converse(self):
+        plan = build_agent_plan(self.config, {"message": "你好", "form": {}})
+        self.assertEqual(plan["intent"], "converse")
+        self.assertEqual(plan["mode"], "converse")
+        self.assertTrue(plan.get("reply"))
+        self.assertEqual(plan.get("steps"), [])
 
     def test_match_intent_smoke(self):
         self.assertEqual(_match_intent("跑冒烟测试"), "execute_smoke")

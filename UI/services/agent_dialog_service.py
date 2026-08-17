@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Agent 对话：自然语言意图 → CLI/Skill 执行计划。"""
+"""Agent 对话：自然语言意图 → CLI/Skill 执行计划或对话引导。"""
 import re
 import sys
 from pathlib import Path
@@ -13,6 +13,30 @@ from services.cli_runner import (
 )
 from services.config_loader import get_remote_swagger_url
 from services.ifrit_paths import list_api_docs
+
+AGENT_NAME = "ifrit 接口自动化测试助手"
+
+SUGGESTED_PROMPTS = [
+    "跑冒烟测试并出报告",
+    "生成 /api/address 用例",
+    "导入 Postman 并执行",
+    "如何配置鉴权和环境？",
+]
+
+_GREETING_RE = re.compile(
+    r"^(你好|您好|嗨|哈喽|hello|hi|hey|在吗|早上好|下午好|晚上好)[!?。，~]*$",
+    re.I,
+)
+_THANKS_RE = re.compile(r"^(谢谢|感谢|thanks|thx)[你您]?[!?。~]*", re.I)
+_HELP_RE = re.compile(
+    r"(你是谁|你能做什么|你会什么|怎么用|如何使用|怎么开始|帮助|help|"
+    r"是什么|什么意思|如何配置|怎么配|入门|新手|文档|手册)",
+    re.I,
+)
+_TASK_KEYWORDS = (
+    "跑", "执行", "运行", "测试", "生成", "导入", "postman", "冒烟", "smoke",
+    "generate", "鉴权", "auth", "用例", "报告", "doc ", "url ", "--",
+)
 
 
 def get_agent_context(config: Dict[str, Any]) -> Dict[str, Any]:
@@ -45,9 +69,135 @@ def _extract_endpoints(message: str) -> List[str]:
     return list(dict.fromkeys(re.findall(r"/api/[\w./-]+", message)))
 
 
+def _has_task_intent(message: str) -> bool:
+    if _HELP_RE.search(message):
+        return False
+    text = message.strip().lower()
+    if text.startswith("--"):
+        return True
+    if re.match(r"^(doc|url|generate|endpoint|skill)\b", text):
+        return True
+    if _extract_endpoints(message):
+        return True
+    return any(k in message for k in _TASK_KEYWORDS) or any(k in text for k in ("postman", "smoke"))
+
+
+def _is_conversational(message: str) -> bool:
+    text = message.strip()
+    if not text:
+        return True
+    if _has_task_intent(text):
+        return False
+    if _GREETING_RE.match(text) or _THANKS_RE.match(text) or _HELP_RE.search(text):
+        return True
+    if len(text) <= 16:
+        return True
+    return False
+
+
+def _static_conversational_reply(message: str, ctx: Dict[str, Any]) -> str:
+    text = message.strip()
+    if _GREETING_RE.match(text):
+        return (
+            f"你好！我是 **{AGENT_NAME}**。\n\n"
+            "我可以帮你：\n"
+            "· 跑冒烟 / 执行用例 / 生成报告\n"
+            "· 从 Swagger 文档 AI 生成用例\n"
+            "· 导入 Postman 并一键执行\n"
+            "· 解答项目配置与使用问题（环境、鉴权、RAG 等）\n\n"
+            "试试说：「跑冒烟测试」或「如何配置鉴权？」"
+        )
+    if _THANKS_RE.match(text):
+        return "不客气！有需要随时说，或点左侧快捷意图按钮。"
+    if _HELP_RE.search(text):
+        doc_hint = ctx.get("default_doc") or "api_docs 下的 Swagger JSON"
+        return (
+            f"**快速上手（Web UI）**\n"
+            "1. **设置** — 填环境、鉴权、AI，跑就绪检查\n"
+            "2. **仪表盘** — 一键「冒烟全流程」或「导入→执行」\n"
+            "3. **报告** — 查看 HTML 结果\n\n"
+            f"**CLI 等价**：`python main.py --file fixtures/smoke/csv/api_test_smoke.csv`\n\n"
+            f"**AI 生成**：需要 {doc_hint}，说「生成 /api/xxx 用例」即可。\n"
+            "**鉴权**：`config/settings/auth.ini` + 执行时勾选全局鉴权。\n\n"
+            "更完整说明见侧栏 **关于** 或仓库内《用户详细使用手册》。"
+        )
+    return (
+        f"我是 **{AGENT_NAME}**。若要做测试，请说具体任务，例如：\n"
+        "· 跑冒烟测试并出报告\n"
+        "· 生成地址接口用例\n"
+        "· 导入 Postman 并执行\n\n"
+        "若是配置/使用问题，可以直接问「如何配置环境」等。"
+    )
+
+
+def generate_conversational_reply(config: Dict[str, Any], message: str) -> Dict[str, Any]:
+    from services.settings_service import _reload_project_env, get_effective_ai_config
+
+    ctx = get_agent_context(config)
+    static_text = _static_conversational_reply(message, ctx)
+    llm_error = ""
+
+    root = config["ifrit"]["root_path_resolved"]
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+    try:
+        _reload_project_env(config)
+        from config.ai_config import AIConfig
+        from agent.llm.client import AIClient
+
+        effective = get_effective_ai_config(config)
+        ai_config = AIConfig()
+        if not ai_config.validate_config():
+            raise RuntimeError("AI 配置校验失败，请检查设置页")
+
+        openai_cfg = ai_config.get_openai_config()
+        client = AIClient(openai_cfg)
+        system = (
+            f"你是 {AGENT_NAME}，语气自然、像同事一样交流，不要像机器人列清单。"
+            "你熟悉 ifrit-apitest：接口自动化、冒烟、Postman 导入、Swagger AI 生成、全局鉴权、报告、知识库 RAG。"
+            "Web：设置 /settings、仪表盘 /、导入 /import、AI /ai、执行 /execute、报告 /reports、Agent /agent。"
+            "规则：用户闲聊就友好回应并简短介绍你能做什么；问用法就给 2～4 步可操作建议；"
+            "不要假装已经在跑测试；只有用户明确下任务时才提醒可以说「跑冒烟」等。"
+            f"\n当前项目：文档={ctx.get('default_doc') or '无'}，冒烟={ctx.get('smoke_file')}。"
+            f"\n当前 LLM：{effective.get('base_url')} / {effective.get('model')}。"
+        )
+        llm_text = client.chat_simple(
+            [
+                {"role": "system", "content": system},
+                {"role": "user", "content": message.strip()},
+            ],
+            max_retries=2,
+            max_tokens=800,
+        )
+        if llm_text:
+            return {
+                "text": llm_text,
+                "source": "llm",
+                "suggestions": SUGGESTED_PROMPTS,
+                "llm_endpoint": effective.get("base_url"),
+                "llm_model": effective.get("model"),
+            }
+        llm_error = client.last_error or "LLM 无响应"
+    except Exception as error:
+        llm_error = str(error)
+
+    fallback = static_text.replace("**", "")
+    if llm_error:
+        fallback += f"\n\n（LLM 未连通：{llm_error}。请到 **设置 → AI/LLM** 检查 Base URL 与 Model，并勾选「测试 LLM 连通」。）"
+    return {
+        "text": fallback,
+        "source": "static",
+        "suggestions": SUGGESTED_PROMPTS,
+        "llm_error": llm_error,
+    }
+
+
 def _match_intent(message: str) -> str:
     text = message.strip()
     lower = text.lower()
+    if _is_conversational(text):
+        return "converse"
     if text.startswith("--"):
         return "cli"
     if re.match(r"^(doc|url|help|skills|show|generate|endpoint|format|out|skill)\b", lower):
@@ -64,7 +214,9 @@ def _match_intent(message: str) -> str:
         return "generate_auth"
     if any(k in text for k in ("生成", "AI", "用例", "generate")):
         return "generate"
-    return "generate"
+    if _extract_endpoints(text):
+        return "generate"
+    return "converse"
 
 
 def _rule_skill_hint(intent: str, message: str, endpoints: List[str]) -> Optional[str]:
@@ -117,6 +269,20 @@ def build_agent_plan(config: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, 
 
     steps: List[Dict[str, Any]] = []
     summary = ""
+
+    if intent == "converse":
+        reply = generate_conversational_reply(config, message)
+        return {
+            "intent": "converse",
+            "mode": "converse",
+            "summary": "对话",
+            "steps": [],
+            "reply": reply["text"],
+            "reply_source": reply["source"],
+            "llm_error": reply.get("llm_error"),
+            "suggestions": reply.get("suggestions", SUGGESTED_PROMPTS),
+            "context": ctx,
+        }
 
     if intent == "cli":
         line = message if message.startswith("--") else form.get("cli_line", message)
@@ -242,6 +408,7 @@ def build_agent_plan(config: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, 
 
     return {
         "intent": intent,
+        "mode": "execute",
         "summary": summary,
         "steps": steps,
         "skill_preview": skill_preview,

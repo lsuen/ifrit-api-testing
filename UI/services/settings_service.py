@@ -63,18 +63,64 @@ def _read_env_keys(config: Dict[str, Any]) -> Dict[str, str]:
     }
 
 
+def _reload_project_env(config: Dict[str, Any]) -> None:
+    root = config["ifrit"]["root_path_resolved"]
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+    from config.loader import reload_dotenv
+
+    reload_dotenv(str(root / ".env"))
+
+
+def get_effective_ai_config(config: Dict[str, Any]) -> Dict[str, Any]:
+    """返回实际生效的 LLM 配置（ai.ini + .env 合并）。"""
+    _reload_project_env(config)
+    from config.ai_config import AIConfig
+
+    ai = AIConfig().get_openai_config()
+    ini_path = _settings_dir(config) / "ai.ini"
+    ini_base = ""
+    ini_model = ""
+    if ini_path.is_file():
+        parser = configparser.ConfigParser()
+        parser.read(ini_path, encoding="utf-8")
+        if parser.has_section("openai"):
+            ini_base = parser.get("openai", "base_url", fallback="")
+            ini_model = parser.get("openai", "model", fallback="")
+
+    env_keys = _read_env_keys(config)
+    base_from_env = bool(env_keys.get("openai_base_url_override"))
+    model_from_env = bool(env_keys.get("openai_model_override"))
+
+    return {
+        "base_url": ai.get("base_url", ""),
+        "model": ai.get("model", ""),
+        "timeout": ai.get("timeout", 120),
+        "api_key_set": env_keys.get("openai_api_key_set", False),
+        "api_key_hint": env_keys.get("openai_api_key_hint", ""),
+        "ini_base_url": ini_base,
+        "ini_model": ini_model,
+        "base_url_from_env": base_from_env,
+        "model_from_env": model_from_env,
+    }
+
+
 def get_settings_payload(config: Dict[str, Any]) -> Dict[str, Any]:
     settings_dir = _settings_dir(config)
     ai_ini = settings_dir / "ai.ini"
-    env_ini = settings_dir / "env_config.ini"
     auth_ini = settings_dir / "auth.ini"
 
-    ai_data: Dict[str, str] = {}
+    effective = get_effective_ai_config(config)
+    ai_data: Dict[str, str] = {
+        "base_url": effective.get("base_url", ""),
+        "model": effective.get("model", ""),
+        "timeout": str(effective.get("timeout", 120)),
+    }
     if ai_ini.is_file():
         parser = configparser.ConfigParser()
         parser.read(ai_ini, encoding="utf-8")
         if parser.has_section("openai"):
-            for key in ("base_url", "model", "temperature", "max_tokens", "timeout"):
+            for key in ("temperature", "max_tokens"):
                 if parser.has_option("openai", key):
                     ai_data[key] = parser.get("openai", key)
 
@@ -92,6 +138,7 @@ def get_settings_payload(config: Dict[str, Any]) -> Dict[str, Any]:
 
     return {
         "ai": ai_data,
+        "effective_ai": effective,
         "env_options": env_options,
         "auth": auth_detail,
         "env_keys": env_keys,
@@ -148,8 +195,16 @@ def save_ai_settings(config: Dict[str, Any], data: Dict[str, Any]) -> None:
     if data.get("openai_model_override") is not None:
         upsert_env_line("OPENAI_MODEL", str(data.get("openai_model_override") or "").strip())
 
-    if lines or api_key:
+    # 主表单 base_url/model 同步写入 .env，确保与 ai.ini 一致、实际生效
+    if data.get("base_url") is not None:
+        upsert_env_line("OPENAI_BASE_URL", str(data.get("base_url") or "").strip())
+    if data.get("model") is not None:
+        upsert_env_line("OPENAI_MODEL", str(data.get("model") or "").strip())
+
+    if lines or api_key or data.get("base_url") is not None:
         env_path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+
+    _reload_project_env(config)
 
 
 def save_env_entry(config: Dict[str, Any], name: str, base_url: str, timeout: str = "30") -> None:
@@ -234,18 +289,38 @@ def run_health_check(config: Dict[str, Any], ping_llm: bool = False) -> Dict[str
 
     if ping_llm and ai_ini.is_file():
         try:
+            _reload_project_env(config)
             from config.ai_config import AIConfig
             from agent.llm.client import AIClient
 
             ai_config = AIConfig()
+            openai_cfg = ai_config.get_openai_config()
+            endpoint = openai_cfg.get("base_url", "")
+            model = openai_cfg.get("model", "")
             if ai_config.validate_config():
-                client = AIClient(ai_config.get_openai_config())
-                resp = client.complete("回复 OK")
-                add("LLM 连通", bool(resp), "LLM 响应正常" if resp else (client.last_error or "无响应"))
+                client = AIClient(openai_cfg)
+                resp = client.chat_simple(
+                    [
+                        {"role": "system", "content": "你是助手，请用一句话回复 OK"},
+                        {"role": "user", "content": "ping"},
+                    ],
+                    max_retries=1,
+                    max_tokens=32,
+                )
+                detail = f"{endpoint} · 模型 {model}"
+                if resp:
+                    add("LLM 连通", True, detail, level="warn")
+                else:
+                    add(
+                        "LLM 连通",
+                        False,
+                        f"{detail} — {client.last_error or '无响应'}",
+                        level="warn",
+                    )
             else:
-                add("LLM 连通", False, "AI 配置校验失败")
+                add("LLM 连通", False, f"配置无效 · {endpoint} · {model}", level="warn")
         except Exception as error:
-            add("LLM 连通", False, str(error))
+            add("LLM 连通", False, str(error), level="warn")
 
     required_ok = all(c["ok"] for c in checks if c["level"] == "required")
     return {

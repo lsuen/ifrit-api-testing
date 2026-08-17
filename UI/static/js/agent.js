@@ -8,12 +8,39 @@
     const inputEl = document.getElementById('agentInput');
     let busy = false;
 
-    function appendMsg(role, text) {
+    function appendMsg(role, text, extraClass) {
         const div = document.createElement('div');
-        div.className = 'agent-msg ' + role;
-        div.innerHTML = `<div class="role">${role === 'user' ? '你' : 'Agent'}</div><div>${escapeHtml(text)}</div>`;
+        div.className = 'agent-msg ' + role + (extraClass ? ' ' + extraClass : '');
+        div.innerHTML = `<div class="role">${role === 'user' ? '你' : 'Agent'}</div><div class="agent-msg-body">${formatMsg(text)}</div>`;
         historyEl.appendChild(div);
         historyEl.scrollTop = historyEl.scrollHeight;
+        return div;
+    }
+
+    function formatMsg(t) {
+        return escapeHtml(t || '').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+    }
+
+    function renderSuggestions(list) {
+        let wrap = document.getElementById('agentSuggestions');
+        if (!wrap) {
+            wrap = document.createElement('div');
+            wrap.id = 'agentSuggestions';
+            wrap.className = 'd-flex flex-wrap gap-2 mt-2';
+            historyEl.parentElement.appendChild(wrap);
+        }
+        wrap.innerHTML = '';
+        (list || []).forEach(text => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn btn-sm btn-outline-secondary';
+            btn.textContent = text;
+            btn.addEventListener('click', () => {
+                inputEl.value = text;
+                handleSend(text);
+            });
+            wrap.appendChild(btn);
+        });
     }
 
     function escapeHtml(t) {
@@ -154,13 +181,33 @@
         inputEl.value = '';
 
         try {
+            const thinking = appendMsg('bot', '思考中…', 'agent-thinking');
             const res = await axios.post('/api/agent/plan', {
                 message: message.trim(),
                 form: getForm(),
             });
+            thinking.remove();
             const plan = res.data;
+
+            if (plan.mode === 'converse' || plan.intent === 'converse') {
+                planBox.classList.add('d-none');
+                renderSkillPreview(null);
+                let replyText = plan.reply || '你好！';
+                if (plan.reply_source === 'llm') {
+                    appendMsg('bot', replyText, 'agent-llm-reply');
+                } else {
+                    appendMsg('bot', replyText);
+                    if (plan.llm_error) {
+                        IfritUI.showToast('LLM 未连通，当前为离线引导', 'error');
+                    }
+                }
+                renderSuggestions(plan.suggestions);
+                return;
+            }
+
             renderSkillPreview(plan.skill_preview);
             appendMsg('bot', plan.summary + '\n步骤：' + plan.steps.map(s => s.label).join(' → '));
+            renderSuggestions([]);
             await runPlan(plan);
         } catch (e) {
             const err = e.response?.data?.error || e.message;
@@ -185,5 +232,9 @@
     document.getElementById('agentClearLog').addEventListener('click', () => { logEl.innerHTML = ''; });
 
     IfritUI.applyRagDefaultCheckbox('agentRag');
-    appendMsg('bot', '你好！可以说「跑冒烟」「生成地址用例」「导入 Postman 并执行」，或用下方快捷按钮。');
+    appendMsg('bot',
+        '你好！我是 **ifrit 接口自动化测试助手**。\n\n'
+        + '可以帮你跑测试、AI 生成用例、导入 Postman，也可以回答项目使用问题。\n'
+        + '试试下方快捷按钮，或直接输入「如何配置环境？」');
+    renderSuggestions(['跑冒烟测试并出报告', '如何配置鉴权和环境？', '生成 /api/address 用例']);
 })();

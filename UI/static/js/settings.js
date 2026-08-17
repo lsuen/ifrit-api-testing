@@ -2,21 +2,30 @@
  * 设置页
  */
 (function() {
+    function renderEffectiveBanner(effective) {
+        const banner = document.getElementById('effectiveAiBanner');
+        const text = document.getElementById('effectiveAiText');
+        if (!banner || !text || !effective) return;
+        banner.classList.remove('d-none');
+        const keyHint = effective.api_key_set ? ` · Key ${effective.api_key_hint || '已设置'}` : ' · Key 未设置';
+        text.textContent = `${effective.base_url || '-'} · 模型 ${effective.model || '-'}${keyHint}`;
+    }
+
     async function loadSettings() {
         const res = await axios.get('/api/settings');
         const data = res.data;
         const ai = data.ai || {};
+        const effective = data.effective_ai || {};
+        renderEffectiveBanner(effective);
         const form = document.getElementById('aiForm');
         if (form) {
-            form.base_url.value = ai.base_url || '';
-            form.model.value = ai.model || '';
-            form.timeout.value = ai.timeout || '120';
-            form.openai_base_url_override.value = data.env_keys?.openai_base_url_override || '';
-            form.openai_model_override.value = data.env_keys?.openai_model_override || '';
+            form.base_url.value = ai.base_url || effective.base_url || '';
+            form.model.value = ai.model || effective.model || '';
+            form.timeout.value = ai.timeout || effective.timeout || '120';
             document.getElementById('keyHint').textContent =
                 data.env_keys?.openai_api_key_set
                     ? '当前 Key: ' + (data.env_keys.openai_api_key_hint || '已设置')
-                    : '未检测到 Key（本地 LLM 可留空）';
+                    : '未检测到 Key（本地 LLM 可留空；公网网关必填）';
         }
         renderEnvList(data.env_options || []);
         const prefs = data.ui_prefs || {};
@@ -24,11 +33,12 @@
         document.getElementById('autoIngestRag').checked = prefs.auto_ingest_rag !== false;
         const auth = data.auth || {};
         document.getElementById('authEnabled').checked = auth.enabled === 'true';
-        if auth.login_path && auth.login_path !== '获取不到') {
-            document.getElementById('authForm').login_path.value = auth.login_path;
+        const authForm = document.getElementById('authForm');
+        if (auth.login_path && auth.login_path !== '获取不到') {
+            authForm.login_path.value = auth.login_path;
         }
-        if (auth.login_method) document.getElementById('authForm').login_method.value = auth.login_method;
-        if (auth.login_body) document.getElementById('authForm').login_body.value = auth.login_body;
+        if (auth.login_method) authForm.login_method.value = auth.login_method;
+        if (auth.login_body) authForm.login_body.value = auth.login_body;
     }
 
     function renderEnvList(options) {
@@ -61,7 +71,28 @@
         ).join('');
     }
 
+    async function testLlm() {
+        const el = document.getElementById('llmTestResult');
+        el.textContent = '测试中…';
+        el.className = 'small text-muted ms-2';
+        try {
+            const res = await axios.post('/api/settings/health', { ping_llm: true });
+            const llm = (res.data.checks || []).find(c => c.name === 'LLM 连通');
+            if (llm && llm.ok) {
+                el.textContent = '✓ ' + llm.message;
+                el.className = 'small text-success ms-2';
+            } else {
+                el.textContent = '✗ ' + (llm?.message || '连通失败');
+                el.className = 'small text-danger ms-2';
+            }
+        } catch (e) {
+            el.textContent = '测试失败';
+            el.className = 'small text-danger ms-2';
+        }
+    }
+
     document.getElementById('runHealthBtn').addEventListener('click', () => runHealth().catch(e => alert(e.message)));
+    document.getElementById('testLlmBtn')?.addEventListener('click', () => testLlm());
     runHealth().catch(() => {});
 
     document.getElementById('aiForm').addEventListener('submit', async e => {
@@ -72,8 +103,6 @@
             model: f.model.value,
             timeout: f.timeout.value,
             openai_api_key: f.openai_api_key.value,
-            openai_base_url_override: f.openai_base_url_override.value,
-            openai_model_override: f.openai_model_override.value,
         });
         IfritUI.showToast('AI 配置已保存', 'success');
         f.openai_api_key.value = '';
