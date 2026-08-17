@@ -1,0 +1,5 @@
+# 作者：孙文龙
+# 用途：GitHub Linguist 语言统计矫正——第三方前端库不计入语言占比
+
+# 第三方打包库（Ace 编辑器）不参与语言统计，避免 JavaScript 抢占主语言
+UI/static/lib/** linguist-vendored

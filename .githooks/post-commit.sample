@@ -1,6 +1,0 @@
-#!/bin/sh
-# 作者：孙文龙
-# Git post-commit：每次 commit 后自动发钉钉（概要来自 commit message）
-ROOT="$(git rev-parse --show-toplevel)"
-cd "$ROOT" || exit 0
-python .cursor/skills/ifrit-project-dev/scripts/send_dingtalk_notify.py --from-last-commit || true

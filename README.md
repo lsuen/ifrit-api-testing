@@ -105,7 +105,7 @@ python main.py --file fixtures/ai/csv/ai_address_business.csv --global-auth --su
 python main.py --env environment
 
 # 全流程调试（probe → auth → 生成 → 验证 → prune）
-# Windows: debug.bat    Linux/WSL: bash debug.sh
+# Windows: debug_workflow.py 参考 scripts/debug_workflow.py
 ```
 
 ### 5. 查看报告
@@ -235,7 +235,7 @@ GitHub Actions 见 `.github/workflows/ci.yml`：push/PR 自动跑单元测试与
 
 ## 开发规范
 
-本项目遵循中文注释、语义化命名、参数校验等开发标准，规范详见 [.cursor/skills/ifrit-project-dev/SKILL.md](.cursor/skills/ifrit-project-dev/SKILL.md)。
+本项目遵循中文注释、语义化命名、参数校验等开发标准，规范详见 `scripts/` 与 `__docs/`。
 
 ## 其他资源
 
