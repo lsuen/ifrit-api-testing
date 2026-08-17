@@ -1,6 +1,12 @@
-# ifrit API 自动化测试框架
+# ifrit - API Testing & Automation Framework
 
-一个功能强大、灵活易用的 API 自动化测试框架，支持数据驱动、AI 智能生成测试用例，并提供可视化 Web UI 操作台。
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB)](#)
+[![License](https://img.shields.io/badge/license-MIT-green)](#)
+[![Framework](https://img.shields.io/badge/stack-Python%20%7C%20pytest%20%7C%20Flask-blue)](#)
+
+一个开源的 API 自动化测试框架，支持数据驱动、AI 智能生成测试用例，并提供可视化 Web UI 操作台。
+
+An open-source API testing & automation framework — data-driven (Excel/CSV/JSON/YAML), AI-powered test case generation from Swagger/Markdown docs, global auth, Allure reports and a Flask Web UI.
 
 > 面向测试/业务同学：请优先阅读 [用户详细使用手册.md](用户详细使用手册.md)（含 AI 生成、鉴权、报告、FAQ，无需编程基础）。
 
